@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+/'top to bottom direction'/
+actor "Labo" as LB
+actor "system" as SY
+rectangle ROI {
+  usecase "Registration" as UC1
+  usecase "Authentification" as UC2
+  usecase "Saisir les donnes de l'activites" as UC3
+  usecase "Effectuer les calcules de l'activites" as UC4
+  usecase "Donner les resultat totale de ROI" as UC5
+  usecase "Generer le rapport de ROI" as UC6
+  usecase "exporter le rapport de ROI as pdf or excel" as UC7
+  usecase "Importer le rapport des activites sous formar excel" as UC8
+}
+LB --> UC1
+LB --> UC2
+LB --> UC3
+SY --> UC4
+SY --> UC5
+SY --> UC6
+LB --> UC6
+LB --> UC7
+LB --> UC8
+
+
+UC3 --> UC4
+UC4 --> UC5
+UC5 --> UC6
+
+@enduml
