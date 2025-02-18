@@ -1,0 +1,66 @@
+
+
+Table users {
+  id integer [primary key] 
+  FirstName varchar
+  LastName varchar
+  role varchar
+  Email email
+  PSW pasword
+  created_at timestamp
+}
+
+Table Labo {
+  id integer [primary key] 
+  userId integer
+  Status boolean
+  Name varchar
+  created_at timestamp 
+}
+
+Table admins {
+  
+  id integer [primary key]
+  userId integer
+}
+
+Table ActivitiesList{
+  id integer [primary key]
+  Name varchar
+}
+
+Table ActivityByLabo{
+  id integer [primary key ]
+  laboId integer
+  ActivityId integer
+}
+
+Table ActivityItems{
+  id integer [primary key]
+  Name varchar
+  ActivityId integer
+}
+
+Table ActivityItemsValue{
+  id integer [primary key]
+  ActivityItemId integer
+  ActyvityByLaboId integer
+  value float
+  year date
+}
+
+Table ReturnOfInvestisment{
+  id integer [primary key]
+  LaboId integer
+  value float
+  year date
+}
+
+Ref: users.id < Labo.userId //Many to one
+Ref: ActivitiesList.id < ActivityByLabo.ActivityId
+Ref: Labo.id < ActivityByLabo.ActivityId
+Ref: ActivitiesList.id < ActivityItems.ActivityId
+Ref: ActivityItems.id < ActivityItemsValue.ActivityItemId
+Ref: ActivityByLabo.id < ActivityItemsValue.ActyvityByLaboId
+Ref: Labo.id < ReturnOfInvestisment.LaboId
+

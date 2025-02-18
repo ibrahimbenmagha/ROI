@@ -1,0 +1,56 @@
+@startuml
+actor Labo
+participant "Front-End (React)" as FE
+participant "Back-End (Laravel)" as BE
+participant "Database (MongoDB)" as DB
+
+== Authentification ==
+Labo -> FE: Se connecter (Email, Password)
+FE -> BE: Vérifier authentification
+BE -> DB: Vérifier utilisateur et rôle
+DB --> BE: Succès / Échec
+BE --> FE: Succès / Échec
+FE --> Labo: Authentification réussie
+
+== Exportation du rapport ==
+Labo -> FE: Demander export du rapport
+FE -> BE: Générer rapport (Excel / PDF, lecture seule)
+BE -> DB: Récupérer données ROI et activité
+DB --> BE: Données récupérées
+BE -> FE: Générer fichier Excel/PDF
+FE --> Labo: Téléchargement du rapport (lecture seule)
+
+== Importation et modification des données ==
+Labo -> FE: Importer un fichier Excel
+FE -> BE: Vérifier si le fichier a été exporté par le système
+BE -> BE: Comparer la signature du fichier
+BE -> FE: Validation OK / Échec
+FE --> Labo: Fichier accepté (ou rejeté)
+
+Labo -> FE: Modifier les données d'entrée
+FE -> BE: Mettre à jour les données
+BE -> DB: Enregistrer les nouvelles valeurs
+DB --> BE: Confirmation
+BE --> FE: Données mises à jour
+FE --> Labo: Modifications enregistrées
+
+== Recalcul du ROI ==
+Labo -> FE: Lancer le recalcul
+FE -> BE: Effectuer calculs ROI
+BE -> DB: Récupérer nouvelles données
+DB --> BE: Données récupérées
+BE -> BE: Effectuer calcul ROI
+BE -> DB: Enregistrer le nouveau ROI
+DB --> BE: Confirmation
+BE --> FE: ROI recalculé
+FE --> Labo: Résultats mis à jour
+
+== Réexportation du rapport ==
+Labo -> FE: Réexporter le rapport mis à jour
+FE -> BE: Générer nouveau fichier (Excel / PDF, lecture seule)
+BE -> DB: Récupérer ROI mis à jour
+DB --> BE: Données récupérées
+BE -> FE: Générer fichier
+FE --> Labo: Télécharger rapport mis à jour
+
+@enduml
