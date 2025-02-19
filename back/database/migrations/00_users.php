@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('FirstName', 20);
             $table->string('LastName', 20);
             $table->string('email')->unique();
-            $table->string("PSW", 40);
+            $table->string("PSW");
             $table->string('Role', 20);
 
             $table->timestamp('email_verified_at')->nullable();
