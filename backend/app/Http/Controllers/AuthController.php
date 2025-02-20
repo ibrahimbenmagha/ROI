@@ -36,7 +36,7 @@ class AuthController extends Controller
                 'FirstName' => $validated['FirstName'],
                 'LastName' => $validated['LastName'],
                 'email' => $validated['email'],
-                'PSW' => Hash::make($validated['password']), // Hash password before saving
+                'password' => Hash::make($validated['password']), // Hash password before saving
                 'Role' => 'admin',
             ]);
 
@@ -55,16 +55,18 @@ class AuthController extends Controller
     /**
      * Authenticate user and return JWT token.
      */
-    public function login()
+    public function login(Request $request)
     {
-        $credentials = request(['email', 'password']);
-
-        if (!$token = auth()->attempt($credentials)) {
+        $credentials = $request->only('email', 'password');
+    
+        if (!$token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
+    
         return $this->respondWithToken($token);
     }
+    
+
 
     /**
      * Get authenticated user info.
