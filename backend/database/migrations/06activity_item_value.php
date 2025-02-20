@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('activityItemId')->references("id")->on("activityItems");
             $table->foreignId('ActivityByLaboId')->references("id")->on("ActivityByLabo");
             $table->float('value');
-            $table->date('year');
             $table->timestamps();
         });
     }

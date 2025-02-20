@@ -18,11 +18,7 @@ Table Labo {
   created_at timestamp 
 }
 
-Table admins {
-  
-  id integer [primary key]
-  userId integer
-}
+
 
 Table ActivitiesList{
   id integer [primary key]
@@ -33,6 +29,7 @@ Table ActivityByLabo{
   id integer [primary key ]
   laboId integer
   ActivityId integer
+  year date
 }
 
 Table ActivityItems{
@@ -46,7 +43,7 @@ Table ActivityItemsValue{
   ActivityItemId integer
   ActyvityByLaboId integer
   value float
-  year date
+
 }
 
 Table ReturnOfInvestisment{

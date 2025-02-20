@@ -14,6 +14,7 @@ class ActivityByLabo extends Model
     protected $fillable = [
         'laboId',
         'ActivityId',
+        'year',
     ];
 
     /**
@@ -37,6 +38,6 @@ class ActivityByLabo extends Model
      */
     public function itemValues()
     {
-        return $this->hasMany(ActivityItemsValue::class, 'ActyvityByLaboId');
+        return $this->hasMany(ActivityItemValue::class, 'ActyvityByLaboId');
     }
 }

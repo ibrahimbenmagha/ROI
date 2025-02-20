@@ -15,7 +15,7 @@ class ActivityItemValue extends Model
         'activityItemId',
         'ActivityByLaboId',
         'value',
-        'year',
+        
     ];
 
     /**

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Labo;
+use App\Models\avtivitybylabo;
+
 use Illuminate\Support\Facades\Hash;
 
 class LaboController extends Controller
@@ -61,6 +63,12 @@ class LaboController extends Controller
         )->get();
     return response()->json(['labos' => $LabosInfos], 200);
         
+    }
+
+    public function CreateActivityByLabo(Request $request){
+        try{
+            
+        }
     }
 
 
