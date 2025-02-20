@@ -23,15 +23,18 @@ class AuthController extends Controller
     public function Create_Admin(Request $request)
     {
         try {
-            // Validate request
-            $validated = $request->validate([
+            if (User::where('email', $request->email)->exists()) {
+                return response()->json([
+                    'message' => 'The email already exists'
+                ], 409); 
+            }
+                $validated = $request->validate([
                 'FirstName' => 'required|string|max:20',
                 'LastName' => 'required|string|max:20',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
             ]);
-
-            // Create the user
+            
             $user = User::create([
                 'FirstName' => $validated['FirstName'],
                 'LastName' => $validated['LastName'],

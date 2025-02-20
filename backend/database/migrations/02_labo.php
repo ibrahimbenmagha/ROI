@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements("id");
             $table->string('Name');
             $table->foreignId('userId')->references("id")->on("users");
-            $table->boolean("status");
+            $table->string("status");
             $table->timestamps();
         });
     }
