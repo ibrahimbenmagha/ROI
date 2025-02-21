@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 18 fév. 2025 à 16:07
+-- Généré le : ven. 21 fév. 2025 à 15:12
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -28,9 +28,29 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `activitieslist` (
-  `id` int(11) NOT NULL,
-  `Name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `Name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `activitieslist`
+--
+
+INSERT INTO `activitieslist` (`id`, `Name`, `created_at`, `updated_at`) VALUES
+(1, 'Distribution des échantillons', NULL, NULL),
+(2, 'Essai clinique', NULL, NULL),
+(3, 'Mailing', NULL, NULL),
+(4, 'Conférences', NULL, NULL),
+(5, 'Tables rondes', NULL, NULL),
+(6, 'Visites médicales', NULL, NULL),
+(7, 'Publicité directe au consommateur', NULL, NULL),
+(8, 'Publicité directe au consommateur en ligne', NULL, NULL),
+(9, 'Publicité dans les revues', NULL, NULL),
+(10, 'Générique (Médecins)', NULL, NULL),
+(11, 'Générique (Patients)', NULL, NULL),
+(12, 'Promotion numérique pour les médecins', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -39,10 +59,13 @@ CREATE TABLE `activitieslist` (
 --
 
 CREATE TABLE `activitybylabo` (
-  `id` int(11) NOT NULL,
-  `laboId` int(11) DEFAULT NULL,
-  `ActivityId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `laboId` bigint(20) UNSIGNED NOT NULL,
+  `ActivityId` bigint(20) UNSIGNED NOT NULL,
+  `year` year(4) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -51,35 +74,27 @@ CREATE TABLE `activitybylabo` (
 --
 
 CREATE TABLE `activityitems` (
-  `id` int(11) NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
   `Name` varchar(255) NOT NULL,
-  `ActivityId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `ActivityId` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `activityitemsvalue`
+-- Structure de la table `activityitemvalues`
 --
 
-CREATE TABLE `activityitemsvalue` (
-  `id` int(11) NOT NULL,
-  `ActivityItemId` int(11) DEFAULT NULL,
-  `ActivityByLaboId` int(11) DEFAULT NULL,
-  `value` decimal(10,2) DEFAULT NULL,
-  `year` year(4) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `admins`
---
-
-CREATE TABLE `admins` (
-  `id` int(11) NOT NULL,
-  `userId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+CREATE TABLE `activityitemvalues` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `activityItemId` bigint(20) UNSIGNED NOT NULL,
+  `ActivityByLaboId` bigint(20) UNSIGNED NOT NULL,
+  `value` double NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -88,25 +103,80 @@ CREATE TABLE `admins` (
 --
 
 CREATE TABLE `labo` (
-  `id` int(11) NOT NULL,
-  `userId` int(11) DEFAULT NULL,
-  `Status` tinyint(1) DEFAULT 1,
-  `Name` varchar(100) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `Name` varchar(255) NOT NULL,
+  `userId` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `returnofinvestisment`
+-- Structure de la table `migrations`
 --
 
-CREATE TABLE `returnofinvestisment` (
-  `id` int(11) NOT NULL,
-  `LaboId` int(11) DEFAULT NULL,
-  `value` decimal(10,0) DEFAULT NULL,
-  `year` year(4) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+CREATE TABLE `migrations` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `migration` varchar(255) NOT NULL,
+  `batch` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
+(1, '00_users', 1),
+(2, '02_labo', 1),
+(3, '03activities_list', 1),
+(4, '04activity_items', 1),
+(5, '05activity_by_labo', 1),
+(6, '06activity_item_value', 1),
+(7, '07rapport_ROI', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `password_reset_tokens`
+--
+
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `reportroi`
+--
+
+CREATE TABLE `reportroi` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `laboId` bigint(20) UNSIGNED NOT NULL,
+  `value` double NOT NULL,
+  `year` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `sessions`
+--
+
+CREATE TABLE `sessions` (
+  `id` varchar(255) NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `payload` longtext NOT NULL,
+  `last_activity` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -115,14 +185,17 @@ CREATE TABLE `returnofinvestisment` (
 --
 
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `FirstName` varchar(50) DEFAULT NULL,
-  `LastName` varchar(50) DEFAULT NULL,
-  `role` varchar(20) DEFAULT NULL,
-  `Email` varchar(255) NOT NULL,
-  `PSW` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `FirstName` varchar(20) NOT NULL,
+  `LastName` varchar(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `Role` varchar(20) NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Index pour les tables déchargées
@@ -133,58 +206,71 @@ CREATE TABLE `users` (
 --
 ALTER TABLE `activitieslist`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `Name` (`Name`);
+  ADD UNIQUE KEY `activitieslist_name_unique` (`Name`);
 
 --
 -- Index pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `laboId` (`laboId`),
-  ADD KEY `ActivityId` (`ActivityId`);
+  ADD KEY `activitybylabo_laboid_foreign` (`laboId`),
+  ADD KEY `activitybylabo_activityid_foreign` (`ActivityId`);
 
 --
 -- Index pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `ActivityId` (`ActivityId`);
+  ADD KEY `activityitems_activityid_foreign` (`ActivityId`);
 
 --
--- Index pour la table `activityitemsvalue`
+-- Index pour la table `activityitemvalues`
 --
-ALTER TABLE `activityitemsvalue`
+ALTER TABLE `activityitemvalues`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `ActivityItemId` (`ActivityItemId`),
-  ADD KEY `ActivityByLaboId` (`ActivityByLaboId`);
-
---
--- Index pour la table `admins`
---
-ALTER TABLE `admins`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `userId` (`userId`);
+  ADD KEY `activityitemvalues_activityitemid_foreign` (`activityItemId`),
+  ADD KEY `activityitemvalues_activitybylaboid_foreign` (`ActivityByLaboId`);
 
 --
 -- Index pour la table `labo`
 --
 ALTER TABLE `labo`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `userId` (`userId`);
+  ADD KEY `labo_userid_foreign` (`userId`);
 
 --
--- Index pour la table `returnofinvestisment`
+-- Index pour la table `migrations`
 --
-ALTER TABLE `returnofinvestisment`
+ALTER TABLE `migrations`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Index pour la table `password_reset_tokens`
+--
+ALTER TABLE `password_reset_tokens`
+  ADD PRIMARY KEY (`email`);
+
+--
+-- Index pour la table `reportroi`
+--
+ALTER TABLE `reportroi`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `LaboId` (`LaboId`);
+  ADD KEY `reportroi_laboid_foreign` (`laboId`);
+
+--
+-- Index pour la table `sessions`
+--
+ALTER TABLE `sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sessions_user_id_index` (`user_id`),
+  ADD KEY `sessions_last_activity_index` (`last_activity`);
 
 --
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `Email` (`Email`);
+  ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
 -- AUTO_INCREMENT pour les tables déchargées
@@ -194,49 +280,49 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `activitieslist`
 --
 ALTER TABLE `activitieslist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `activityitemsvalue`
+-- AUTO_INCREMENT pour la table `activityitemvalues`
 --
-ALTER TABLE `activityitemsvalue`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT pour la table `admins`
---
-ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `activityitemvalues`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `labo`
 --
 ALTER TABLE `labo`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `returnofinvestisment`
+-- AUTO_INCREMENT pour la table `migrations`
 --
-ALTER TABLE `returnofinvestisment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `migrations`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT pour la table `reportroi`
+--
+ALTER TABLE `reportroi`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Contraintes pour les tables déchargées
@@ -246,39 +332,33 @@ ALTER TABLE `users`
 -- Contraintes pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  ADD CONSTRAINT `activitybylabo_ibfk_1` FOREIGN KEY (`laboId`) REFERENCES `labo` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `activitybylabo_ibfk_2` FOREIGN KEY (`ActivityId`) REFERENCES `activitieslist` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `activitybylabo_activityid_foreign` FOREIGN KEY (`ActivityId`) REFERENCES `activitieslist` (`id`),
+  ADD CONSTRAINT `activitybylabo_laboid_foreign` FOREIGN KEY (`laboId`) REFERENCES `labo` (`id`);
 
 --
 -- Contraintes pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
-  ADD CONSTRAINT `activityitems_ibfk_1` FOREIGN KEY (`ActivityId`) REFERENCES `activitieslist` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `activityitems_activityid_foreign` FOREIGN KEY (`ActivityId`) REFERENCES `activitieslist` (`id`);
 
 --
--- Contraintes pour la table `activityitemsvalue`
+-- Contraintes pour la table `activityitemvalues`
 --
-ALTER TABLE `activityitemsvalue`
-  ADD CONSTRAINT `activityitemsvalue_ibfk_1` FOREIGN KEY (`ActivityItemId`) REFERENCES `activityitems` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `activityitemsvalue_ibfk_2` FOREIGN KEY (`ActivityByLaboId`) REFERENCES `activitybylabo` (`id`) ON DELETE CASCADE;
-
---
--- Contraintes pour la table `admins`
---
-ALTER TABLE `admins`
-  ADD CONSTRAINT `admins_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `activityitemvalues`
+  ADD CONSTRAINT `activityitemvalues_activitybylaboid_foreign` FOREIGN KEY (`ActivityByLaboId`) REFERENCES `activitybylabo` (`id`),
+  ADD CONSTRAINT `activityitemvalues_activityitemid_foreign` FOREIGN KEY (`activityItemId`) REFERENCES `activityitems` (`id`);
 
 --
 -- Contraintes pour la table `labo`
 --
 ALTER TABLE `labo`
-  ADD CONSTRAINT `labo_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `labo_userid_foreign` FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
 
 --
--- Contraintes pour la table `returnofinvestisment`
+-- Contraintes pour la table `reportroi`
 --
-ALTER TABLE `returnofinvestisment`
-  ADD CONSTRAINT `returnofinvestisment_ibfk_1` FOREIGN KEY (`LaboId`) REFERENCES `labo` (`id`) ON DELETE CASCADE;
+ALTER TABLE `reportroi`
+  ADD CONSTRAINT `reportroi_laboid_foreign` FOREIGN KEY (`laboId`) REFERENCES `labo` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

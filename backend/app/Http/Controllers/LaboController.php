@@ -72,11 +72,7 @@ class LaboController extends Controller
     public function CreateActivityByLabo(Request $request)
     {
         try {
-            // if (
-            //     ActivityByLabo::where('ActivityId', $request->ActivityId &&
-            //         'laboId', $request->laboId &&
-            //         'year', $request->year)->exists()
-            // ) {
+
             if (
                 ActivityByLabo::where([
                     ['ActivityId', $request->ActivityId],
@@ -84,8 +80,6 @@ class LaboController extends Controller
                     ['year', $request->year]
                 ])->exists()
             ) {
-
-
                 return response()->json([
                     'message' => 'You alreaddy counted the return of that activity'
                 ], 409);
@@ -109,47 +103,7 @@ class LaboController extends Controller
             ], 500);
         }
     }
-
-
-    //     public function CreateActivityByLabo(Request $request)
-// {
-//     try {
-//         // Validate input
-//         $validated = $request->validate([
-//             "year" => 'required|',
-//             "laboId" => 'required|exists:labo,id',
-//             "ActivityId" => 'required|exists:activitieslist,id',
-//         ]);
-
-    //         // Check if the activity already exists for the labo in the same year
-//         if (ActivityByLabo::where('ActivityId', $request->ActivityId)
-//             ->where('laboId', $request->laboId)
-//             ->whereYear('year', date('Y', strtotime($validated['year'])))
-//             ->exists()
-//         ) {
-//             return response()->json([
-//                 'message' => 'You already counted the return of that activity for this year'
-//             ], 409);
-//         }
-
-    //         // Create ActivityByLabo
-//         $activityByLabo = ActivityByLabo::create([
-//             "year" => $validated["year"],
-//             "laboId" => $validated["laboId"],
-//             "ActivityId" => $validated["ActivityId"],
-//         ]);
-
-    //         return response()->json([
-//             "message" => "Activity created successfully",
-//             "activity" => $activityByLabo
-//         ], 201);
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             "message" => 'Failed to create activity',
-//             "error" => $e->getMessage()
-//         ], 500);
-//     }
-// }
+    
 
 
 }
