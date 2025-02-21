@@ -22,7 +22,7 @@ Route::get('GetAllLaboInfos', [LaboController::class, 'GetAllLaboInfos']);
 
 Route::get('getAllActivity', action: [ActivitiesController::class, 'getAllActivity']);
 Route::get('getActivityById/{id}', action: [ActivitiesController::class, 'getActivityById']);
-Route::post('', action: [ActivitiesController::class,'']);
+Route::post('CreateActivityByLabo', action: [LaboController::class,'CreateActivityByLabo']);
 
 
 

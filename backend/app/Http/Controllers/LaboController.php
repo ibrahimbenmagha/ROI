@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Labo;
-use App\Models\avtivitybylabo;
+use App\Models\ActivityByLabo;
 
 use Illuminate\Support\Facades\Hash;
 
@@ -51,25 +51,105 @@ class LaboController extends Controller
         }
     }
 
-    public function GetAllLabos(){
+    public function GetAllLabos()
+    {
         $labos = Labo::all();
         return response()->json($labos);
     }
 
-    public function GetAllLaboInfos(Request $request){
-        $LabosInfos= Labo::join('users', 'labo.userId', '=','users.id')
-        ->select(
-            'labo.Name','users.FirstName','users.LastName'
-        )->get();
-    return response()->json(['labos' => $LabosInfos], 200);
-        
+    public function GetAllLaboInfos(Request $request)
+    {
+        $LabosInfos = Labo::join('users', 'labo.userId', '=', 'users.id')
+            ->select(
+                'labo.Name',
+                'users.FirstName',
+                'users.LastName'
+            )->get();
+        return response()->json(['labos' => $LabosInfos], 200);
+
     }
 
-    public function CreateActivityByLabo(Request $request){
-        try{
-            
+    public function CreateActivityByLabo(Request $request)
+    {
+        try {
+            // if (
+            //     ActivityByLabo::where('ActivityId', $request->ActivityId &&
+            //         'laboId', $request->laboId &&
+            //         'year', $request->year)->exists()
+            // ) {
+            if (
+                ActivityByLabo::where([
+                    ['ActivityId', $request->ActivityId],
+                    ['laboId', $request->laboId],
+                    ['year', $request->year]
+                ])->exists()
+            ) {
+
+
+                return response()->json([
+                    'message' => 'You alreaddy counted the return of that activity'
+                ], 409);
+            }
+            $validated = $request->validate([
+                "year" => 'required',
+
+            ]);
+            $avtivitybylabo = ActivityByLabo::create([
+                "year" => $validated["year"],
+                "laboId" => $request->laboId,
+                "ActivityId" => $request->ActivityId,
+            ]);
+            return response()->json([
+                "message" => "You creatd"
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => 'Failed to create activity',
+                "error" => $e->getMessage()
+            ], 500);
         }
     }
+
+
+    //     public function CreateActivityByLabo(Request $request)
+// {
+//     try {
+//         // Validate input
+//         $validated = $request->validate([
+//             "year" => 'required|',
+//             "laboId" => 'required|exists:labo,id',
+//             "ActivityId" => 'required|exists:activitieslist,id',
+//         ]);
+
+    //         // Check if the activity already exists for the labo in the same year
+//         if (ActivityByLabo::where('ActivityId', $request->ActivityId)
+//             ->where('laboId', $request->laboId)
+//             ->whereYear('year', date('Y', strtotime($validated['year'])))
+//             ->exists()
+//         ) {
+//             return response()->json([
+//                 'message' => 'You already counted the return of that activity for this year'
+//             ], 409);
+//         }
+
+    //         // Create ActivityByLabo
+//         $activityByLabo = ActivityByLabo::create([
+//             "year" => $validated["year"],
+//             "laboId" => $validated["laboId"],
+//             "ActivityId" => $validated["ActivityId"],
+//         ]);
+
+    //         return response()->json([
+//             "message" => "Activity created successfully",
+//             "activity" => $activityByLabo
+//         ], 201);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             "message" => 'Failed to create activity',
+//             "error" => $e->getMessage()
+//         ], 500);
+//     }
+// }
 
 
 }
