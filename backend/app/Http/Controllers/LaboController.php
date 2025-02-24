@@ -57,7 +57,7 @@ class LaboController extends Controller
         return response()->json($labos);
     }
 
-    public function GetAllLaboInfos(Request $request)
+    public function GetAllLabosInfos(Request $request)
     {
         $LabosInfos = Labo::join('users', 'labo.userId', '=', 'users.id')
             ->select(
@@ -69,41 +69,70 @@ class LaboController extends Controller
 
     }
 
-    public function CreateActivityByLabo(Request $request)
+    public function GetLaboInfosByLaboId(Request $request, $laboId)
     {
-        try {
+        $LaboInfo = Labo::join('users', 'labo.userId', '=', 'users.id')
+            ->select(
+                'labo.id',
+                'labo.Name',
+                'users.FirstName',
+                'users.LastName'
+            )
+            ->where('labo.id', $laboId)
+            ->first();
 
-            if (
-                ActivityByLabo::where([
-                    ['ActivityId', $request->ActivityId],
-                    ['laboId', $request->laboId],
-                    ['year', $request->year]
-                ])->exists()
-            ) {
-                return response()->json([
-                    'message' => 'You alreaddy counted the return of that activity'
-                ], 409);
-            }
-            $validated = $request->validate([
-                "year" => 'required',
-
-            ]);
-            $avtivitybylabo = ActivityByLabo::create([
-                "year" => $validated["year"],
-                "laboId" => $request->laboId,
-                "ActivityId" => $request->ActivityId,
-            ]);
-            return response()->json([
-                "message" => "You creatd"
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to create activity',
-                "error" => $e->getMessage()
-            ], 500);
+        if ($LaboInfo) {
+            return response()->json(['labo' => $LaboInfo], 200);
+        } else {
+            return response()->json(['message' => 'Labo not found'], 404);
         }
     }
+
+    public function GetAllLaboNames()
+    {
+        $LaboNames = Labo::select('Name')->select(
+            'id',
+            'Name',);
+        return response()->json(['labNames' => $LaboNames], 200);
+    }
+
+    public function GetLaboInfoByLabName(Request $request, $Name)
+    {
+        $LaboInfo = Labo::join('users', 'labo.userId', '=', 'users.id')
+            ->select(
+                'labo.id',
+                'labo.Name',
+                'labo.status',
+                'users.FirstName',
+                'users.LastName'
+            )
+            ->where('labo.Name', $Name)
+            ->first();
+
+        if ($LaboInfo) {
+            return response()->json(['labo' => $LaboInfo], 200);
+        } else {
+            return response()->json(['message' => 'Labo not '], 501);
+        }
+
+    }
+
+    public function GetLaboByLabName(Request $request, $labName)
+    {
+        $LaboInfo = Labo::where('labo.Name', $labName)->get();
+        if ($LaboInfo) {
+            return response()->json(['labo' => $LaboInfo], 200);
+        } else {
+            return response()->json(['message' => 'Labo not found'], 404);
+        }
+    }
+
+
+
     
+
+
+
 
 
 }

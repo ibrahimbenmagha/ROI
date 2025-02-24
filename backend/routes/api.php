@@ -16,13 +16,23 @@ Route::get('/user', function (Request $request) {
 Route::post('register', [AuthController::class, 'Create_Admin']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
-Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
-Route::get('GetAllLabos', [LaboController::class, 'GetAllLabos']);
-Route::get('GetAllLaboInfos', [LaboController::class, 'GetAllLaboInfos']);
 
-Route::get('getAllActivity', action: [ActivitiesController::class, 'getAllActivity']);
-Route::get('getActivityById/{id}', action: [ActivitiesController::class, 'getActivityById']);
-Route::post('CreateActivityByLabo', action: [LaboController::class,'CreateActivityByLabo']);
+//LaboController
+Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);//works
+
+Route::get('GetAllLabos', [LaboController::class, 'GetAllLabos']);//works
+Route::get('GetAllLabosInfos', [LaboController::class, 'GetAllLabosInfos']);//works
+Route::get('GetLaboInfosByLaboId/{id}', [LaboController::class, 'GetLaboInfosByLaboId']);//woorks
+Route::get('GetAllLaboNames', [LaboController::class, 'GetAllLaboNames']);//works
+Route::get('GetLaboInfoByLabName/{Name}', [LaboController::class, 'GetLaboInfoByLabName']);//works
+Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);//works
+
+
+//ActivitiesController
+Route::post('CreateActivityByLabo', action: [ActivitiesController::class,'CreateActivityByLabo']);//work
+
+Route::get('getAllActivity', action: [ActivitiesController::class, 'getAllActivity']);//works
+Route::get('getActivityById/{id}', action: [ActivitiesController::class, 'getActivityById']);//works
 
 
 
