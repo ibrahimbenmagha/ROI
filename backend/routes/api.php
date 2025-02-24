@@ -28,11 +28,14 @@ Route::get('GetLaboInfoByLabName/{Name}', [LaboController::class, 'GetLaboInfoBy
 Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);//works
 
 
-//ActivitiesController
+//ActivitiesController 
 Route::post('CreateActivityByLabo', action: [ActivitiesController::class,'CreateActivityByLabo']);//work
 
 Route::get('getAllActivity', action: [ActivitiesController::class, 'getAllActivity']);//works
+Route::get('getAllActivitiesByLabo', action: [ActivitiesController::class, 'getAllActivitiesByLabo']);//works
 Route::get('getActivityById/{id}', action: [ActivitiesController::class, 'getActivityById']);//works
-
-
+Route::get('getActivityByName/{Name}', action: [ActivitiesController::class, 'getActivityByName']);//works
+Route::get('getAllActivitiesByLaboInfos', action: [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);//works
+Route::get('getActivitiesByLaboInfosById/{id}', action: [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
+Route::get('getAllActivityByLaboInfosByLaboId/{id}', action: [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
 
