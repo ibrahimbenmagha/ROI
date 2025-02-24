@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ActivitiesList;
 use App\Models\ActivityByLabo;
+use App\Models\Labo;
 
 class ActivitiesController extends Controller
 {
@@ -64,7 +65,7 @@ class ActivitiesController extends Controller
         ], 200);
     }
 
-    
+
     public function getActivityByName(Request $request, $ActivityName)
     {
         $ActivityName = $request->Name;
@@ -151,6 +152,23 @@ class ActivitiesController extends Controller
             return response()->json(['message' => 'No activities found for the given labo'], 404);
         }
     }
+
+    //new
+    public function getAllActivityByLaboName(Request $request, $Name)
+    {
+        $LaboId = Labo::where('Name', $Name)->select('id')->get();
+        $Activities = ActivityByLabo::where('laboId', $LaboId)
+            ->select('id', 'laboId')
+            ->get();
+        if ($Activities->isNotEmpty()) {
+            return response()->json(['Activities' => $Activities], 200);
+        } else {
+            return response()->json(['message' => 'No activities found for the given labo'], 404);
+        }
+
+    }
+
+
 
 
 

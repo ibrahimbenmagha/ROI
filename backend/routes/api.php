@@ -38,4 +38,5 @@ Route::get('getActivityByName/{Name}', action: [ActivitiesController::class, 'ge
 Route::get('getAllActivitiesByLaboInfos', action: [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);//works
 Route::get('getActivitiesByLaboInfosById/{id}', action: [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
 Route::get('getAllActivityByLaboInfosByLaboId/{id}', action: [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
+Route::get('getAllActivityByLaboName/{Name}', action: [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
 
