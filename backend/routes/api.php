@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LaboController;
 use App\Http\Controllers\ActivitiesController;
+use App\Http\Controllers\Activity1;
+
 
 
 
@@ -39,4 +41,10 @@ Route::get('getAllActivitiesByLaboInfos', action: [ActivitiesController::class, 
 Route::get('getActivitiesByLaboInfosById/{id}', action: [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
 Route::get('getAllActivityByLaboInfosByLaboId/{id}', action: [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
 Route::get('getAllActivityByLaboName/{Name}', action: [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
+
+
+//activity 1
+Route::post('calculateROI', action: [Activity1::class,'calculateROI']);//work   
+Route::post('insetrIntoTable', action: [Activity1::class,'insetrIntoTable']);//work   
+
 
