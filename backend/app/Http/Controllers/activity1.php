@@ -74,7 +74,6 @@ class Activity1 extends Controller
             'M' => 'required|numeric|min:0', // input de Coût unitaire d’un échantillon
             'N' => 'required|numeric|min:0', // input de Coûts fixes du programme
 
-
         ]);
         $id_A = $request['id_A'];//id de de Nombre de médecins recevant des échantillons dans la table activityItems
         $id_B = $request['id_B'];
@@ -129,7 +128,6 @@ class Activity1 extends Controller
             'message' => 'Good request'
         ], 201);
     }
-
 
     public function updateActivityValues(Request $request)
     {
@@ -223,24 +221,89 @@ class Activity1 extends Controller
     }
 
     public function deleteActivityValues(Request $request)
-{
-    $ActivityByLaboId = $request["ActivityByLaboId"];
-    try {
-        // Suppression des valeurs liées à l'activité
-        ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+    {
+        $ActivityByLaboId = $request["ActivityByLaboId"];
+        try {
+            // Suppression des valeurs liées à l'activité
+            ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
 
-        return response()->json([
-            'message' => 'Values deleted successfully'
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Failed to delete values',
-            'error' => $e->getMessage()
-        ], 500);
+            return response()->json([
+                'message' => 'Values deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete values',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
+    
+
+//     public function getValuesByActivityId(Request $request, $activityListId)
+// {
+//     // Debugging: Check if the ID is passed correctly
+//     if (!$activityListId) {
+//         return response()->json(['error' => 'activityListId is required'], 400);
+//     }
+
+//     $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
+//         ->join("users", "labo.userId", "=", "users.id")
+//         ->join("activityItems", "ActivityByLabo.ActivityId", "=", "activityItems.activityId")
+//         ->join("activityItemValues", "ActivityByLabo.id", "=", "activityItemValues.ActivityByLaboId")
+//         ->where("ActivityByLabo.ActivityId", $activityListId)
+//         ->select(
+//             "users.FirstName",
+//             "users.LastName",
+//             "labo.Name as LaboName",
+//             "ActivityByLabo.year",
+//             "activityItems.name as ItemName",
+//             "activityItemValues.value as ItemValue"
+//         )
+//         ->get();
+
+//     // Debug: Check if any records are found
+//     if ($AllInfos->isEmpty()) {
+//         return response()->json(['message' => 'No records found for this activity'], 404);
+//     }
+
+//     return response()->json(['data' => $AllInfos], 200);
+// }
+
+
+public function getValuesByActivityId(Request $request, $activityListId)
+{
+    // Vérifier si l'ID est fourni
+    if (!$activityListId) {
+        return response()->json(['error' => 'activityListId is required'], 400);
+    }
+
+    // Récupérer les données groupées par ActivityByLabo
+    $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
+         
+        ->join("users", "labo.userId", "=", "users.id")
+        ->join("activityItemValues", "ActivityByLabo.id", "=", "activityItemValues.ActivityByLaboId")
+        ->join("activityItems", "activityItemValues.activityItemId", "=", "activityItems.id")
+        ->where("ActivityByLabo.ActivityId", $activityListId)
+        ->select(
+            "ActivityByLabo.id as actv",
+            "ActivityByLabo.year",
+            "labo.Name as LaboName",
+            "users.FirstName",
+            "users.LastName",
+            "activityItems.name as ItemName",
+            "activityItemValues.value as ItemValue"
+        )
+        ->get()
+        ->groupBy("actv");
+
+    // Vérifier si on a trouvé des enregistrements
+    if ($AllInfos->isEmpty()) {
+        return response()->json(['message' => 'No records found for this activity'], 404);
+    }
+
+    return response()->json(['data' => $AllInfos], 200);
 }
-
-
 
 
 }

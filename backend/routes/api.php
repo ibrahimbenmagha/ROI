@@ -47,8 +47,8 @@ Route::get('getAllActivityByLaboName/{Name}',  [ActivitiesController::class, 'ge
 Route::post('calculateROI',  [Activity1::class,'calculateROI']);//work   
 Route::post('insetrIntoTable',  [Activity1::class,'insetrIntoTable']);//work   
 Route::post('updateActivityValues',  [Activity1::class,'updateActivityValues']);//work   
-
 Route::delete('deleteActivityValues/{ActivityByLaboId}',  [Activity1::class,'deleteActivityValues']);
 
+Route::get('getValuesByActivityId/{activityListId}',  [Activity1::class,'getValuesByActivityId']);
 
 

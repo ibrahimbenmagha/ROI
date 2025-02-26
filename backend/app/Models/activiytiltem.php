@@ -29,6 +29,6 @@ class ActivityItem extends Model
      */
     public function itemValues()
     {
-        return $this->hasMany(ActivityItemsValue::class, 'ActivityItemId');
+        return $this->hasMany(ActivityItemValue::class, 'ActivityItemId');
     }
 }
