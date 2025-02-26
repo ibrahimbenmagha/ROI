@@ -31,20 +31,24 @@ Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName'
 
 
 //ActivitiesController 
-Route::post('CreateActivityByLabo', action: [ActivitiesController::class,'CreateActivityByLabo']);//work
+Route::post('CreateActivityByLabo',  [ActivitiesController::class,'CreateActivityByLabo']);//work
 
-Route::get('getAllActivity', action: [ActivitiesController::class, 'getAllActivity']);//works
-Route::get('getAllActivitiesByLabo', action: [ActivitiesController::class, 'getAllActivitiesByLabo']);//works
-Route::get('getActivityById/{id}', action: [ActivitiesController::class, 'getActivityById']);//works
-Route::get('getActivityByName/{Name}', action: [ActivitiesController::class, 'getActivityByName']);//works
-Route::get('getAllActivitiesByLaboInfos', action: [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);//works
-Route::get('getActivitiesByLaboInfosById/{id}', action: [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
-Route::get('getAllActivityByLaboInfosByLaboId/{id}', action: [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
-Route::get('getAllActivityByLaboName/{Name}', action: [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
+Route::get('getAllActivity',  [ActivitiesController::class, 'getAllActivity']);//works
+Route::get('getAllActivitiesByLabo',  [ActivitiesController::class, 'getAllActivitiesByLabo']);//works
+Route::get('getActivityById/{id}',  [ActivitiesController::class, 'getActivityById']);//works
+Route::get('getActivityByName/{Name}',  [ActivitiesController::class, 'getActivityByName']);//works
+Route::get('getAllActivitiesByLaboInfos',  [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);//works
+Route::get('getActivitiesByLaboInfosById/{id}',  [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
+Route::get('getAllActivityByLaboInfosByLaboId/{id}',  [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
+Route::get('getAllActivityByLaboName/{Name}',  [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
 
 
 //activity 1
-Route::post('calculateROI', action: [Activity1::class,'calculateROI']);//work   
-Route::post('insetrIntoTable', action: [Activity1::class,'insetrIntoTable']);//work   
+Route::post('calculateROI',  [Activity1::class,'calculateROI']);//work   
+Route::post('insetrIntoTable',  [Activity1::class,'insetrIntoTable']);//work   
+Route::post('updateActivityValues',  [Activity1::class,'updateActivityValues']);//work   
+
+Route::delete('deleteActivityValues/{ActivityByLaboId}',  [Activity1::class,'deleteActivityValues']);
+
 
 

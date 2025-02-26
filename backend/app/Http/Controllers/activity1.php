@@ -24,7 +24,7 @@ class Activity1 extends Controller
             'K' => 'required|numeric|min:0', // input de Valeur moyenne d’un patient incrémental
             'M' => 'required|numeric|min:0', // input de Coût unitaire d’un échantillon
             'N' => 'required|numeric|min:0', // input de Coûts fixes du programme
-            'Y' => 'required|integer|min:2026'// inout de l'anne
+            // 'Y' => 'required|integer|min:2026'// inout de l'anne
         ]);
         // Conversion des pourcentages
         $D = $validated['D'] / 100;
@@ -42,15 +42,22 @@ class Activity1 extends Controller
         $F = ($C * $D) / $E; // Nombre total de patients ayant reçu un échantillon
         $H = $F * $G; // Nombre total de patients obtenant une prescription
         $J = $H * (1 - $I); // Nombre total de patients incrémentaux gagnés grâce aux échantillons
-        $L = $J * $K; // Revenus supplémentaires générés
-        $O = ($M * $C) + $N; // Coût total du programme
+        $L = $J * $K; // Revenus supplémentaires généré
+        $P = $M * $C;
+        $O = $P + $N; // Coût total du programme
 
         // Vérifier pour éviter la division par zéro
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
 
         return response()->json([
-            'message' => 'Done',
-            'ROI' => $ROI
+            'ROI' => $ROI,
+            'C' => $C,
+            'F' => $F,
+            'H' => $H,
+            'J' => $J,
+            'L' => $L,
+            'O' => $O,
+            'P' => $P,
         ], 201);
     }
 
@@ -124,72 +131,7 @@ class Activity1 extends Controller
     }
 
 
-    // public function updateActivityValues(Request $request, $activityByLaboId)
-    // {
-    //     $validated = $request->validate([
-    //         'A' => 'required|numeric|min:0',
-    //         'B' => 'required|numeric|min:0',
-    //         'D' => 'required|numeric|min:0|max:100',
-    //         'E' => 'required|numeric|min:0.1',
-    //         'G' => 'required|numeric|min:0|max:100',
-    //         'I' => 'required|numeric|min:0|max:100',
-    //         'K' => 'required|numeric|min:0',
-    //         'M' => 'required|numeric|min:0',
-    //         'N' => 'required|numeric|min:0',
-    //     ]);
-
-    //     $id_A = $request['id_A'];
-    //     $id_B = $request['id_B'];
-    //     $id_D = $request['id_D'];
-    //     $id_E = $request['id_E'];
-    //     $id_G = $request['id_G'];
-    //     $id_I = $request['id_I'];
-    //     $id_K = $request['id_K'];
-    //     $id_M = $request['id_M'];
-    //     $id_N = $request['id_N'];
-    //     $id_ROI = $request['id_ROI'];
-
-    //     // Conversion des pourcentages
-    //     $D = $validated['D'] / 100;
-    //     $G = $validated['G'] / 100;
-    //     $I = $validated['I'] / 100;
-
-    //     $A = $validated['A'];
-    //     $B = $validated['B'];
-    //     $E = $validated['E'];
-    //     $K = $validated['K'];
-    //     $M = $validated['M'];
-    //     $N = $validated['N'];
-
-    //     $C = $A * $B;
-    //     $F = ($C * $D) / $E;
-    //     $H = $F * $G;
-    //     $J = $H * (1 - $I);
-    //     $L = $J * $K;
-    //     $O = ($M * $C) + $N;
-    //     $ROI = ($O > 0) ? round($L / $O, 4) : 0;
-
-
-
-    //     // $values = [
-    //     //     ['activityItemId' => $id_A, 'value' => $A],
-    //     //     ['activityItemId' => $id_B, 'value' => $B],
-    //     //     ['activityItemId' => $id_D, 'value' => $D],
-    //     //     ['activityItemId' => $id_E, 'value' => $E],
-    //     //     ['activityItemId' => $id_K, 'value' => $K],
-    //     //     ['activityItemId' => $id_M, 'value' => $M],
-    //     //     ['activityItemId' => $id_N, 'value' => $N],
-    //     //     ['activityItemId' => $id_G, 'value' => $G],
-    //     //     ['activityItemId' => $id_I, 'value' => $I],
-    //     //     ['activityItemId' => $id_ROI, 'value' => $ROI],
-    //     // ];
-    //     // $values= ActivityItemValue::upda
-
-    // }
-
-
-
-    public function updateActivityValues(Request $request, $activityByLaboId)
+    public function updateActivityValues(Request $request)
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0',
@@ -203,8 +145,6 @@ class Activity1 extends Controller
             'N' => 'required|numeric|min:0',
         ]);
 
-
-        // Conversion des pourcentages
         $D = $validated['D'] / 100;
         $G = $validated['G'] / 100;
         $I = $validated['I'] / 100;
@@ -216,36 +156,89 @@ class Activity1 extends Controller
         $M = $validated['M'];
         $N = $validated['N'];
 
-        $activityByLaboId = $request['activityByLaboId'];
+        $id_A = $request['id_A'];
+        $id_B = $request['id_B'];
+        $id_D = $request['id_D'];
+        $id_E = $request['id_E'];
+        $id_G = $request['id_G'];
+        $id_I = $request['id_I'];
+        $id_K = $request['id_K'];
+        $id_M = $request['id_M'];
+        $id_N = $request['id_N'];
+        $id_ROI = $request['id_ROI'];
+
+        $activityByLaboId = $request['ActivityByLaboId'];
 
         $C = $A * $B;
         $F = ($C * $D) / $E;
         $H = $F * $G;
         $J = $H * (1 - $I);
         $L = $J * $K;
-        $O = ($M * $C) + $N;
+        $P = $M * $C;
+        $O = $P + $N;
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
+        //     ['value' => $A],
+        //     ['value' => $B],
+        //     ['value' => $D],
+        //     ['value' => $E],
+        //     ['value' => $K],
+        //     ['value' => $M],
+        //     ['value' => $N],
+        //     ['value' => $G],
+        //     ['value' => $I],
+        //     ['value' => $ROI],
+        // ];
+
+
         $values = [
-            ['value' => $A],
-            ['value' => $B],
-            ['value' => $D],
-            ['value' => $E],
-            ['value' => $K],
-            ['value' => $M],
-            ['value' => $N],
-            ['value' => $G],
-            ['value' => $I],
-            ['value' => $ROI],
+            ['activityItemId' => $id_A, 'value' => $A],
+            ['activityItemId' => $id_B, 'value' => $B],
+            ['activityItemId' => $id_D, 'value' => $D],
+            ['activityItemId' => $id_E, 'value' => $E],
+            ['activityItemId' => $id_K, 'value' => $K],
+            ['activityItemId' => $id_M, 'value' => $M],
+            ['activityItemId' => $id_N, 'value' => $N],
+            ['activityItemId' => $id_G, 'value' => $G],
+            ['activityItemId' => $id_I, 'value' => $I],
+            ['activityItemId' => $id_ROI, 'value' => $ROI],
         ];
-        foreach ($values as $value) {
-            ActivityItemValue::where([
-                ['ActivityByLaboId', $activityByLaboId]
-            ])->update(['value' => $value['value']]);
+        try {
+            foreach ($values as $value) {
+                ActivityItemValue::where([
+                    ['activityItemId', $value['activityItemId']],
+                    ['ActivityByLaboId', $activityByLaboId]
+                ])->update(['value' => $value['value']]);
+            }
+
+            return response()->json([
+                'message' => 'Values updated successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => 'Failed to update',
+                "error" => $e->getMessage()
+            ], 500);
         }
+
+    }
+
+    public function deleteActivityValues(Request $request)
+{
+    $ActivityByLaboId = $request["ActivityByLaboId"];
+    try {
+        // Suppression des valeurs liées à l'activité
+        ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+
         return response()->json([
-            'message' => 'Values updated successfully'
+            'message' => 'Values deleted successfully'
         ], 200);
-    }//not workiong yet
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to delete values',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 
