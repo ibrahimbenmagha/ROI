@@ -7,8 +7,7 @@ use App\Http\Controllers\LaboController;
 use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\Activity1;
 use App\Http\Controllers\Activity2;
-
-
+use App\Http\Controllers\Activity3;
 
 
 
@@ -57,5 +56,8 @@ Route::post('calculateROIAct2',  [Activity2::class,'calculateROIAct2']);//work
 Route::post('insertIntoTable2',  [Activity2::class,'insertIntoTable2']);//work   
 Route::post('updateActivity2Values',  [Activity2::class,'updateActivity2Values']);//work   
 
-
+//activity 3
+Route::post('calculateROIAct3',  [Activity3::class,'calculateROIAct3']);//work   
+Route::post('insertIntoTable3',  [Activity3::class,'insertIntoTable3']);
+Route::post('updateActivity3Values',  [Activity3::class,'updateActivity3Values']);
 

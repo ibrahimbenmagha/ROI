@@ -85,27 +85,56 @@ class ActivitiesController extends Controller
         return response()->json($ActivityByLabo);
     }
 
-    public function getAllActivitiesByLaboInfos()
-    {
-        $ActivitiesByLaboInfos = ActivityByLabo::join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
-            ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
-            ->join('users', 'labo.userId', '=', 'users.id')
-            ->select(
-                'activitieslist.id',
-                'activitieslist.Name',
-                'activitybylabo.id',
-                'activitybylabo.laboId',
-                'activitybylabo.ActivityId',
-                'activitybylabo.year',
-                'labo.Name as LaboName',
-                'users.FirstName',
-                'users.LastName'
-            )->get();
-        if (!$ActivitiesByLaboInfos) {
-            return response()->json(['message' => 'No Activity Created By labo yet'], 401);
-        }
-        return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
+    // public function getAllActivitiesByLaboInfos()
+    // {
+    //     $ActivitiesByLaboInfos = ActivityByLabo::join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
+    //         ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
+    //         ->join('users', 'labo.userId', '=', 'users.id')
+    //         ->select(
+    //             'activitieslist.id',
+    //             'activitieslist.Name',
+    //             'activitybylabo.id',
+    //             'activitybylabo.laboId',
+    //             'activitybylabo.ActivityId',
+    //             'activitybylabo.year',
+    //             'labo.Name as LaboName',
+    //             'users.FirstName',
+    //             'users.LastName'
+    //         )->get();
+    //     if (!$ActivitiesByLaboInfos) {
+    //         return response()->json(['message' => 'No Activity Created By labo yet'], 401);
+    //     }
+    //     return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
+    // }
+
+
+
+
+
+public function getAllActivitiesByLaboInfos()
+{
+    $activitiesByLaboInfos = ActivityByLabo::with(['activity', 'labo', 'labo.user'])
+        ->select([
+            'activitieslist.id',
+            'activitieslist.Name',
+            'activitybylabo.id',
+            'activitybylabo.laboId',
+            'activitybylabo.ActivityId',
+            'activitybylabo.year',
+            'labo.Name as LaboName',
+            'users.FirstName',
+            'users.LastName'
+        ])
+        ->get();
+
+    if (!$activitiesByLaboInfos->count()) {
+        return response()->json(['message' => 'No Activity Created By labo yet'], 401);
     }
+
+    return response()->json(['ActivitiesByLaboInfos' => $activitiesByLaboInfos], 200);
+}
+
+
 
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
