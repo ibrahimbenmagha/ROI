@@ -44,14 +44,18 @@ Route::get('getAllActivityByLaboInfosByLaboId/{id}',  [ActivitiesController::cla
 Route::get('getAllActivityByLaboName/{Name}',  [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
 Route::get('getActivityRepportBYActivityId/{activityListId}',  [ActivitiesController::class,'getActivityRepportBYActivityId']);
 Route::get('getActivityRepport',  [ActivitiesController::class,'getActivityRepport']);
+Route::delete('deleteActivityValues/{ActivityByLaboId}',  [ActivitiesController::class,'deleteActivityValues']);
 
 
 //activity 1
 Route::post('calculateROIAct1',  [Activity1::class,'calculateROIAct1']);//work   
 Route::post('insetrIntoTable1',  [Activity1::class,'insetrIntoTable1']);//work   
-Route::post('updateActivityValues',  [Activity1::class,'updateActivityValues']);//work   
-Route::delete('deleteActivityValues/{ActivityByLaboId}',  [Activity1::class,'deleteActivityValues']);
+Route::post('updateActivity1Values',  [Activity1::class,'updateActivity1Values']);//work   
 
 //activity 2
 Route::post('calculateROIAct2',  [Activity2::class,'calculateROIAct2']);//work   
+Route::post('insertIntoTable2',  [Activity2::class,'insertIntoTable2']);//work   
+Route::post('updateActivity2Values',  [Activity2::class,'updateActivity2Values']);//work   
+
+
 

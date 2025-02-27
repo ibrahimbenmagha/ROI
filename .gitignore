@@ -20,4 +20,5 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+DB
 /.zed
