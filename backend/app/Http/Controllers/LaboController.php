@@ -92,7 +92,8 @@ class LaboController extends Controller
     {
         $LaboNames = Labo::select('Name')->select(
             'id',
-            'Name',);
+            'Name',
+        );
         return response()->json(['labNames' => $LaboNames], 200);
     }
 
@@ -126,13 +127,5 @@ class LaboController extends Controller
             return response()->json(['message' => 'Labo not found'], 404);
         }
     }
-
-
-
-    
-
-
-
-
 
 }

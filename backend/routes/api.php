@@ -41,6 +41,8 @@ Route::get('getAllActivitiesByLaboInfos',  [ActivitiesController::class, 'getAll
 Route::get('getActivitiesByLaboInfosById/{id}',  [ActivitiesController::class, 'getActivitiesByLaboInfosById']);//works
 Route::get('getAllActivityByLaboInfosByLaboId/{id}',  [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);//works
 Route::get('getAllActivityByLaboName/{Name}',  [ActivitiesController::class, 'getAllActivityByLaboName']);//Not working
+Route::get('getActivityRepportBYActivityId/{activityListId}',  [ActivitiesController::class,'getActivityRepportBYActivityId']);
+Route::get('getActivityRepport',  [ActivitiesController::class,'getActivityRepport']);
 
 
 //activity 1
@@ -49,6 +51,6 @@ Route::post('insetrIntoTable',  [Activity1::class,'insetrIntoTable']);//work
 Route::post('updateActivityValues',  [Activity1::class,'updateActivityValues']);//work   
 Route::delete('deleteActivityValues/{ActivityByLaboId}',  [Activity1::class,'deleteActivityValues']);
 
-Route::get('getValuesByActivityId/{activityListId}',  [Activity1::class,'getValuesByActivityId']);
+// Route::get('getActivityRepportBYActivityId/{activityListId}',  [Activity1::class,'getActivityRepportBYActivityId']);
 
 

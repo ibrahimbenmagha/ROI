@@ -238,72 +238,79 @@ class Activity1 extends Controller
         }
     }
 
-    
+    public function getValues(Request $request, $activityListId)
+    {
+        if (!$activityListId) {
+            return response()->json(['error' => 'activityListId is required'], 400);
+        }
 
-//     public function getValuesByActivityId(Request $request, $activityListId)
-// {
-//     // Debugging: Check if the ID is passed correctly
-//     if (!$activityListId) {
-//         return response()->json(['error' => 'activityListId is required'], 400);
-//     }
+        // Récupérer toutes les données nécessaires
+        $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
+            ->join("users", "labo.userId", "=", "users.id")
+            ->join("activityItemValues", "ActivityByLabo.id", "=", "activityItemValues.ActivityByLaboId")
+            ->join("activityItems", "activityItemValues.activityItemId", "=", "activityItems.id")
+            ->join("activitieslist", "ActivityByLabo.ActivityId", "=", "activitieslist.id")
+            ->where("ActivityByLabo.ActivityId", $activityListId)
+            ->select(
+                "labo.id as LaboId",
+                "labo.Name as LaboName",
+                "users.FirstName as FirstName",
+                "users.LastName as LastName",
+                "activitieslist.name as ActivityName",
+                "activityItems.name as ItemName",
+                "activityItemValues.value as ItemValue",
+                "ActivityByLabo.year"
+            )
+            ->get();
 
-//     $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
-//         ->join("users", "labo.userId", "=", "users.id")
-//         ->join("activityItems", "ActivityByLabo.ActivityId", "=", "activityItems.activityId")
-//         ->join("activityItemValues", "ActivityByLabo.id", "=", "activityItemValues.ActivityByLaboId")
-//         ->where("ActivityByLabo.ActivityId", $activityListId)
-//         ->select(
-//             "users.FirstName",
-//             "users.LastName",
-//             "labo.Name as LaboName",
-//             "ActivityByLabo.year",
-//             "activityItems.name as ItemName",
-//             "activityItemValues.value as ItemValue"
-//         )
-//         ->get();
+        if ($AllInfos->isEmpty()) {
+            return response()->json(['message' => 'No records found for this activity'], 404);
+        }
 
-//     // Debug: Check if any records are found
-//     if ($AllInfos->isEmpty()) {
-//         return response()->json(['message' => 'No records found for this activity'], 404);
-//     }
+        // Transformer les résultats dans le format souhaité
+        $formattedData = [];
 
-//     return response()->json(['data' => $AllInfos], 200);
-// }
+        foreach ($AllInfos as $info) {
+            $laboKey = $info->LaboName; // Clé pour le labo
 
+            if (!isset($formattedData[$laboKey])) {
+                $formattedData[$laboKey] = [];
+            }
 
-public function getValuesByActivityId(Request $request, $activityListId)
-{
-    // Vérifier si l'ID est fourni
-    if (!$activityListId) {
-        return response()->json(['error' => 'activityListId is required'], 400);
+            $activityKey = $info->ActivityName;
+
+            // Vérifier si l'activité existe pour ce labo
+            $existingIndex = null;
+            foreach ($formattedData[$laboKey] as $index => $entry) {
+                if ($entry['Activity name'] === $activityKey) {
+                    $existingIndex = $index;
+                    break;
+                }
+            }
+
+            if ($existingIndex === null) {
+                // Ajouter une nouvelle activité
+                $formattedData[$laboKey][] = [
+                    "Labo name" => $info->LaboName,
+                    "First name" => $info->FirstName,
+                    "Last name" => $info->LastName,
+                    "year" => $info->year,
+                    "Activity name" => $activityKey,
+                    "Items" => []
+                ];
+                $existingIndex = count($formattedData[$laboKey]) - 1;
+            }
+
+            // Ajouter l'item à l'activité
+            $formattedData[$laboKey][$existingIndex]["Items"][] = [
+                "Item name" => $info->ItemName,
+                "Item Value" => $info->ItemValue
+            ];
+        }
+
+        return response()->json(['data' => $formattedData], 200);
     }
-
-    // Récupérer les données groupées par ActivityByLabo
-    $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
-         
-        ->join("users", "labo.userId", "=", "users.id")
-        ->join("activityItemValues", "ActivityByLabo.id", "=", "activityItemValues.ActivityByLaboId")
-        ->join("activityItems", "activityItemValues.activityItemId", "=", "activityItems.id")
-        ->where("ActivityByLabo.ActivityId", $activityListId)
-        ->select(
-            "ActivityByLabo.id as actv",
-            "ActivityByLabo.year",
-            "labo.Name as LaboName",
-            "users.FirstName",
-            "users.LastName",
-            "activityItems.name as ItemName",
-            "activityItemValues.value as ItemValue"
-        )
-        ->get()
-        ->groupBy("actv");
-
-    // Vérifier si on a trouvé des enregistrements
-    if ($AllInfos->isEmpty()) {
-        return response()->json(['message' => 'No records found for this activity'], 404);
-    }
-
-    return response()->json(['data' => $AllInfos], 200);
-}
+  
 
 
 }
