@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LaboController;
 use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\Activity1;
+use App\Http\Controllers\Activity2;
 
 
 
@@ -46,11 +47,11 @@ Route::get('getActivityRepport',  [ActivitiesController::class,'getActivityReppo
 
 
 //activity 1
-Route::post('calculateROI',  [Activity1::class,'calculateROI']);//work   
-Route::post('insetrIntoTable',  [Activity1::class,'insetrIntoTable']);//work   
+Route::post('calculateROIAct1',  [Activity1::class,'calculateROIAct1']);//work   
+Route::post('insetrIntoTable1',  [Activity1::class,'insetrIntoTable1']);//work   
 Route::post('updateActivityValues',  [Activity1::class,'updateActivityValues']);//work   
 Route::delete('deleteActivityValues/{ActivityByLaboId}',  [Activity1::class,'deleteActivityValues']);
 
-// Route::get('getActivityRepportBYActivityId/{activityListId}',  [Activity1::class,'getActivityRepportBYActivityId']);
-
+//activity 2
+Route::post('calculateROIAct2',  [Activity2::class,'calculateROIAct2']);//work   
 

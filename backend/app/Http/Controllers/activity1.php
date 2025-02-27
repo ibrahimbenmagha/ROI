@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class Activity1 extends Controller
 {
-    public function calculateROI(Request $request)
+    public function calculateROIAct1(Request $request)
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
@@ -61,8 +61,9 @@ class Activity1 extends Controller
         ], 201);
     }
 
-    public function insetrIntoTable(Request $request)
+    public function insetrIntoTable1(Request $request)
     {
+
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
             'B' => 'required|numeric|min:0', // input de Nombre d’échantillons donnés à chaque médecin
@@ -109,7 +110,11 @@ class Activity1 extends Controller
         $O = ($M * $C) + $N;
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
 
-
+        if (ActivityItemValue::where('ActivityByLaboId', $ActByLabo)->exists()) {
+            return response()->json([
+                'message' => 'Uplicated values for 1 Activity are dineided'
+            ], 409);
+        }
         $values = ActivityItemValue::insert(
             [
                 ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
@@ -123,7 +128,7 @@ class Activity1 extends Controller
                 ['activityItemId' => $id_I, 'ActivityByLaboId' => $ActByLabo, 'value' => $I],
                 ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
             ]
-        );
+        ); 
         return response()->json([
             'message' => 'Good request'
         ], 201);
