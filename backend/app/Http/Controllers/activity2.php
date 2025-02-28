@@ -36,11 +36,11 @@ class activity2 extends Controller
         $K = $validated['K'];
 
         // Calculs
-        $C = $A * $B;       // Nombre total de patients inscrits
-        $E = $B * $D;       // Nombre de patients poursuivant le traitement après l'étude
-        $G = $A * ($E + $F); // Patients incrémentaux obtenus grâce à l’étude
-        $I = $G * $H;       // Ventes incrémentales
-        $L = ($J * $A) + $K; // Coût total du programme
+        $C = $A * $B;// Nombre total de patients inscrits
+        $E = $B * $D;// Nombre de patients poursuivant le traitement après l'étude
+        $G = $A * ($E + $F);// Patients incrémentaux obtenus grâce à l’étude
+        $I = $G * $H;// Ventes incrémentales
+        $L = ($J * $A) + $K;// Coût total du programme
 
         // Vérification pour éviter la division par zéro
         $ROI = ($L > 0) ? round($I / $L, 4) : 0;

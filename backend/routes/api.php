@@ -8,6 +8,9 @@ use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\Activity1;
 use App\Http\Controllers\Activity2;
 use App\Http\Controllers\Activity3;
+use App\Http\Controllers\activity4;
+use App\Http\Controllers\Activity5;
+
 
 
 
@@ -58,6 +61,17 @@ Route::post('updateActivity2Values',  [Activity2::class,'updateActivity2Values']
 
 //activity 3
 Route::post('calculateROIAct3',  [Activity3::class,'calculateROIAct3']);//work   
-Route::post('insertIntoTable3',  [Activity3::class,'insertIntoTable3']);
+Route::post('insertIntoTable3',  [Activity3::class,'insertIntoTable3']);//work   
 Route::post('updateActivity3Values',  [Activity3::class,'updateActivity3Values']);
+
+//activity 4
+Route::post('calculateROIAct4',  [Activity4::class,'calculateROIAct4']);//work   
+Route::post('insertIntoTable4',  [Activity4::class,'insertIntoTable4']);//work   
+Route::post('updateActivity4Values',  [Activity4::class,'updateActivity4Values']);//work   
+
+//activity 5
+Route::post('calculateROIAct5', [Activity5::class,'calculateROIAct5']);
+Route::post('insertIntoTable5', [Activity5::class,'insertIntoTable5']);
+
+
 
