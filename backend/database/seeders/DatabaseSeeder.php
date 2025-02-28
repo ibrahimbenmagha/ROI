@@ -5,6 +5,10 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\ActivitiesList;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Labo;
+
+
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,7 +22,7 @@ class DatabaseSeeder extends Seeder
     {
         //
         DB::table('activitieslist')->insert([
-            ["Name" => "Distribution des échantillons" ],
+            ["Name" => "Distribution des échantillons"],
             ["Name" => "Essai clinique"],
             ["Name" => "Mailing"],
             ["Name" => "Conférences"],
@@ -102,7 +106,6 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Roi de de l'activite 5", "ActivityId" => 5],
 
         ]);
-
 
         // Activité 6: Visites médicales
         DB::table('activityItems')->insert([
@@ -200,6 +203,59 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Roi de de l'activite", "ActivityId" => 12],
 
         ]);
+
+        $labos = [
+            [
+                'FirstName' => 'haasra',
+                'LastName' => 'letshlift',
+                'email' => 'wasw50@gmail.com',
+                'password' => Hash::make('120501@Casahm'),
+                'Name' => 'labo 5wewe0'
+            ],
+            [
+                'FirstName' => 'John',
+                'LastName' => 'Doe',
+                'email' => 'john.doe@example.com',
+                'password' => Hash::make('password123'),
+                'Name' => 'Labo Example'
+            ]
+        ];
+
+        foreach ($labos as $laboData) {
+            $user = User::create([
+                'FirstName' => $laboData['FirstName'],
+                'LastName' => $laboData['LastName'],
+                'email' => $laboData['email'],
+                'password' => $laboData['password'],
+                'Role' => 'Laboratoire',
+            ]);
+
+            Labo::create([
+                'status' => "Activated",
+                'userId' => $user->id,
+                'Name' => $laboData['Name'],
+            ]);
+        }
+
+
+
+        $years = ['2026', '2027'];
+        $laboIds = [1, 2];
+        $activityIds = range(1, 12);
+        $data = [];
+        foreach ($years as $year) {
+            foreach ($laboIds as $laboId) {
+                foreach ($activityIds as $activityId) {
+                    $data[] = [
+                        'year' => $year,
+                        'laboId' => $laboId,
+                        'ActivityId' => $activityId,
+                    ];
+                }
+            }
+        }
+        DB::table('ActivityByLabo')->insert($data);
+
 
     }
 }
