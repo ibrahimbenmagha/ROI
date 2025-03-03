@@ -37,7 +37,7 @@ class activity2 extends Controller
 
         // Calculs
         $C = $A * $B;// Nombre total de patients inscrits
-        $E = $B * $D;// Nombre de patients poursuivant le traitement après l'étude
+        $E = $C * $D;// Nombre de patients poursuivant le traitement après l'étude
         $G = $A * ($E + $F);// Patients incrémentaux obtenus grâce à l’étude
         $I = $G * $H;// Ventes incrémentales
         $L = ($J * $A) + $K;// Coût total du programme
@@ -90,8 +90,7 @@ class activity2 extends Controller
         $J = $validated['J'];
         $K = $validated['K'];
 
-        $ActByLabo = $request['ActByLabo'];
-
+        
         // Calculs
         $C = $A * $B;       // Nombre total de patients inscrits
         $E = $B * $D;       // Nombre de patients poursuivant le traitement après l'étude
@@ -101,7 +100,15 @@ class activity2 extends Controller
 
         $ROI = ($L > 0) ? round($I / $L, 4) : 0;
 
-        // Vérification de la duplication des valeurs pour la même activité
+        $ActByLabo = $request['ActByLabo'];
+        $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
+
+        if(!($verify===2)){
+            return response()->json([
+                'message' => 'value/activity not match',
+                'id' =>$verify
+            ], 409);
+        }
         if (ActivityItemValue::where('ActivityByLaboId', $ActByLabo)->exists()) {
             return response()->json([
                 'message' => 'Duplicated values for 1 Activity are denied'
@@ -166,7 +173,13 @@ class activity2 extends Controller
             ['activityItemId' => $request['id_ROI'], 'value' => $ROI],
         ];
         $activityByLaboId = $request['ActivityByLaboId'];
-
+        $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+        if(!($verify===2)){
+            return response()->json([
+                'message' => 'value/activity not match',
+                'id' =>$verify
+            ], 409);
+        }
 
         try {
             foreach ($values as $value) {

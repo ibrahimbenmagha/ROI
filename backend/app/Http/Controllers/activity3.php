@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ActivityItemValue;
+use App\Models\ActivityByLabo;
+use App\Models\Labo;
+use App\Models\ActivityItem;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class activity3 extends Controller
 {
@@ -91,7 +96,15 @@ class activity3 extends Controller
             $O = ($M * $A * $B) + $N; // Coût total du programme
             $ROI = ($O > 0) ? round($L / $O, 4) : 0; // Retour sur investissement (ROI)
 
+            
             $activityByLaboId = $request['ActivityByLaboId'];
+            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+            if(!($verify===3)){
+                return response()->json([
+                    'message' => 'value/activity not match',
+                    'id' =>$verify
+                ], 409);
+            }
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
                 return response()->json([
                     'message' => 'Duplicated values for 1 Activity are denied'
@@ -175,6 +188,13 @@ class activity3 extends Controller
             ['activityItemId' => $request['id_ROI'], 'value' => $ROI],
         ];
         $activityByLaboId = $request['ActivityByLaboId'];
+        $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+        if(!($verify===3)){
+            return response()->json([
+                'message' => 'value/activity not match',
+                'id' =>$verify
+            ], 409);
+        }
 
         try {
             foreach ($values as $value) {

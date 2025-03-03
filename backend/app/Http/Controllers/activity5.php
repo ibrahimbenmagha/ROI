@@ -108,6 +108,13 @@ class activity5 extends Controller
                 ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
 
             ];
+            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+            if(!($verify===5)){
+                return response()->json([
+                    'message' => 'value/activity not match',
+                    'id' =>$verify
+                ], 409);
+            }
             $activityByLaboId = $request['ActivityByLaboId'];
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
                 return response()->json([
@@ -177,7 +184,13 @@ class activity5 extends Controller
                 ['activityItemId' => $request['id_O'], 'value' => $O],
                 ['activityItemId' => $request['id_ROI'], 'value' => $ROI],
             ];
-
+            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+            if(!($verify===5)){
+                return response()->json([
+                    'message' => 'value/activity not match',
+                    'id' =>$verify
+                ], 409);
+            }
             foreach ($values as $value) {
                 ActivityItemValue::where([
                     ['activityItemId', $value['activityItemId']],

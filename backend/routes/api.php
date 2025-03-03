@@ -10,6 +10,11 @@ use App\Http\Controllers\Activity2;
 use App\Http\Controllers\Activity3;
 use App\Http\Controllers\activity4;
 use App\Http\Controllers\Activity5;
+use App\Http\Controllers\Activity6;
+use App\Http\Controllers\Activity7;
+use App\Http\Controllers\Activity8;
+use App\Http\Controllers\Activity9;
+use App\Http\Controllers\Activity10;
 
 
 
@@ -70,8 +75,34 @@ Route::post('insertIntoTable4',  [Activity4::class,'insertIntoTable4']);//work
 Route::post('updateActivity4Values',  [Activity4::class,'updateActivity4Values']);//work   
 
 //activity 5
-Route::post('calculateROIAct5', [Activity5::class,'calculateROIAct5']);
-Route::post('insertIntoTable5', [Activity5::class,'insertIntoTable5']);
+Route::post('calculateROIAct5', [Activity5::class,'calculateROIAct5']);//work   
+Route::post('insertIntoTable5', [Activity5::class,'insertIntoTable5']);//work   
+Route::post('updateActivity5Values', [Activity5::class,'updateActivity5Values']);//work   
 
+//activity 6
+Route::post('calculateROIAct6', [Activity6::class,'calculateROIAct6']);//work   
+Route::post('insertIntoTable6', [Activity6::class,'insertIntoTable6']);//work   
+Route::post('updateActivity6Values', [Activity6::class,'updateActivity6Values']);//work   
+
+//activity 7
+Route::post('calculateROIAct7', [Activity7::class,'calculateROIAct7']);//work   
+Route::post('insertIntoTable7', [Activity7::class,'insertIntoTable7']);//work   
+Route::post('updateActivity7Values', [Activity7::class,'updateActivity7Values']);//work   
+
+
+//activity 8
+Route::post('calculateROIAct8', [Activity8::class,'calculateROIAct8']);//work   
+Route::post('insertIntoTable8', [Activity8::class,'insertIntoTable8']);//work   
+Route::post('updateActivity8Values', [Activity8::class,'updateActivity8Values']);//work   
+
+//activity 9
+Route::post('calculateROIAct9', [Activity9::class,'calculateROIAct9']);//work   
+Route::post('insertIntoTable9', [Activity9::class,'insertIntoTable9']);//work   
+Route::post('updateActivity9Values', [Activity9::class,'updateActivity9Values']);//work   
+
+//activity 10
+Route::post('calculateROIAct10', [Activity10::class,'calculateROIAct10']);//work   
+Route::post('insertIntoTable10', [Activity10::class,'insertIntoTable10']);//work   
+Route::post('updateActivity10Values', [Activity10::class,'updateActivity10Values']);//work   
 
 
