@@ -55,9 +55,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Authenticate user and return JWT token.
-     */
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
