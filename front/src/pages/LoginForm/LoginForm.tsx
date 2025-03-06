@@ -3,17 +3,23 @@ import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
 import axios from "axios";
-
+import Cookies from 'js-cookie';
 export default function LoginForm() {
   const navigate = useNavigate(); // Hook for navigation
   const [loading, setLoading] = useState(false);
+
+
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
       const response = await axiosInstance.post("/auth/login", values);
       const { access_token } = response.data;
+      console.log(response.data);
+      
+      document.cookie = `access_token=${response.data}`;
 
+  
       message.success("Logged in successfully");
       navigate("/Home");
     } catch (error) {
@@ -22,6 +28,8 @@ export default function LoginForm() {
     setLoading(false);
   };
 
+  
+  
   const styles = {
     body: {
       margin: 0,

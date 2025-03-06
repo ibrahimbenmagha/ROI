@@ -14,19 +14,23 @@ class AuthController extends Controller
     }
 
 
-    public function login()
-    {
+    public function login(){
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return $this->respondWithToken($token);
+        // Store the token in a cookie (e.g., 'token')
+        $cookie = cookie('token', $token, 60 * 24); // Store token for 24 hours
+
+        return response()->json([$token])
+            ->withCookie($cookie); // Attach the cookie to the response
     }
 
 
-    
+
+
     public function me()
     {
         return response()->json(auth()->user());
@@ -48,7 +52,7 @@ class AuthController extends Controller
     }
 
 
- 
+
     protected function respondWithToken($token)
     {
         return response()->json([
