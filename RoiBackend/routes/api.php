@@ -23,13 +23,12 @@ use App\Http\Controllers\Activity10;
 
 
 
-
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::middleware('auth:api')->get('user', function () {
-        return response()->json(auth()->user());
+        // return response()->json(auth()->user());
     });
     Route::post('logout', [AuthController::class, 'logout']);
 });

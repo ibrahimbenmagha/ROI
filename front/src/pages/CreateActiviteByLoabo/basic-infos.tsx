@@ -23,9 +23,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "../../axiosConfig";
 const BasicInfo = () => {
     const [selectedActivity, setSelectedActivity] = useState<string>("");
+    const [acts, setActs] = useState([]);
     const [otherActivity, setOtherActivity] = useState<string>("");
     const [selectedYear, setSelectedYear] = useState<Date | undefined>(undefined);
-    // const [activities, setActivities] = useState<string[]>([]); /
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +39,16 @@ const BasicInfo = () => {
     "Danse",
     "Autre activité"
   ];
+  
+  useEffect(() => {
+    axiosInstance.get('getAllActivity')
+      .then(response => {
+        setActs(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching specialities:', error);
+      });
+  }, []);
 
 
   return (
@@ -59,11 +69,14 @@ const BasicInfo = () => {
                   <SelectValue placeholder="Sélectionnez une activité" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activities.map((activity) => (
-                    <SelectItem key={activity} value={activity}>
-                      {activity}
+                  {acts.map((activity) => (
+                    <SelectItem key={activity.id} value={activity.id}>
+                      {activity.Name}
                     </SelectItem>
                   ))}
+                  <SelectItem key="Autre activité" value="Autre activité">
+                    Autre activité
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

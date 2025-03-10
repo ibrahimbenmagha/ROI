@@ -2,13 +2,9 @@ import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
-import axios from "axios";
-import Cookies from 'js-cookie';
 export default function LoginForm() {
   const navigate = useNavigate(); // Hook for navigation
   const [loading, setLoading] = useState(false);
-
-
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -26,8 +22,6 @@ export default function LoginForm() {
     setLoading(false);
   };
 
-  
-  
   const styles = {
     body: {
       margin: 0,
