@@ -41,7 +41,7 @@ const BasicInfo = () => {
   ];
   
   useEffect(() => {
-    axiosInstance.get('getAllActivity')
+    axiosInstance.get('getAllActivityNotCustum')
       .then(response => {
         setActs(response.data);
       })
@@ -132,7 +132,7 @@ const BasicInfo = () => {
             </div>
 
             <Button type="submit" className="w-full">
-              Enregistrer
+            Creer l'activite
             </Button>
           </form>
         </CardContent>

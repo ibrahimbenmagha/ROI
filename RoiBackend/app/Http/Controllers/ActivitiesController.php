@@ -12,6 +12,35 @@ use Illuminate\Support\Facades\DB;
 class ActivitiesController extends Controller
 {
 
+
+    public function createActivity(Request $request)
+    {
+        try {
+            if (ActivitiesList::where('Name', $request->name)->exists()) {
+                return response()->json([
+                    'message' => 'This activity already exists'
+                ], 409);
+            }
+            $validated = $request->validate([
+                'Name' => 'required|string|max:255|unique:activitieslist,Name',
+            ]);
+            $activity = ActivitiesList::create([
+                'Name' => $validated['Name'],
+                'is_custom' => true,
+            ]);
+
+            return response()->json([
+                'message' => 'Activity created successfully',
+                'activity' => $activity,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create activity',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function CreateActivityByLabo(Request $request)
     {
         try {
@@ -46,11 +75,20 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
+
     public function getAllActivity()
     {
         $Activities = ActivitiesList::all();
         return response()->json($Activities);
     }
+
+    public function getAllActivityNotCustum()
+    {
+        // $Activities = ActivitiesList::where("is_custom","=",false);
+        $activities = ActivitiesList::where('is_custom', false)->get();
+        return response()->json($activities);
+    }
+
 
     public function getActivityById($id)
     {
@@ -106,28 +144,6 @@ class ActivitiesController extends Controller
         }
         return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
     }
-    // {
-    //     $ActivitiesByLaboInfos = ActivityByLabo::with(['activitieslist','labo','users'])
-
-    //         ->select(
-    //             'activitieslist.id',
-    //             'activitieslist.Name',
-    //             'activitybylabo.id',
-    //             'activitybylabo.laboId',
-    //             'activitybylabo.ActivityId',
-    //             'activitybylabo.year',
-    //             'labo.Name as LaboName',
-    //             'users.FirstName',
-    //             'users.LastName'
-    //         )->get();
-    //     if (!$ActivitiesByLaboInfos) {
-    //         return response()->json(['message' => 'No Activity Created By labo yet'], 401);
-    //     }
-    //     return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
-    // }
-
-
-
 
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
@@ -188,7 +204,6 @@ class ActivitiesController extends Controller
         } else {
             return response()->json(['message' => 'No activities found for the given labo'], 404);
         }
-
     }
 
     public function getActivityRepport()
@@ -258,7 +273,7 @@ class ActivitiesController extends Controller
 
         return response()->json(['data' => $formattedData], 200);
     }
-    
+
     public function getActivityRepportBYActivityId(Request $request, $activityListId)
     {
         if (!$activityListId) {
@@ -349,5 +364,4 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
-
 }

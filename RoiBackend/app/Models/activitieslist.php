@@ -13,6 +13,7 @@ class ActivitiesList extends Model
 
     protected $fillable = [
         'Name',
+        'is_custom'
     ];
 
     /**

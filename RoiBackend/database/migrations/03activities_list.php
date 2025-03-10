@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('activitieslist', function (Blueprint $table) {
             $table->id();
             $table->string('Name')->unique();
+            $table->boolean('is_custom');
             $table->timestamps();
         });
     }

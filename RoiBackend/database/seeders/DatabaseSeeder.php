@@ -22,18 +22,19 @@ class DatabaseSeeder extends Seeder
     {
         //
         DB::table('activitieslist')->insert([
-            ["Name" => "Distribution des échantillons"],
-            ["Name" => "Essai clinique"],
-            ["Name" => "Mailing"],
-            ["Name" => "Conférences"],
-            ["Name" => "Tables rondes"],
-            ["Name" => "Visites médicales"],
-            ["Name" => "Publicité directe au consommateur"],
-            ["Name" => "Publicité directe au consommateur en ligne"],
-            ["Name" => "Publicité dans les revues"],
-            ["Name" => "Générique (Médecins)"],
-            ["Name" => "Générique (Patients)"],
-            ["Name" => "Promotion numérique pour les médecins"],
+            ["Name" => "Distribution des échantillons", "is_custom" => false],
+            ["Name" => "Essai clinique", "is_custom" => false],
+            ["Name" => "Mailing", "is_custom" => false],
+            ["Name" => "Conférences", "is_custom" => false],
+            ["Name" => "Tables rondes", "is_custom" => false],
+            ["Name" => "Visites médicales", "is_custom" => false],
+            ["Name" => "Publicité directe au consommateur", "is_custom" => false],
+            ["Name" => "Publicité directe au consommateur en ligne", "is_custom" => false],
+            ["Name" => "Publicité dans les revues", "is_custom" => false],
+            ["Name" => "Générique (Médecins)", "is_custom" => false],
+            ["Name" => "Générique (Patients)", "is_custom" => false],
+            ["Name" => "Promotion numérique pour les médecins", "is_custom" => false],
+
         ]);
 
         //Activité 1: Distribution des échantillons
@@ -255,7 +256,5 @@ class DatabaseSeeder extends Seeder
             }
         }
         DB::table('ActivityByLabo')->insert($data);
-
-
     }
 }
