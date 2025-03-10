@@ -14,18 +14,18 @@ class AuthController extends Controller
     }
 
 
-    public function login(){
-        $credentials = request(['email', 'password']);
 
+    public function login()
+    {
+        $credentials = request(['email', 'password']);
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+        // return response()->json(['access_token' => $token],200)
+        //     ->cookie('access_token', $token, 60, '/', null, true, true);
+        return response()->json(['access_token' => $token], 200)
+    ->cookie('access_token', $token, 60, '/', null, true, true);
 
-        // Store the token in a cookie (e.g., 'token')
-        $cookie = cookie('token', $token, 60 * 24); // Store token for 24 hours
-
-        return response()->json([$token])
-            ->withCookie($cookie); // Attach the cookie to the response
     }
 
 

@@ -44,19 +44,16 @@ const FeatureCard = ({ title, description, icon, link }) => {
 };
 
 const Index = () => {
-  const navigate = useNavigate(); // Utiliser useNavigate pour la redirection après la déconnexion
+  const navigate = useNavigate(); 
   
   const handleLogout = async () => {
-    // Simuler l'appel à l'API de déconnexion (vous pouvez remplacer cette logique par un appel réel)
     try {
-      // Simuler l'appel API de déconnexion
-      // Exemple : await logoutAPI();
-      localStorage.removeItem('authToken'); // Supprimer le token d'authentification
-      // Afficher un message ou gérer un retour de l'API de déconnexion si nécessaire
-      navigate("/Login"); // Rediriger vers la page de connexion
+
+      localStorage.removeItem('authToken'); 
+      navigate("/Login"); 
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
-      // Ajouter un message d'erreur si nécessaire
+      
     }
   };
 

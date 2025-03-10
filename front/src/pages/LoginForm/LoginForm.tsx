@@ -15,11 +15,9 @@ export default function LoginForm() {
     try {
       const response = await axiosInstance.post("/auth/login", values);
       const { access_token } = response.data;
-      console.log(response.data);
-      
-      document.cookie = `access_token=${response.data}`;
-
-  
+      // console.log(response.data);
+      document.cookie = `access_token=${response.data.access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
+      // document.cookie = `access_token=${response.data.access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
       message.success("Logged in successfully");
       navigate("/Home");
     } catch (error) {
