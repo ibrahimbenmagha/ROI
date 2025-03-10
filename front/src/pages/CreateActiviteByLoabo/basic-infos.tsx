@@ -40,51 +40,90 @@ const BasicInfo = () => {
       });
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!selectedYear) {
-      message.error("Veuillez sélectionner une année.");
-      return;
-    }
+  //   if (!selectedYear) {
+  //     message.error("Veuillez sélectionner une année.");
+  //     return;
+  //   }
 
-    let activityId = selectedActivity;
+  //   let activityId = selectedActivity;
 
-    setLoading(true);
+  //   setLoading(true);
 
-    try {
-      // Si l'utilisateur a sélectionné "Autre activité", créer d'abord l'activité
-      if (selectedActivity === "Autre activité") {
-        if (!otherActivity) {
-          message.error("Veuillez spécifier l'autre activité.");
-          setLoading(false);
-          return;
-        }
+  //   try {
+  //     // Si l'utilisateur a sélectionné "Autre activité", créer d'abord l'activité
+  //     if (selectedActivity === "Autre activité") {
+  //       if (!otherActivity) {
+  //         message.error("Veuillez spécifier l'autre activité.");
+  //         setLoading(false);
+  //         return;
+  //       }
 
-        const activityResponse = await axiosInstance.post("/activities", {
-          name: otherActivity
-        });
+  //       const activityResponse = await axiosInstance.post("/CreateActivityByLabo", {
+  //         name: otherActivity
+  //       });
 
-        activityId = activityResponse.data.activity.id;
-        message.success("Nouvelle activité créée avec succès.");
-      }
+  //       activityId = activityResponse.data.activity.id;
+  //       message.success("Nouvelle activité créée avec succès.");
+  //     }
 
-      // Appel API pour créer ActivityByLabo
-      await axiosInstance.post("/CreateActivityByLabo", {
-        year: format(selectedYear, "yyyy"),
-        laboId: 1, // Remplacer par l'ID réel du laboratoire
-        ActivityId: activityId
-      });
+  //     // Appel API pour créer ActivityByLabo
+  //     await axiosInstance.post("/CreateActivityByLabo", {
+  //       year: format(selectedYear, "yyyy"),
+  //       laboId: 1, // Remplacer par l'ID réel du laboratoire
+  //       ActivityId: activityId
+  //     });
 
-      message.success("Activité créée avec succès !");
-    } catch (error) {
-      console.error("Erreur lors de la création de l'activité:", error);
-      message.error(error.response?.data?.message || "Erreur lors de la création.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     message.success("Activité créée avec succès !");
+  //   } catch (error) {
+  //     console.error("Erreur lors de la création de l'activité:", error);
+  //     message.error(error.response?.data?.message || "Erreur lors de la création.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+// Remplacer la fonction handleSubmit par celle-ci
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
+  if (!selectedYear) {
+    message.error("Veuillez sélectionner une année.");
+    return;
+  }
+
+  if (selectedActivity === "Autre activité" && !otherActivity) {
+    message.error("Veuillez spécifier l'autre activité.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // Un seul appel API qui gère à la fois l'activité standard et personnalisée
+    await axiosInstance.post("/CreateActivityByLabo", {
+      year: parseInt(format(selectedYear, "yyyy")),
+      laboId: 1, // Remplacer par l'ID réel du laboratoire
+      ActivityId: selectedActivity,
+      otherActivity: selectedActivity === "Autre activité" ? otherActivity : null
+    });
+
+    message.success("Activité créée avec succès !");
+    
+    // Réinitialiser le formulaire après succès
+    setSelectedActivity("");
+    setOtherActivity("");
+    setSelectedYear(undefined);
+  } catch (error) {
+    console.error("Erreur lors de la création de l'activité:", error);
+    message.error(error.response?.data?.message || "Erreur lors de la création.");
+  } finally {
+    setLoading(false);
+  }
+};
+  
+  
   return (
     <div className="container mx-auto py-10">
       <Card>

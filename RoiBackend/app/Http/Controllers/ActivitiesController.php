@@ -13,6 +13,61 @@ class ActivitiesController extends Controller
 {
 
 
+    public function CreateActivityByLabo(Request $request)
+    {
+        try {
+            // Vérification si l'activité existe déjà pour l'année et le labo donnés
+            if (ActivityByLabo::where([
+                ['ActivityId', $request->ActivityId],
+                ['laboId', $request->laboId],
+                ['year', $request->year]
+            ])->exists()) {
+                return response()->json([
+                    'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
+                ], 409);
+            }
+    
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'laboId' => 'required|integer',
+                'ActivityId' => 'required|string',
+                'otherActivity' => 'nullable|string'
+            ]);
+    
+            $activityId = $validated['ActivityId'];
+    
+            // Si l'activité sélectionnée est "Autre activité", créer une nouvelle activité personnalisée
+            if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
+                $newActivity = Activitieslist::create([
+                    'Name' => $validated['otherActivity'],
+                    'is_custom' => true,
+                ]);
+                
+                $activityId = $newActivity->id;
+            }
+    
+            $activity = ActivityByLabo::create([
+                'year' => $validated['year'],
+                'laboId' => $validated['laboId'],
+                'ActivityId' => $activityId,
+            ]);
+    
+            return response()->json([
+                'message' => "Activité créée avec succès.",
+                'activity' => $activity
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Échec de la création de l\'activité.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+
     public function createActivity(Request $request)
     {
         try {
@@ -41,41 +96,43 @@ class ActivitiesController extends Controller
         }
     }
 
-    public function CreateActivityByLabo(Request $request)
-    {
-        try {
+    // public function CreateActivityByLabo(Request $request)
+    // {
+    //     try {
 
-            if (
-                ActivityByLabo::where([
-                    ['ActivityId', $request->ActivityId],
-                    ['laboId', $request->laboId],
-                    ['year', $request->year]
-                ])->exists()
-            ) {
-                return response()->json([
-                    'message' => 'You alreaddy counted the return of that activity'
-                ], 409);
-            }
-            $validated = $request->validate([
-                "year" => 'required',
+    //         if (
+    //             ActivityByLabo::where([
+    //                 ['ActivityId', $request->ActivityId],
+    //                 ['laboId', $request->laboId],
+    //                 ['year', $request->year]
+    //             ])->exists()
+    //         ) {
+    //             return response()->json([
+    //                 'message' => 'You alreaddy counted the return of that activity'
+    //             ], 409);
+    //         }
+    //         $validated = $request->validate([
+    //             "year" => 'required',
 
-            ]);
-            $avtivitybylabo = ActivityByLabo::create([
-                "year" => $validated["year"],
-                "laboId" => 1,
-                "ActivityId" => $request->ActivityId,
-            ]);
-            return response()->json([
-                "message" => "You creatd"
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to create activity',
-                "error" => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         ]);
+    //         $avtivitybylabo = ActivityByLabo::create([
+    //             "year" => $validated["year"],
+    //             "laboId" => 1,
+    //             "ActivityId" => $request->ActivityId,
+    //         ]);
+    //         return response()->json([
+    //             "message" => "You creatd"
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             "message" => 'Failed to create activity',
+    //             "error" => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
+
+   
     public function getAllActivity()
     {
         $Activities = ActivitiesList::all();
@@ -88,7 +145,6 @@ class ActivitiesController extends Controller
         $activities = ActivitiesList::where('is_custom', false)->get();
         return response()->json($activities);
     }
-
 
     public function getActivityById($id)
     {
@@ -104,7 +160,6 @@ class ActivitiesController extends Controller
             'Activity' => $Activity
         ], 200);
     }
-
 
     public function getActivityByName(Request $request, $ActivityName)
     {
