@@ -62,7 +62,7 @@ class ActivitiesController extends Controller
             ]);
             $avtivitybylabo = ActivityByLabo::create([
                 "year" => $validated["year"],
-                "laboId" => $request->laboId,
+                "laboId" => 1,
                 "ActivityId" => $request->ActivityId,
             ]);
             return response()->json([
