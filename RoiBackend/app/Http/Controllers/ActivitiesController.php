@@ -9,6 +9,7 @@ use App\Models\Labo;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityItem;
 
+
 use Illuminate\Support\Facades\DB;
 
 class ActivitiesController extends Controller
@@ -46,6 +47,10 @@ class ActivitiesController extends Controller
                 ]);
                 
                 $activityId = $newActivity->id;
+                $item = ActivityItem::create([
+                    'Name' => "ROI",
+                    'ActivityId' => $activityId,
+                ]);
             }
     
             $activity = ActivityByLabo::create([
@@ -54,10 +59,7 @@ class ActivitiesController extends Controller
                 'ActivityId' => $activityId,
             ]);
 
-            $item = ActivityItem::create([
-                'Name' => "ROI",
-                'ActivityId' => $activityId,
-            ]);
+
     
             return response()->json([
                 'message' => "Activité créée avec succès.",
