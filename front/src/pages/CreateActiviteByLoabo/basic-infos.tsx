@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { LogoutOutlined } from "@ant-design/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Popover,
@@ -22,8 +24,22 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "../../axiosConfig";
 import { message } from "antd";
-
+const { Header, Content, Footer } = Layout;
+const { Title, Paragraph, Text } = Typography;
 const BasicInfo = () => {
+    const navigate = useNavigate(); 
+    
+    const handleLogout = async () => {
+      try {
+  
+        localStorage.removeItem('authToken'); 
+        navigate("/Login"); 
+      } catch (error) {
+        console.error("Erreur lors de la déconnexion", error);
+        
+      }
+    };
+    
   const [selectedActivity, setSelectedActivity] = useState<string>("");
   const [acts, setActs] = useState([]);
   const [otherActivity, setOtherActivity] = useState<string>("");
@@ -31,12 +47,13 @@ const BasicInfo = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    axiosInstance.get('getAllActivityNotCustum')
-      .then(response => {
+    axiosInstance
+      .get("getAllActivityNotCustum")
+      .then((response) => {
         setActs(response.data);
       })
-      .catch(error => {
-        console.error('Error fetching activities:', error);
+      .catch((error) => {
+        console.error("Error fetching activities:", error);
       });
   }, []);
 
@@ -84,58 +101,67 @@ const BasicInfo = () => {
   //     setLoading(false);
   //   }
   // };
-// Remplacer la fonction handleSubmit par celle-ci
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  // Remplacer la fonction handleSubmit par celle-ci
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!selectedYear) {
-    message.error("Veuillez sélectionner une année.");
-    return;
-  }
+    if (!selectedYear) {
+      message.error("Veuillez sélectionner une année.");
+      return;
+    }
 
-  if (selectedActivity === "Autre activité" && !otherActivity) {
-    message.error("Veuillez spécifier l'autre activité.");
-    return;
-  }
+    if (selectedActivity === "Autre activité" && !otherActivity) {
+      message.error("Veuillez spécifier l'autre activité.");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    // Un seul appel API qui gère à la fois l'activité standard et personnalisée
-    await axiosInstance.post("/CreateActivityByLabo", {
-      year: parseInt(format(selectedYear, "yyyy")),
-      laboId: 1, // Remplacer par l'ID réel du laboratoire
-      ActivityId: selectedActivity,
-      otherActivity: selectedActivity === "Autre activité" ? otherActivity : null
-    });
+    try {
+      // Un seul appel API qui gère à la fois l'activité standard et personnalisée
+      await axiosInstance.post("/CreateActivityByLabo", {
+        year: parseInt(format(selectedYear, "yyyy")),
+        laboId: 1, // Remplacer par l'ID réel du laboratoire
+        ActivityId: selectedActivity,
+        otherActivity:
+          selectedActivity === "Autre activité" ? otherActivity : null,
+      });
 
-    message.success("Activité créée avec succès !");
-    
-    // Réinitialiser le formulaire après succès
-    setSelectedActivity("");
-    setOtherActivity("");
-    setSelectedYear(undefined);
-  } catch (error) {
-    console.error("Erreur lors de la création de l'activité:", error);
-    message.error(error.response?.data?.message || "Erreur lors de la création.");
-  } finally {
-    setLoading(false);
-  }
-};
-  
-  
+      message.success("Activité créée avec succès !");
+
+      // Réinitialiser le formulaire après succès
+      setSelectedActivity("");
+      setOtherActivity("");
+      setSelectedYear(undefined);
+    } catch (error) {
+      console.error("Erreur lors de la création de l'activité:", error);
+      message.error(
+        error.response?.data?.message || "Erreur lors de la création."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-10">
+      <Button
+        type="text"
+        icon={<LogoutOutlined style={{ color: "white", fontSize: "24px" }} />}
+        onClick={handleLogout}
+      />
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Informations de base</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Informations de base
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="activity">Nom de l'activité</Label>
-              <Select 
-                value={selectedActivity} 
+              <Select
+                value={selectedActivity}
                 onValueChange={setSelectedActivity}
               >
                 <SelectTrigger className="w-full">

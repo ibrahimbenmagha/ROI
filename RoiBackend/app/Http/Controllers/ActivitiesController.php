@@ -7,6 +7,8 @@ use App\Models\ActivitiesList;
 use App\Models\ActivityByLabo;
 use App\Models\Labo;
 use App\Models\ActivityItemValue;
+use App\Models\ActivityItem;
+
 use Illuminate\Support\Facades\DB;
 
 class ActivitiesController extends Controller
@@ -49,6 +51,11 @@ class ActivitiesController extends Controller
             $activity = ActivityByLabo::create([
                 'year' => $validated['year'],
                 'laboId' => $validated['laboId'],
+                'ActivityId' => $activityId,
+            ]);
+
+            $item = ActivityItem::create([
+                'Name' => "ROI",
                 'ActivityId' => $activityId,
             ]);
     

@@ -56,6 +56,7 @@ const Index = () => {
       
     }
   };
+  
 
   return (
     <Layout className="min-h-screen">
