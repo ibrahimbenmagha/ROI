@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
+
 export default function LoginForm() {
   const navigate = useNavigate(); // Hook for navigation
   const [loading, setLoading] = useState(false);
@@ -11,7 +12,6 @@ export default function LoginForm() {
     try {
       const response = await axiosInstance.post("/auth/login", values);
       const { access_token } = response.data;
-      // console.log(response.data);
       document.cookie = `access_token=${response.data.access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
       message.success("Logged in successfully");
       navigate("/Home");

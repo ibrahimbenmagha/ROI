@@ -17,6 +17,7 @@ use App\Http\Controllers\Activity10;
 
 // Routes publiques (pas besoin d'authentification)
 Route::prefix('auth')->group(function () {
+    Route::post('loginadmin', [AuthController::class, 'loginadmin']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
     Route::post('refresh', [AuthController::class, 'refresh']);
