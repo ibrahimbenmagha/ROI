@@ -7,12 +7,28 @@ export default function LoginForm() {
   const navigate = useNavigate(); // Hook for navigation
   const [loading, setLoading] = useState(false);
 
+  // const onFinish = async (values) => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await axiosInstance.post("/auth/login", values);
+  //     const { access_token } = response.data;
+  //     document.cookie = `access_token=${response.data.access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
+  //     message.success("Logged in successfully");
+  //     navigate("/Home");
+  //   } catch (error) {
+  //     message.error("Invalid credentials");
+  //   }
+  //   setLoading(false);
+  // };
+
+
   const onFinish = async (values) => {
     setLoading(true);
     try {
       const response = await axiosInstance.post("/auth/login", values);
-      const { access_token } = response.data;
-      document.cookie = `access_token=${response.data.access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
+      const { access_token, user } = response.data;
+  
+      document.cookie = `access_token=${access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;
       message.success("Logged in successfully");
       navigate("/Home");
     } catch (error) {
@@ -20,6 +36,7 @@ export default function LoginForm() {
     }
     setLoading(false);
   };
+
 
   const styles = {
     body: {
