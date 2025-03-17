@@ -1,25 +1,27 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom"; // Utiliser useNavigate pour redirection
-import { 
-  Card, 
-  Button, 
-  Layout, 
-  Typography, 
-  Row, 
-  Col, 
-  Space, 
-  Divider 
+import {
+  Card,
+  Button,
+  Layout,
+  Typography,
+  Row,
+  Col,
+  Space,
+  Divider,
 } from "antd";
-import { 
-  LeftOutlined, 
-  RightOutlined, 
+import {
+  LeftOutlined,
+  RightOutlined,
   QuestionCircleOutlined,
   DownloadOutlined,
   UploadOutlined,
   ReloadOutlined,
   PrinterOutlined,
-  LogoutOutlined // Importer l'icône de déconnexion
+  LogoutOutlined, // Importer l'icône de déconnexion
 } from "@ant-design/icons";
+
+import Head from "./Header/Header";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph, Text } = Typography;
@@ -27,8 +29,8 @@ const { Title, Paragraph, Text } = Typography;
 // Feature card component
 const FeatureCard = ({ title, description, icon, link }) => {
   return (
-    <Card 
-      hoverable 
+    <Card
+      hoverable
       style={{ width: "100%" }}
       extra={<span style={{ fontSize: 24 }}>{icon}</span>}
       title={title}
@@ -44,65 +46,53 @@ const FeatureCard = ({ title, description, icon, link }) => {
 };
 
 const Index = () => {
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     try {
-
-      localStorage.removeItem('authToken'); 
-      navigate("/Login"); 
+      localStorage.removeItem("authToken");
+      navigate("/Login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
-      
     }
   };
-  
 
   return (
     <Layout className="min-h-screen">
-      {/* Header */}
-      <Header style={{ background: "#1A1F2C", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <Title level={3} style={{ color: "white", margin: "16px 0" }}>
-            Calculateur ROI pour Laboratoire Médical
-          </Title>
-        </div>
-        {/* Icône de déconnexion */}
-        <Button 
-          type="text" 
-          icon={<LogoutOutlined style={{ color: "white", fontSize: "24px" }} />} 
-          onClick={handleLogout}
-        />
-      </Header>
+      <Head/>
 
-      {/* Main Content */}
+
+      Main Content
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Row gutter={[32, 32]}>
             {/* Entries Block */}
             <Col xs={24} md={12}>
-              <Title level={4} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}>
+              <Title
+                level={4}
+                style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}
+              >
                 Saisies
               </Title>
-              
+
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                <FeatureCard 
-                  title="Informations de Base" 
-                  description="Configuration initiale pour la planification" 
+                <FeatureCard
+                  title="Informations de Base"
+                  description="Configuration initiale pour la planification"
                   icon="📋"
-                  link="/basic-info"
+                  link="/CreateActivity"
                 />
-                
-                <FeatureCard 
-                  title="Valeur Nouveau Patient" 
-                  description="Analyse de rentabilité par patient" 
+
+                <FeatureCard
+                  title="Listes des activites a calculer"
+                  description="Les activites non calcules"
                   icon="👤"
-                  link="/patient-value"
+                  link="/DisplayActivity"
                 />
-                
-                <FeatureCard 
-                  title="Évaluation Plan Tactique" 
-                  description="Mesurer l'efficacité des stratégies marketing" 
+
+                <FeatureCard
+                  title="Évaluation Plan Tactique"
+                  description="Mesurer l'efficacité des stratégies marketing"
                   icon="📊"
                   link="/tactical-plan"
                 />
@@ -111,42 +101,45 @@ const Index = () => {
 
             {/* Outputs Block */}
             <Col xs={24} md={12}>
-              <Title level={4} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}>
+              <Title
+                level={4}
+                style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}
+              >
                 Résultats
               </Title>
-              
+
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                <FeatureCard 
-                  title="Analyse Seuil de Rentabilité" 
-                  description="Analyser les seuils de rentabilité pour les investissements" 
+                <FeatureCard
+                  title="Analyse Seuil de Rentabilité"
+                  description="Analyser les seuils de rentabilité pour les investissements"
                   icon="📈"
                   link="/threshold-analysis"
                 />
-                
-                <FeatureCard 
-                  title="Aperçu ROI" 
-                  description="Vue complète du retour sur investissement" 
+
+                <FeatureCard
+                  title="Aperçu ROI"
+                  description="Vue complète du retour sur investissement"
                   icon="💰"
                   link="/roi-overview"
                 />
-                
-                <FeatureCard 
-                  title="Résumé Année de Planification" 
-                  description="Résumé des activités de l'année planifiée" 
+
+                <FeatureCard
+                  title="Résumé Année de Planification"
+                  description="Résumé des activités de l'année planifiée"
                   icon="📅"
                   link="/year-summary"
                 />
-                
-                <FeatureCard 
-                  title="Optimisation Mix Marketing" 
-                  description="Optimisez votre mix marketing pour de meilleurs résultats" 
+
+                <FeatureCard
+                  title="Optimisation Mix Marketing"
+                  description="Optimisez votre mix marketing pour de meilleurs résultats"
                   icon="🎯"
                   link="/marketing-mix"
                 />
-                
-                <FeatureCard 
-                  title="Comparaison Stratégies Marketing" 
-                  description="Comparez différentes approches marketing" 
+
+                <FeatureCard
+                  title="Comparaison Stratégies Marketing"
+                  description="Comparez différentes approches marketing"
                   icon="⚖️"
                   link="/strategies-comparison"
                 />
@@ -164,7 +157,7 @@ const Index = () => {
                 <Button icon={<QuestionCircleOutlined />}>Aide</Button>
               </Space>
             </Col>
-            
+
             <Col>
               <Space size={8}>
                 <Button icon={<DownloadOutlined />}>Exporter</Button>
@@ -179,7 +172,9 @@ const Index = () => {
 
       {/* Footer */}
       <Footer style={{ textAlign: "center", background: "#f0f0f0" }}>
-        <Text type="secondary">© 2023 Calculateur ROI pour Laboratoire Médical. Tous droits réservés.</Text>
+        <Text type="secondary">
+          © 2023 Calculateur ROI pour Laboratoire Médical. Tous droits réservés.
+        </Text>
       </Footer>
     </Layout>
   );

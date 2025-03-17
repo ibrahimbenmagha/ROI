@@ -9,7 +9,8 @@ import "antd/dist/reset.css";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
-import BasicInfo from "./pages/CreateActiviteByLoabo/basic-infos"
+import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity"
+import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
 
 
 const queryClient = new QueryClient();
@@ -23,8 +24,9 @@ const App = () => (
         <Routes>
           <Route path="/Login" element={<LoginForm />} />
           <Route path="*" element={<NotFound />} />
-          <Route path="basic-info" element={<BasicInfo/>}/>
+          <Route path="CreateActivity" element={<CreateActivity/>}/>
           <Route path="/Home" element={<Index />} />
+          <Route path="/DisplayActivity" element={<DisplayActivity/>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

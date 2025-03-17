@@ -3,64 +3,71 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\JwtHelper; // Adjust the namespace as needed
 use App\Models\ActivitiesList;
 use App\Models\ActivityByLabo;
 use App\Models\Labo;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityItem;
-
-
 use Illuminate\Support\Facades\DB;
+
+
 
 class ActivitiesController extends Controller
 {
 
-
-    public function CreateActivityByLabo(Request $request)
+    public function CreateActivityByLabo(Request $request) //works
     {
         try {
-            // Vérification si l'activité existe déjà pour l'année et le labo donnés
+            $token = $request->cookie('access_token');
+            // $userData = get_token_user_data($token);
+            $userData = get_token_user_data($token);
+            if (!$userData) {
+                return response()->json(['error' => 'Invalid token'], 401);
+            }
+            
+            $userId = $userData['user_id'];
+            $laboId = $userData['labo.id'];
+
             if (ActivityByLabo::where([
                 ['ActivityId', $request->ActivityId],
-                ['laboId', $request->laboId],
+                // ['laboId', $request->laboId],
+                ['laboId', $laboId],
                 ['year', $request->year]
             ])->exists()) {
                 return response()->json([
                     'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
                 ], 409);
             }
-    
             $validated = $request->validate([
                 'year' => 'required|integer',
-                'laboId' => 'required|integer',
+                // 'laboId' => 'required|integer',
                 'ActivityId' => 'required|string',
                 'otherActivity' => 'nullable|string'
             ]);
-    
+
             $activityId = $validated['ActivityId'];
-    
-            // Si l'activité sélectionnée est "Autre activité", créer une nouvelle activité personnalisée
+
             if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
                 $newActivity = Activitieslist::create([
                     'Name' => $validated['otherActivity'],
                     'is_custom' => true,
                 ]);
-                
+
                 $activityId = $newActivity->id;
                 $item = ActivityItem::create([
                     'Name' => "ROI",
                     'ActivityId' => $activityId,
                 ]);
             }
-    
+
             $activity = ActivityByLabo::create([
                 'year' => $validated['year'],
-                'laboId' => $validated['laboId'],
+                // 'laboId' => $request['laboId'],
+                'laboId' => $laboId,
+
                 'ActivityId' => $activityId,
             ]);
-
-
-    
             return response()->json([
                 'message' => "Activité créée avec succès.",
                 'activity' => $activity
@@ -72,10 +79,6 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
-
-
-
-
 
     public function createActivity(Request $request)
     {
@@ -105,43 +108,6 @@ class ActivitiesController extends Controller
         }
     }
 
-    // public function CreateActivityByLabo(Request $request)
-    // {
-    //     try {
-
-    //         if (
-    //             ActivityByLabo::where([
-    //                 ['ActivityId', $request->ActivityId],
-    //                 ['laboId', $request->laboId],
-    //                 ['year', $request->year]
-    //             ])->exists()
-    //         ) {
-    //             return response()->json([
-    //                 'message' => 'You alreaddy counted the return of that activity'
-    //             ], 409);
-    //         }
-    //         $validated = $request->validate([
-    //             "year" => 'required',
-
-    //         ]);
-    //         $avtivitybylabo = ActivityByLabo::create([
-    //             "year" => $validated["year"],
-    //             "laboId" => 1,
-    //             "ActivityId" => $request->ActivityId,
-    //         ]);
-    //         return response()->json([
-    //             "message" => "You creatd"
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             "message" => 'Failed to create activity',
-    //             "error" => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-
-   
     public function getAllActivity()
     {
         $Activities = ActivitiesList::all();
@@ -206,11 +172,12 @@ class ActivitiesController extends Controller
         if (!$ActivitiesByLaboInfos) {
             return response()->json(['message' => 'No Activity Created By labo yet'], 401);
         }
-        return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
+        return response()->json($ActivitiesByLaboInfos, 200);
     }
 
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
+        $id=$request['id']; 
         $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
@@ -229,7 +196,7 @@ class ActivitiesController extends Controller
         if ($ActivitiesByLaboInfos->isEmpty()) {
             return response()->json(['message' => 'No Activity Created By labo yet'], 401);
         }
-        return response()->json(['ActivitiesByLaboInfos' => $ActivitiesByLaboInfos], 200);
+        return response()->json( $ActivitiesByLaboInfos, 200);
     }
 
     public function getAllActivityByLaboInfosByLaboId(Request $request, $laboId)
@@ -251,7 +218,7 @@ class ActivitiesController extends Controller
             )->get();
 
         if ($Activities->isNotEmpty()) {
-            return response()->json(['activities' => $Activities], 200);
+            return response()->json($Activities, 200);
         } else {
             return response()->json(['message' => 'No activities found for the given labo'], 404);
         }

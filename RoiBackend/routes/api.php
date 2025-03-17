@@ -46,7 +46,7 @@ Route::prefix('auth')->group(function () {
     Route::get('getActivityByName/{Name}', [ActivitiesController::class, 'getActivityByName']);
     Route::get('getAllActivitiesByLaboInfos', [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);
     Route::get('getActivitiesByLaboInfosById/{id}', [ActivitiesController::class, 'getActivitiesByLaboInfosById']);
-    Route::get('getAllActivityByLaboInfosByLaboId/{id}', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
+    Route::get('getAllActivityByLaboInfosByLaboId/{laboId}', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::get('getAllActivityByLaboName/{Name}', [ActivitiesController::class, 'getAllActivityByLaboName']);
     Route::get('getActivityRepportBYActivityId/{activityListId}', [ActivitiesController::class, 'getActivityRepportBYActivityId']);
     Route::get('getActivityRepport', [ActivitiesController::class, 'getActivityRepport']);

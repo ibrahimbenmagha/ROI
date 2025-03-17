@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Popover,
@@ -21,13 +21,15 @@ import { fr } from "date-fns/locale";
 import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import axiosInstance from "../../axiosConfig";
 import { message, Layout, Typography } from "antd";
-import{LogoutOutlined }from "@ant-design/icons"
+import { HomeOutlined } from "@ant-design/icons";
+
+import axiosInstance from "../../axiosConfig";
+import Head from "../Header/Header";
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-const BasicInfo = () => {
+const CreateActivity = () => {
   const [selectedActivity, setSelectedActivity] = useState<string>("");
   const [acts, setActs] = useState([]);
   const [otherActivity, setOtherActivity] = useState<string>("");
@@ -36,18 +38,18 @@ const BasicInfo = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axiosInstance.get('getAllActivityNotCustum')
-      .then(response => {
+    axiosInstance
+      .get("getAllActivityNotCustum")
+      .then((response) => {
         setActs(response.data);
       })
-      .catch(error => {
-        console.error('Error fetching activities:', error);
+      .catch((error) => {
+        console.error("Error fetching activities:", error);
       });
   }, []);
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('authToken');
       navigate("/Login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
@@ -74,7 +76,8 @@ const BasicInfo = () => {
         year: parseInt(format(selectedYear, "yyyy")),
         laboId: 1,
         ActivityId: selectedActivity,
-        otherActivity: selectedActivity === "Autre activité" ? otherActivity : null
+        otherActivity:
+          selectedActivity === "Autre activité" ? otherActivity : null,
       });
 
       message.success("Activité créée avec succès !");
@@ -83,43 +86,35 @@ const BasicInfo = () => {
       setSelectedYear(undefined);
     } catch (error) {
       console.error("Erreur lors de la création de l'activité:", error);
-      message.error(error.response?.data?.message || "Erreur lors de la création.");
+      message.error(
+        error.response?.data?.message || "Erreur lors de la création."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-
-  
   return (
     <Layout className="min-h-screen">
-      <Header style={{ background: "#1A1F2C", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <Title level={3} style={{ color: "white", margin: "16px 0" }}>
-            Calculateur ROI pour Laboratoire Médical
-          </Title>
-        </div>
-        <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleLogout}
-            className="text-white hover:text-white/80 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
-      </Header>
+      
+      <Head />
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div className="container mx-auto py-10">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">Informations de base</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Informations de base
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <Label htmlFor="activity">Nom de l'activité</Label>
-                  <Select value={selectedActivity} onValueChange={setSelectedActivity}>
+                  <Select
+                    value={selectedActivity}
+                    onValueChange={setSelectedActivity}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Sélectionnez une activité" />
                     </SelectTrigger>
@@ -161,7 +156,11 @@ const BasicInfo = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedYear ? format(selectedYear, "yyyy") : <span>Sélectionnez une année</span>}
+                        {selectedYear ? (
+                          format(selectedYear, "yyyy")
+                        ) : (
+                          <span>Sélectionnez une année</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -193,4 +192,4 @@ const BasicInfo = () => {
   );
 };
 
-export default BasicInfo;
+export default CreateActivity;
