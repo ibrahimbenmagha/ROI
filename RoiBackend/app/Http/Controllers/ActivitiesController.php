@@ -69,44 +69,50 @@ class ActivitiesController extends Controller
     // }
 
 
-    public function CreateActivityByLabo(Request $request) {
+    public function CreateActivityByLabo(Request $request)
+    {
         try {
-            // $token = $request->bearerToken();
-            $token = $request->cookie('access_token');
 
-            
-            $tokenData = get_token_user_data($token);
-            
-            if (!$tokenData || !isset($tokenData['labo_id'])) {
+
+            // $token = $request->cookie('access_token');
+            // $tokenData = get_token_user_data($token);
+
+            // if (!$tokenData || !isset($tokenData['labo_id'])) {
+            //     return response()->json([
+            //         'message' => 'Information du laboratoire non trouvée dans le token.',$token
+            //     ], 401);
+            // }
+            // $laboId = $tokenData['labo_id'];
+
+
+            $laboId = JWTHelper::getLaboId($request);
+
+            if (!$laboId) {
                 return response()->json([
-                    'message' => 'Information du laboratoire non trouvée dans le token.',$token
+                    'message' => 'Information du laboratoire non trouvée dans le token.'
                 ], 401);
             }
-            
-            // Retrieve laboId from the token data
-            $laboId = $tokenData['labo_id'];
-            
-            // Check if the activity already exists for the laboId and year
+
             if (ActivityByLabo::where([
                 ['ActivityId', $request->ActivityId],
-                ['laboId', $laboId],    
+                ['laboId', $laboId],
                 ['year', $request->year]
             ])->exists()) {
                 return response()->json([
                     'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
                 ], 409);
             }
-    
+
             // Validate the request data
             $validated = $request->validate([
                 'year' => 'required|integer',
                 'ActivityId' => 'required|string',
                 'otherActivity' => 'nullable|string'
             ]);
-    
+
             // Get the ActivityId from the validated data
             $activityId = $validated['ActivityId'];
-    
+
             // Handle the case where the activity is custom
             if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
                 $newActivity = Activitieslist::create([
@@ -114,26 +120,25 @@ class ActivitiesController extends Controller
                     'is_custom' => true,
                 ]);
                 $activityId = $newActivity->id;
-    
+
                 // Create a new item for the custom activity
                 $item = ActivityItem::create([
                     'Name' => "ROI",
                     'ActivityId' => $activityId,
                 ]);
             }
-    
+
             // Create the activity record
             $activity = ActivityByLabo::create([
                 'year' => $validated['year'],
                 'laboId' => $laboId,  // Use laboId from token
                 'ActivityId' => $activityId,
             ]);
-    
+
             return response()->json([
                 'message' => "Activité créée avec succès.",
                 'activity' => $activity
             ], 201);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Échec de la création de l\'activité.',
@@ -142,7 +147,7 @@ class ActivitiesController extends Controller
         }
     }
 
-    
+
     public function createActivity(Request $request)
     {
         try {
@@ -240,7 +245,7 @@ class ActivitiesController extends Controller
 
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
-        $id=$request['id']; 
+        $id = $request['id'];
         $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
@@ -259,7 +264,7 @@ class ActivitiesController extends Controller
         if ($ActivitiesByLaboInfos->isEmpty()) {
             return response()->json(['message' => 'No Activity Created By labo yet'], 401);
         }
-        return response()->json( $ActivitiesByLaboInfos, 200);
+        return response()->json($ActivitiesByLaboInfos, 200);
     }
 
     public function getAllActivityByLaboInfosByLaboId(Request $request, $laboId)
