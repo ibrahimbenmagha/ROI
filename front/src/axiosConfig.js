@@ -7,4 +7,3 @@ const axiosInstance = axios.create({
 });
 
 export default axiosInstance;
-//http://192.168.0.89:8081/

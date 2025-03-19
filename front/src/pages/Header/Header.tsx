@@ -4,12 +4,15 @@ import { message, Layout, Typography } from "antd";
 import { Button } from "@/components/ui/button";
 import { HomeOutlined } from "@ant-design/icons";
 
+import axiosInstance from "../../axiosConfig";
+
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
 const Head = () => {
   const handleLogout = async () => {
     try {
+      // await axiosInstance.post("/auth/logout");
       navigate("/Login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);

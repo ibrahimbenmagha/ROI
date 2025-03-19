@@ -61,8 +61,6 @@ const Index = () => {
     <Layout className="min-h-screen">
       <Head/>
 
-
-      Main Content
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Row gutter={[32, 32]}>

@@ -50,6 +50,7 @@ const CreateActivity = () => {
 
   const handleLogout = async () => {
     try {
+      // await axiosInstance.post("/auth/logout");
       navigate("/Login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
@@ -74,7 +75,7 @@ const CreateActivity = () => {
     try {
       await axiosInstance.post("/CreateActivityByLabo", {
         year: parseInt(format(selectedYear, "yyyy")),
-        laboId: 1,
+        // laboId: 1,
         ActivityId: selectedActivity,
         otherActivity:
           selectedActivity === "Autre activité" ? otherActivity : null,
@@ -180,7 +181,7 @@ const CreateActivity = () => {
                   </Popover>
                 </div>
 
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full" loading={loading} style={{ backgroundColor: "#1890ff" }}>
                   {loading ? "En cours..." : "Créer l'activité"}
                 </Button>
               </form>

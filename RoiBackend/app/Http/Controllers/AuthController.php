@@ -28,7 +28,15 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
             $laboratoire = DB::table('labo')->where('userId', $user->id)->first();
-            $customToken = auth()->claims(['labo.id' => $laboratoire ? $laboratoire->id : null])->refresh();
+            $customToken = auth()->claims([
+                'labo_id' => $laboratoire ? $laboratoire->id : null,
+                'user.email' => $user->email,
+                'user.first_name' => $user->FirstName,
+                'user.last_name' => $user->LastName,
+                'user.Role' => $user->Role,
+                'labo.status' => $laboratoire->status,
+                ])->refresh();
+
             return response()->json([
                 'access_token' => $customToken,
                 'user' => [
@@ -43,54 +51,6 @@ class AuthController extends Controller
         }
     }
 
-
-    // public function login()
-    // {
-    //     $credentials = request(['email', 'password']);
-    //     if (!$token = auth()->attempt($credentials)) {
-    //         return response()->json(['error' => 'Unauthorized'], 401);
-    //     } else {
-    //         $user = Auth::user();
-    //         return response()->json([
-    //             'access_token' => $token,
-    //             'user' => [
-    //                 'id' => $user->id,
-    //                 'Role' => $user->Role,
-    //             ]
-    //         ], 200)
-    //             ->cookie('access_token', $token, 60, '/', null, true, true);
-    //     }
-    // }
-
-
-    // public function login()
-    // {
-    //     $credentials = request(['email', 'password']);
-
-    //     // Attempt to authenticate the user
-    //     if (!$token = auth()->($credentials)) {
-    //         return response()->json(data: ['error' => 'Unauthorized'], 401);
-    //     } else {
-    //         // Get the authenticated user
-    //         $user = Auth::user();
-
-    //         // Check if the user's role is "Laboratoire"
-    //         if ($user->Role !== 'Laboratoire') {
-    //             return response()->json(['error' => 'Unauthorized'], 401);
-    //         }
-
-    //         return response()->json([
-    //             'access_token' => $token,
-    //             'user' => [
-    //                 'id' => $user->id,
-    //                 'Role' => $user->Role,
-    //                 'FirstName' => $user->FirstName,
-    //                 'LastName' => $user->LastName,
-    //             ]
-    //         ], 200)
-    //             ->cookie('access_token', $token, 60, '/', null, true, true);
-    //     }
-    // }
 
     public function loginadmin()
     {
@@ -124,9 +84,11 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        
+        return response()->json(['message' => 'Successfully logged out'], 200)
+            ->cookie('access_token', '', -1, '/', null, true, true); // Remove the cookie by setting an expired date
     }
+    
 
 
 

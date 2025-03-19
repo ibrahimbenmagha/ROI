@@ -4,7 +4,7 @@ import { CalendarIcon, LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { Button } from "antd";
 
 import { message, Layout, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
@@ -55,8 +55,14 @@ const DisplayActivity = () => {
   const styles = {
     md: {
       display: "flex",
-      flexDirection: "row-reverse",
-
+      flexDirection: "row",
+    },
+    ButtonSpan: {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "40%",
+      paddingRight: "10px",
     },
   };
   return (
@@ -77,6 +83,8 @@ const DisplayActivity = () => {
         >
           {[...Array(6)].map((_, index) => (
             <Card
+            style={styles.md}
+
               key={index}
               className="shadow-md hover:shadow-lg transition-shadow"
             >
@@ -100,8 +108,9 @@ const DisplayActivity = () => {
                 key={activity.id}
                 className="md shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => console.log("Selected activity:", activity)}
+                style={styles.md}
               >
-                <span>
+                <span  style={{ width: "60%" }} >
                   <CardHeader>
                     <CardTitle className="text-xl font-bold">
                       {activity.Name}
@@ -119,8 +128,12 @@ const DisplayActivity = () => {
                     <span className="text-gray-600"></span>
                   </CardContent>
                 </span>
-                <span>
-              k
+                <span style={styles.ButtonSpan}>
+                  <Link to={`/CalculateAct${activity.ActivityId}`} style={{ width: "100%" }}>
+                    <Button type="primary" style={{ width: "100%" }}>
+                      Calculer
+                    </Button>
+                  </Link>
                 </span>
               </Card>
             ))

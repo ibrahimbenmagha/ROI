@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
 import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity"
 import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
+import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 
 
 const queryClient = new QueryClient();
@@ -27,6 +28,8 @@ const App = () => (
           <Route path="CreateActivity" element={<CreateActivity/>}/>
           <Route path="/Home" element={<Index />} />
           <Route path="/DisplayActivity" element={<DisplayActivity/>} />
+          <Route path="/CalculateAct1" element={<CalculateAct1/>} />
+
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
