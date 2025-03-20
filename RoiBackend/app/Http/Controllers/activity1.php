@@ -63,7 +63,6 @@ class Activity1 extends Controller
 
     public function insetrIntoTable1(Request $request)
     {
-
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
             'B' => 'required|numeric|min:0', // input de Nombre d’échantillons donnés à chaque médecin

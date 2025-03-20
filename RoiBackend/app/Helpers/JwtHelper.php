@@ -56,7 +56,6 @@ class JWTHelper
             return null;
         }
     }
-
     public static function getTokenUserData(Request $request)
     {
         try {
@@ -65,13 +64,10 @@ class JWTHelper
             }
 
             $token = $request->cookie('access_token') ?? $request->bearerToken();
-            
             if (!$token) {
                 return null;
             }
-            
             return self::parseToken($token);
-            
         } catch (\Exception $e) {
             return null;
         }
@@ -79,7 +75,6 @@ class JWTHelper
 
     private static function parseToken($token)
     {
-        // Decode the JWT token
         $tokenParts = explode('.', $token);
         if (count($tokenParts) != 3) {
             return null;
@@ -89,7 +84,6 @@ class JWTHelper
             ['+', '/'],
             $tokenParts[1]
         ));
-        
         return json_decode($payload, true);
     }
 
@@ -119,11 +113,9 @@ class JWTHelper
             $userData = self::getTokenUserData($request);
             $firstName = $userData['user.first_name'] ?? '';
             $lastName = $userData['user.last_name'] ?? '';
-            
             if ($firstName || $lastName) {
                 return trim($firstName . ' ' . $lastName);
             }
-            
             return null;
         } catch (\Exception $e) {
             return null;

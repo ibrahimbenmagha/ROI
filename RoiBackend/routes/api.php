@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LaboController;
 use App\Http\Controllers\ActivitiesController;
+use App\Http\Controllers\activityitems;
 use App\Http\Controllers\Activity1;
 use App\Http\Controllers\Activity2;
 use App\Http\Controllers\Activity3;
@@ -24,8 +25,6 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
 
-// Routes protégées (nécessitent l'authentification)
-// Route::middleware('auth:api')->group(function () {
 
 // LaboController
 Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
@@ -52,14 +51,14 @@ Route::get('getActivityRepportBYActivityId/{activityListId}', [ActivitiesControl
 Route::get('getActivityRepport', [ActivitiesController::class, 'getActivityRepport']);
 Route::delete('deleteActivityValues/{ActivityByLaboId}', [ActivitiesController::class, 'deleteActivityValues']);
 
-// Activities ROI Calculations
-// for ($i = 1; $i <= 10; $i++) {
-//     Route::post("calculateROIAct$i", ["Activity$i", "calculateROIAct$i"]);
-//     Route::post("insertIntoTable$i", ["Activity$i", "insertIntoTable$i"]);
-//     Route::post("updateActivity{$i}Values", ["Activity$i", "updateActivity{$i}Values"]);
-// }
+
+//ActivityItemsController
+Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
+Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
+Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
+
+
+
 Route::post("calculateROIAct1", [Activity1::class, "calculateROIAct1"]);
 Route::post("insetrIntoTable1", [Activity1::class, "insetrIntoTable1"]);
 Route::post("updateActivity1Values", [Activity1::class, "updateActivity1Values"]);
-
-// });

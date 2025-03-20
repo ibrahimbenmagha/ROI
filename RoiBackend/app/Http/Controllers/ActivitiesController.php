@@ -16,77 +16,11 @@ use Illuminate\Support\Facades\DB;
 class ActivitiesController extends Controller
 {
 
-    // public function CreateActivityByLabo(Request $request) //works
-    // {
-    //     try {
-
-    //         if (ActivityByLabo::where([
-    //             ['ActivityId', $request->ActivityId],
-    //             ['laboId', $request->laboId],
-    //             ['year', $request->year]
-    //         ])->exists()) {
-    //             return response()->json([
-    //                 'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
-    //             ], 409);
-    //         }
-    //         $validated = $request->validate([
-    //             'year' => 'required|integer',
-    //             'laboId' => 'required|integer',
-    //             'ActivityId' => 'required|string',
-    //             'otherActivity' => 'nullable|string'
-    //         ]);
-    //         $activityId = $validated['ActivityId'];
-
-    //         if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
-    //             $newActivity = Activitieslist::create([
-    //                 'Name' => $validated['otherActivity'],
-    //                 'is_custom' => true,
-    //             ]);
-    //             $activityId = $newActivity->id;
-    //             $item = ActivityItem::create([
-    //                 'Name' => "ROI",
-    //                 'ActivityId' => $activityId,
-    //             ]);
-    //         }
-
-    //         $activity = ActivityByLabo::create([
-    //             'year' => $validated['year'],
-    //             'laboId' => $request['laboId'],
-    //             // 'laboId' => $laboId,
-
-    //             'ActivityId' => $activityId,
-    //         ]);
-    //         return response()->json([
-    //             'message' => "Activité créée avec succès.",
-    //             'activity' => $activity
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Échec de la création de l\'activité.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-
     public function CreateActivityByLabo(Request $request)
     {
         try {
 
-
-            // $token = $request->cookie('access_token');
-            // $tokenData = get_token_user_data($token);
-
-            // if (!$tokenData || !isset($tokenData['labo_id'])) {
-            //     return response()->json([
-            //         'message' => 'Information du laboratoire non trouvée dans le token.',$token
-            //     ], 401);
-            // }
-            // $laboId = $tokenData['labo_id'];
-
-
             $laboId = JWTHelper::getLaboId($request);
-
             if (!$laboId) {
                 return response()->json([
                     'message' => 'Information du laboratoire non trouvée dans le token.'

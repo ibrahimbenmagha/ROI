@@ -149,18 +149,16 @@ const Index = () => {
           <Divider style={{ margin: "40px 0 24px" }} />
           <Row justify="space-between" gutter={[16, 16]}>
             <Col>
-              <Space size={8}>
-                <Button icon={<LeftOutlined />}>Précédent</Button>
-                <Button icon={<RightOutlined />}>Suivant</Button>
+              {/* <Space size={8}>
+
                 <Button icon={<QuestionCircleOutlined />}>Aide</Button>
-              </Space>
+              </Space> */}
             </Col>
 
             <Col>
               <Space size={8}>
                 <Button icon={<DownloadOutlined />}>Exporter</Button>
                 <Button icon={<UploadOutlined />}>Importer</Button>
-                <Button icon={<ReloadOutlined />}>Réinitialiser</Button>
                 <Button icon={<PrinterOutlined />}>Imprimer</Button>
               </Space>
             </Col>
