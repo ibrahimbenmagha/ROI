@@ -39,7 +39,9 @@ const CalculateAct2 = () => {
           console.error("Error fetching activities:", error);
         });
     }, []);
-  const validateNumeric = (value, min, max = null) => {
+ 
+ 
+    const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
     if (isNaN(num)) return false;
     if (num < min) return false;
