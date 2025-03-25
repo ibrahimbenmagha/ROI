@@ -15,6 +15,7 @@ class ActivityByLabo extends Model
         'laboId',
         'ActivityId',
         'year',
+        'is_calculated',
     ];
 
     /**

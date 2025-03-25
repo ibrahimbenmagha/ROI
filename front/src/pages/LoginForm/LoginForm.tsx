@@ -12,12 +12,8 @@ export default function LoginForm() {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/auth/login", values,
-      //  { headers: {
-      //     'Authorization': `Bearer ${access_token}`
-      //   }}
-      );
-      const { access_token, user } = response.data;
+      const response = await axiosInstance.post("/auth/login", values);
+      const { access_token} = response.data;
       
       document.cookie = `access_token=${access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;  
       message.success("Logged in successfully");

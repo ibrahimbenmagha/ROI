@@ -204,6 +204,14 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Roi de de l'activite", "ActivityId" => 12],
 
         ]);
+        DB::table('users')->insert([
+            ["FirstName" => "Ibrahim", "LastName" => "Benmagha",'password' => Hash::make('120501@Casahm'),'email' =>"benmagha@gmail.com","Role" =>"Admin"],
+            ["FirstName" => "said", "LastName" => "taghmaoui",'password' => Hash::make('120501@Casahm'),'email' =>"said@gmail.com","Role" =>"Admin"],
+            ["FirstName" => "Rachid", "LastName" => "katorza",'password' => Hash::make('120501@Casahm'),'email' =>"Rachid@gmail.com","Role" =>"Admin"],
+            ["FirstName" => "Yasser", "LastName" => "Eddaoussari",'password' => Hash::make('120501@Casahm'),'email' =>"Yasser@gmail.com","Role" =>"Admin"],
+            
+
+        ]);
 
         $labos = [
             [

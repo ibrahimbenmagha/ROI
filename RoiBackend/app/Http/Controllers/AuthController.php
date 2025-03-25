@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Helpers\JwtHelper; // Adjust the namespace as needed
+
 
 class AuthController extends Controller
 {
@@ -15,37 +18,65 @@ class AuthController extends Controller
     {
         // $this->middleware('auth:api', ['except' => ['login']]);
     }
-    
+
+    public function checkAuth(Request $request)
+    {
+        try {
+            // Ton helper JWT vérifie déjà l'authentification
+            $userData = JWTHelper::getTokenUserData($request);
+
+            if (!$userData) {
+                return response()->json([
+                    'authenticated' => false,
+                    'role' => null
+                ]);
+            }
+
+            return response()->json([
+                'authenticated' => true,
+                'role' => $userData['user.Role'] ?? null,
+                'laboId' => $userData['labo_id'] ?? null,
+                // Ajoute d'autres informations si nécessaire
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'authenticated' => false,
+                'role' => null,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     public function login()
     {
         $credentials = request(['email', 'password']);
-    
+
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         } else {
             $user = Auth::user();
-            if ($user->Role !== 'Laboratoire') {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-            $laboratoire = DB::table('labo')->where('userId', $user->id)->first();
-            $customToken = auth()->claims([
-                'labo_id' => $laboratoire ? $laboratoire->id : null,
-                'user.email' => $user->email,
-                'user.first_name' => $user->FirstName,
-                'user.last_name' => $user->LastName,
-                'user.Role' => $user->Role,
-                'labo.status' => $laboratoire->status,
+            if ($user->Role == 'Laboratoire') {
+                $laboratoire = DB::table('labo')->where('userId', $user->id)->first();
+                $customToken = auth()->claims([
+                    'labo_id' => $laboratoire ? $laboratoire->id : null,
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->FirstName,
+                    'user.last_name' => $user->LastName,
+                    'user.Role' => $user->Role,
+                    'labo.status' => $laboratoire->status,
                 ])->refresh();
-
+                
+            } else if ($user->Role == 'Admin') {
+                $customToken = auth()->claims([
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->FirstName,
+                    'user.last_name' => $user->LastName,
+                    'user.Role' => $user->Role,
+                ])->refresh();
+            }
             return response()->json([
                 'access_token' => $customToken,
-                'user' => [
-                    'id' => $user->id,
-                    'Role' => $user->Role,
-                    'FirstName' => $user->FirstName,
-                    'LastName' => $user->LastName,
-                    'laboratoire_id' => $laboratoire ? $laboratoire->id : null,
-                ]
+                // 'role' => $user->Role,
             ], 200)
                 ->cookie('access_token', $customToken, 60, '/', null, true, true);
         }
@@ -84,11 +115,11 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->logout();
-        
+
         return response()->json(['message' => 'Successfully logged out'], 200)
             ->cookie('access_token', '', -1, '/', null, true, true); // Remove the cookie by setting an expired date
     }
-    
+
 
 
 

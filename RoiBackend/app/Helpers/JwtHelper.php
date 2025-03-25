@@ -6,7 +6,7 @@
 //     try {
 //         // Add debug logging
 //         error_log("Token received: " . substr($token, 0, 20) . "...");
-        
+
 //         // Decode the JWT token
 //         $tokenParts = explode('.', $token);
 //         if (count($tokenParts) != 3) {
@@ -20,19 +20,19 @@
 //             ['+', '/'],
 //             $tokenParts[1]
 //         ));
-        
+
 //         $userData = json_decode($payload, true);
-        
+
 //         // Debug the payload
 //         error_log("Decoded payload: " . json_encode($userData));
-        
+
 //         // Check if labo_id exists
 //         if (!isset($userData['labo_id'])) {
 //             error_log("labo_id not found in token payload");
 //         }
 
 //         return $userData;
-        
+
 //     } catch (\Exception $e) {
 //         error_log("Token parsing error: " . $e->getMessage());
 //         return null;
@@ -47,15 +47,20 @@ use Illuminate\Http\Request;
 
 class JWTHelper
 {
-    public static function getLaboId(Request $request)
+    private static function parseToken($token)
     {
-        try {
-            $userData = self::getTokenUserData($request);
-            return $userData['labo_id'] ?? null;
-        } catch (\Exception $e) {
+        $tokenParts = explode('.', $token);
+        if (count($tokenParts) != 3) {
             return null;
         }
+        $payload = base64_decode(str_replace(
+            ['-', '_'],
+            ['+', '/'],
+            $tokenParts[1]
+        ));
+        return json_decode($payload, true);
     }
+
     public static function getTokenUserData(Request $request)
     {
         try {
@@ -73,18 +78,14 @@ class JWTHelper
         }
     }
 
-    private static function parseToken($token)
+    public static function getLaboId(Request $request)
     {
-        $tokenParts = explode('.', $token);
-        if (count($tokenParts) != 3) {
+        try {
+            $userData = self::getTokenUserData($request);
+            return $userData['labo_id'] ?? null;
+        } catch (\Exception $e) {
             return null;
         }
-        $payload = base64_decode(str_replace(
-            ['-', '_'],
-            ['+', '/'],
-            $tokenParts[1]
-        ));
-        return json_decode($payload, true);
     }
 
     public static function getUserRole(Request $request)

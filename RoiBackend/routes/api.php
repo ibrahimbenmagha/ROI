@@ -23,6 +23,7 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('check', [AuthController::class, 'checkAuth']);
 });
 
 
@@ -62,3 +63,11 @@ Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, '
 Route::post("calculateROIAct1", [Activity1::class, "calculateROIAct1"]);
 Route::post("insetrIntoTable1", [Activity1::class, "insetrIntoTable1"]);
 Route::post("updateActivity1Values", [Activity1::class, "updateActivity1Values"]);
+
+Route::post("calculateROIAct2", [Activity2::class, "calculateROIAct2"]);
+Route::post("insertIntoTable2", [Activity2::class, "insertIntoTable2"]);
+Route::post("updateActivity2Values", [Activity2::class, "updateActivity2Values"]);
+
+Route::post("calculateROIAct2", [Activity2::class, "calculateROIAct2"]);
+Route::post("insertIntoTable3", [Activity3::class, "insertIntoTable3"]);
+Route::post("updateActivity3Values", [Activity3::class, "updateActivity3Values"]);

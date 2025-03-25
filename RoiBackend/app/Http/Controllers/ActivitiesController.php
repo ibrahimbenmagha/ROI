@@ -180,7 +180,7 @@ class ActivitiesController extends Controller
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
         $id = $request['id'];
-        $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id)
+        $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id )
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')
@@ -204,6 +204,7 @@ class ActivitiesController extends Controller
     public function getAllActivityByLaboInfosByLaboId(Request $request, $laboId)
     {
         $Activities = ActivityByLabo::where('laboId', $laboId)
+            ->where('is_calculated' , false)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')

@@ -9,8 +9,12 @@ import {
   Alert,
   Spin,
 } from "antd";
-import { CalculatorOutlined, ReloadOutlined, CheckCircleOutlined} from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import {
+  CalculatorOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TheHeader from "../Header/Header";
@@ -38,6 +42,20 @@ const CalculateAct1 = () => {
   const [items, setItems] = useState([]);
 
 
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    axiosInstance
+      .get("getActivityItemsByActivityId/1")
+      .then((response) => {
+        setItems(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching activities:", error);
+      });
+  }, []);
+
   const handleReset = () => {
     setNumDoctors(0);
     setSamplesPerDoctor(0);
@@ -55,7 +73,6 @@ const CalculateAct1 = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Empêche la soumission par défaut du formulaire
 
-    // Assurez-vous que les données sont bien chargées
     if (items.length === 0) {
       alert("Les données nécessaires ne sont pas encore disponibles.");
       return;
@@ -72,7 +89,6 @@ const CalculateAct1 = () => {
       K: valuePerPatient,
       M: costPerSample,
       N: fixedCosts,
-      ActByLabo: 1, // Remplacez par l'ID réel du laboratoire
       id_A: items[0]?.id, // Utilisation de l'ID dynamique de items
       id_B: items[1]?.id, // Utilisation de l'ID dynamique de items
       id_D: items[2]?.id, // Utilisation de l'ID dynamique de items
@@ -93,8 +109,9 @@ const CalculateAct1 = () => {
       if (response.status === 201) {
         // alert("Les données ont été insérées avec succès.");
         message.success("Les données ont été insérées avec succès.");
-        handleReset();
+        navigate("/DisplayActivity");
 
+        // handleReset();
       }
     } catch (error) {
       // Gestion des erreurs
@@ -111,16 +128,7 @@ const CalculateAct1 = () => {
     }
   };
 
-  useEffect(() => {
-    axiosInstance
-      .get("getActivityItemsByActivityId/1")
-      .then((response) => {
-        setItems(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching activities:", error);
-      });
-  }, []);
+
 
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
@@ -173,8 +181,6 @@ const CalculateAct1 = () => {
       setLoading(false);
     }
   };
-
-
 
   return (
     <Layout className="min-h-screen">
@@ -391,8 +397,7 @@ const CalculateAct1 = () => {
                     <Spin size="small" />
                   ) : (
                     <>
-                     
-                      <CheckCircleOutlined className="mr-2"/>
+                      <CheckCircleOutlined className="mr-2" />
                       Inserer les donnees
                     </>
                   )}

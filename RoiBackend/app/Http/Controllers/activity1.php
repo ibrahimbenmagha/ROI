@@ -106,8 +106,8 @@ class Activity1 extends Controller
         $L = $J * $K;
         $O = ($M * $C) + $N;
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
-
-        $ActByLabo = $request['ActByLabo'];
+        $ActByLabo = $request->cookie('activityId');
+        // $ActByLabo = $request['ActByLabo'];
         $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
 
 
@@ -127,16 +127,16 @@ class Activity1 extends Controller
        
         $values = ActivityItemValue::insert(
             values: [
-                ['activityItemId' => $id_A, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $A],
-                ['activityItemId' => $id_B, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $B],
-                ['activityItemId' => $id_D, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $D],
-                ['activityItemId' => $id_E, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $E],
-                ['activityItemId' => $id_K, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $K],
-                ['activityItemId' => $id_M, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $M],
-                ['activityItemId' => $id_N, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $N],
-                ['activityItemId' => $id_G, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $G],
-                ['activityItemId' => $id_I, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $I],
-                ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $request['ActByLabo'], 'value' => $ROI],
+                ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
+                ['activityItemId' => $id_B, 'ActivityByLaboId' => $ActByLabo, 'value' => $B],
+                ['activityItemId' => $id_D, 'ActivityByLaboId' => $ActByLabo, 'value' => $D],
+                ['activityItemId' => $id_E, 'ActivityByLaboId' => $ActByLabo, 'value' => $E],
+                ['activityItemId' => $id_K, 'ActivityByLaboId' => $ActByLabo, 'value' => $K],
+                ['activityItemId' => $id_M, 'ActivityByLaboId' => $ActByLabo, 'value' => $M],
+                ['activityItemId' => $id_N, 'ActivityByLaboId' => $ActByLabo, 'value' => $N],
+                ['activityItemId' => $id_G, 'ActivityByLaboId' => $ActByLabo, 'value' => $G],
+                ['activityItemId' => $id_I, 'ActivityByLaboId' => $ActByLabo, 'value' => $I],
+                ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
             ]
         );
         return response()->json([

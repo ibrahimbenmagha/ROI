@@ -74,14 +74,9 @@ class activity2 extends Controller
         $id_H = $request['id_H'];
         $id_J = $request['id_J'];
         $id_K = $request['id_K'];
-        $id_C = $request['id_C'];
-        $id_E = $request['id_E'];
-        $id_G = $request['id_G'];
-        $id_I = $request['id_I'];
-        $id_L = $request['id_L'];
         $id_ROI = $request['id_ROI'];
 
-        $D = $validated['D'] / 100;
+        $D = $validated['D'] / 100; 
 
         $A = $validated['A'];
         $B = $validated['B'];
@@ -100,7 +95,9 @@ class activity2 extends Controller
 
         $ROI = ($L > 0) ? round($I / $L, 4) : 0;
 
-        $ActByLabo = $request['ActByLabo'];
+        // $ActByLabo = $request['ActByLabo'];
+        $ActByLabo = $request->cookie('activityId');
+        
         $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
 
         if(!($verify===2)){
@@ -132,7 +129,7 @@ class activity2 extends Controller
         ], 201);
     }
 
-    public function updateActivity2Values(Request $request)
+    public function updateActivity2Values(Request $request)     
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0',
