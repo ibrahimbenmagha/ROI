@@ -97,9 +97,9 @@ class activity3 extends Controller
             $ROI = ($O > 0) ? round($L / $O, 4) : 0; // Retour sur investissement (ROI)
 
             
-            $activityByLaboId = $request->cookie('activityId');
+            $activityByLaboId = $request->cookie('activityId'); 
             $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if(!($verify===3)){
+            if(!($verify==3)){
                 return response()->json([
                     'message' => 'value/activity not match',
                     'id' =>$verify

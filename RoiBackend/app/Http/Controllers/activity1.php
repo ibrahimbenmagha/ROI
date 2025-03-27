@@ -61,7 +61,7 @@ class Activity1 extends Controller
         ], 201);
     }
 
-    public function insetrIntoTable1(Request $request)
+    public function insertIntoTable1(Request $request)
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
@@ -106,8 +106,8 @@ class Activity1 extends Controller
         $L = $J * $K;
         $O = ($M * $C) + $N;
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
+        
         $ActByLabo = $request->cookie('activityId');
-        // $ActByLabo = $request['ActByLabo'];
         $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
 
 

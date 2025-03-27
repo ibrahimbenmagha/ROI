@@ -121,6 +121,7 @@ const CalculateAct1 = () => {
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
+        console.log(response)
       } else {
         // Afficher une erreur de requête
         alert("Une erreur est survenue lors de l'envoi de la requête.");

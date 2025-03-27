@@ -46,6 +46,7 @@ namespace App\Helpers;
 use Illuminate\Http\Request;
 
 class JWTHelper
+
 {
     private static function parseToken($token)
     {

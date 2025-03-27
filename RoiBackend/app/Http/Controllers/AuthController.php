@@ -112,13 +112,22 @@ class AuthController extends Controller
     }
 
 
-    public function logout()
-    {
-        auth()->logout();
+   public function logout(Request $request)
+   {
+       try {
+           // Invalide le token actuel
+           auth()->logout();
+            $token = $request->cookie('access_token');
+            JWTAuth::removeToken($token);
+           return response()->json(['message' => 'Successfully logged out'], 200);
+            //    ->cookie('access_token', '', -1, '/', null, true, true); // Supprime le cookie
+       } catch (\Exception $e) {
+           return response()->json(['message' => 'Failed to logout, please try again. Error: ' . $e->getMessage()], 500);
+       }
+   }
 
-        return response()->json(['message' => 'Successfully logged out'], 200)
-            ->cookie('access_token', '', -1, '/', null, true, true); // Remove the cookie by setting an expired date
-    }
+
+    
 
 
 

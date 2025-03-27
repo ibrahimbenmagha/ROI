@@ -11,7 +11,7 @@ const LoadingComponent = () => (
       alignItems: "center",
       height: "100vh",
     }}
-  >
+  > 
     Chargement...
   </div>
 );

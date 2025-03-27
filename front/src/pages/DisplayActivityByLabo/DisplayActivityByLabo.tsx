@@ -8,18 +8,18 @@ import TheHeader from "../Header/Header";
 import Head from "../../components/Head";
 
 const storeActivityIdInCookie = (id) => {
-  // Stocke l'ID dans un cookie avec une expiration d'1 heure
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
 };
 
 const DisplayActivity = () => {
-  const [activities, setActivities] = useState([]); // Ajouter le type Activity
+  const [activities, setActivities] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axiosInstance
-      .get("getAllActivityByLaboInfosByLaboId/1")
+      .get("getAllActivityByLaboInfosByLaboId")
+          //getAllActivityByLaboInfosByLaboId
       .then((response) => {
         setActivities(response.data);
         setLoading(false);

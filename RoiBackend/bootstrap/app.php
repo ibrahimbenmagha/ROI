@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register the auth middleware
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
+            'check.role' => \App\Http\Middleware\CheckUserRole::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

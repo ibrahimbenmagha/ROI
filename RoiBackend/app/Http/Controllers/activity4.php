@@ -89,7 +89,7 @@ class activity4 extends Controller
 
             $ROI = ($N > 0) ? round($K / $N, 4) : 0;
 
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
             $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
 
             if (!($verify === 4)) {
@@ -169,7 +169,8 @@ class activity4 extends Controller
             $I = ($G * $H) + $KOL;// Nombre de patients incrémentaux gagnés
             $K = $I * $J;// Ventes incrémentales générées
             $N = ($L * $A) + $M;// Coût total du programme
-            $activityByLaboId = $request['ActivityByLaboId'];
+            // $activityByLaboId = $request['ActivityByLaboId'];
+
 
             //Vérification pour éviter division par zéro
             $ROI = ($N > 0) ? round($K / $N, 4) : 0;
@@ -185,10 +186,13 @@ class activity4 extends Controller
                 ['activityItemId' => $request['id_M'], 'value' => $M],
                 ['activityItemId' => $request['id_ROI'], 'value' => $ROI],
             ];
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
+            $activityByLaboId = $request->cookie('activityId');
+
+            $verify = ActivityByLabo::where('id', $activityByLaboId)->select('ActivityId');
             if(!($verify===4)){
                 return response()->json([
                     'message' => 'value/activity not match',
+                    'activityId' => $activityByLaboId,
                     'id' =>$verify
                 ], 409);
             }

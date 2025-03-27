@@ -5,7 +5,7 @@ import {
   ReloadOutlined, 
   CheckCircleOutlined 
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -30,7 +30,7 @@ const CalculateAct3 = () => {
   const [calculated, setCalculated] = useState(false);
   const [calculationResult, setCalculationResult] = useState(null);
   const [items, setItems] = useState([]);
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     axiosInstance
@@ -171,7 +171,7 @@ const CalculateAct3 = () => {
     if (response.status === 201) {
       // alert("Les données ont été insérées avec succès.");
       message.success("Les données ont été insérées avec succès.");
-      handleReset();
+      navigate("/DisplayActivity");
     }
   } catch (error) { 
     // Gestion des erreurs
@@ -196,7 +196,7 @@ const CalculateAct3 = () => {
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
-              <Title level={4}>Paramètres de calcul</Title>
+              <Title level={4} style={{textAlign: "center"}}>Mailing</Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -417,7 +417,7 @@ const CalculateAct3 = () => {
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
                   </Button>
-                  <Link to="/">
+                  <Link to="/DisplayActivity">
                     <Button variant="secondary">Retour</Button>
                   </Link>
                 </div>

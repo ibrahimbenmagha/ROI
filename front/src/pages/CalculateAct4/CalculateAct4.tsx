@@ -110,6 +110,9 @@ const CalculateAct4 = () => {
       incrementalSales: K,
       totalCost: N,
     });
+
+    // Marquer le calcul comme terminé
+    setCalculated(true);
   };
 
   const handleReset = () => {
@@ -123,6 +126,8 @@ const CalculateAct4 = () => {
     setCostPerDoctor(0);
     setFixedCosts(0);
     setCalculationResult(null);
+    // Réinitialiser également l'état de calcul
+    setCalculated(false);
   };
 
   const handleSubmit = async (e) => {
@@ -155,7 +160,7 @@ const CalculateAct4 = () => {
     };
 
     try {
-      const response = await axiosInstance.post("insertIntoTable2", formData);
+      const response = await axiosInstance.post("insertIntoTable4", formData);
       console.log(response.status);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
@@ -184,9 +189,9 @@ const CalculateAct4 = () => {
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          <form>
+          <form  onSubmit={handleSubmit}>
             <Card>
-              <Title level={4}>Paramètres de calcul</Title>
+              <Title level={4} style={{textAlign:"center"}}>Conférences</Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -196,7 +201,7 @@ const CalculateAct4 = () => {
                     htmlFor="numDoctors"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre de médecins participants à la conférence (A)
+                    Nombre de médecins participants à la conférence 
                   </label>
                   <Input
                     id="numDoctors"
@@ -214,7 +219,7 @@ const CalculateAct4 = () => {
                     htmlFor="percentRemember"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage de médecins ayant retenu le message (B)
+                    Pourcentage de médecins ayant retenu le message
                   </label>
                   <Input
                     id="percentRemember"
@@ -233,7 +238,7 @@ const CalculateAct4 = () => {
                     htmlFor="percentPositive"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage de médecins ayant une perception positive (D)
+                    Pourcentage de médecins ayant une perception positive 
                   </label>
                   <Input
                     id="percentPositive"
@@ -274,7 +279,7 @@ const CalculateAct4 = () => {
                     htmlFor="patientsPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre moyen de nouveaux patients prescrits par médecin (H)
+                    Nombre moyen de nouveaux patients prescrits par médecin 
                   </label>
                   <Input
                     id="patientsPerDoctor"
@@ -294,7 +299,7 @@ const CalculateAct4 = () => {
                     htmlFor="kolAdjustment"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Ajustement lié à l'influence des leaders d'opinion (KOL)
+                    Ajustement lié à l'influence des leaders d'opinion 
                   </label>
                   <Input
                     id="kolAdjustment"
@@ -312,7 +317,7 @@ const CalculateAct4 = () => {
                     htmlFor="valuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur de revenu générée par patient incrémental € (J)
+                    Valeur de revenu générée par patient incrémental €
                   </label>
                   <Input
                     id="valuePerPatient"
@@ -330,7 +335,7 @@ const CalculateAct4 = () => {
                     htmlFor="costPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût variable par médecin € (L)
+                    Coût variable par médecin € 
                   </label>
                   <Input
                     id="costPerDoctor"
@@ -348,7 +353,7 @@ const CalculateAct4 = () => {
                     htmlFor="fixedCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût fixe total du programme € (M)
+                    Coût fixe total du programme € 
                   </label>
                   <Input
                     id="fixedCosts"
@@ -392,7 +397,7 @@ const CalculateAct4 = () => {
                   ) : (
                     <>
                       <CheckCircleOutlined className="mr-2" />
-                      Inserer les donnees
+                      Insérer les données
                     </>
                   )}
                 </Button>
@@ -402,7 +407,7 @@ const CalculateAct4 = () => {
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
                   </Button>
-                  <Link to="/">
+                  <Link to="/DisplayActivity">
                     <Button variant="secondary">Retour</Button>
                   </Link>
                 </div>

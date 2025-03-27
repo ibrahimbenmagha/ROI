@@ -201,8 +201,15 @@ class ActivitiesController extends Controller
         return response()->json($ActivitiesByLaboInfos, 200);
     }
 
-    public function getAllActivityByLaboInfosByLaboId(Request $request, $laboId)
+    public function getAllActivityByLaboInfosByLaboId(Request $request)
     {
+        $laboId = JWTHelper::getLaboId($request);
+        if (!$laboId) {
+            return response()->json([
+                'message' => 'Information du laboratoire non trouvée dans le token.'
+            ], 401);
+        }
+
         $Activities = ActivityByLabo::where('laboId', $laboId)
             ->where('is_calculated' , false)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
@@ -218,7 +225,9 @@ class ActivitiesController extends Controller
                 'labo.Name as LaboName',
                 'users.FirstName',
                 'users.LastName'
-            )->get();
+            )->orderBy('activitieslist.id')
+            ->get();
+
 
         if ($Activities->isNotEmpty()) {
             return response()->json($Activities, 200);

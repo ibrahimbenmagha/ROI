@@ -6,19 +6,24 @@ import { HomeOutlined } from "@ant-design/icons";
 
 import axiosInstance from "../../axiosConfig";
 
+
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
 const Head = () => {
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     try {
-      // await axiosInstance.post("/auth/logout");
-      navigate("/Login");
+      await axiosInstance.post("/auth/logout");
+
+      message.success("Logged out successfully");
+      navigate("/login");
     } catch (error) {
-      console.error("Erreur lors de la déconnexion", error);
+      message.error("Failed to logout, please try again");
     }
+
   };
-  const navigate = useNavigate();
 
   return (
     <Header
