@@ -16,6 +16,7 @@ import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
 import CalculateAct3 from "./pages/CalculateAct3/CalculateAct3";
+import CalculateAct4 from "./pages/CalculateAct4/CalculateAct4";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import DashboardLogin from "./pages/Dashboard/DashboardLogin";
@@ -99,6 +100,15 @@ const App = () => (
             element={
               <LaboRoute>
                 <CalculateAct3 />
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct4"
+            element={
+              <LaboRoute>
+                <CalculateAct4 />
               </LaboRoute>
             }
           />

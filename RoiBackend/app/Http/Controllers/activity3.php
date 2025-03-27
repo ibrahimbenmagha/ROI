@@ -138,8 +138,6 @@ class activity3 extends Controller
             ], 500);
         }
     }
-
-
     public function updateActivity3Values(Request $request)
     {
         $validated = $request->validate([

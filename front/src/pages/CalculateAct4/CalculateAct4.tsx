@@ -1,47 +1,44 @@
 import React, { useState, useEffect } from "react";
 import {
+  Layout,
   Typography,
   Card,
   Divider,
   Statistic,
   Alert,
-  Layout,
   message,
 } from "antd";
-import {
-  CalculatorOutlined,
-  ReloadOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
+import { CalculatorOutlined, ReloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import TheHeader from "../Header/Header";
 import axiosInstance from "../../axiosConfig";
+import TheHeader from "../Header/Header";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
-const CalculateAct2 = () => {
-  const [numDoctors, setNumDoctors] = useState(); // A - Nombre de médecins participant à l'étude
-  const [patientsPerDoctor, setPatientsPerDoctor] = useState(); // B - Nombre moyen de patients inscrits par médecin
-  const [percentContinue, setPercentContinue] = useState(); // D - Pourcentage moyen de patients qui continuent le traitement
-  const [newPatientsPerDoctor, setNewPatientsPerDoctor] = useState(); // F - Nombre de nouveaux patients traités par médecin
-  const [valuePerPatient, setValuePerPatient] = useState(); // H - Valeur du revenu par patient incrémental
-  const [costPerDoctor, setCostPerDoctor] = useState(); // J - Coût variable par médecin
-  const [fixedCosts, setFixedCosts] = useState(); // K - Coût fixe total de l'étude
+const CalculateAct4 = () => {
+  const [numDoctors, setNumDoctors] = useState(0); // A - Nombre de médecins participants à la conférence
+  const [percentRemember, setPercentRemember] = useState(0); // B - Pourcentage de médecins ayant retenu le message
+  const [percentPositive, setPercentPositive] = useState(0); // D - Pourcentage de médecins ayant une perception positive
+  const [percentPrescribing, setPercentPrescribing] = useState(0); // F - Pourcentage de médecins qui prescrivent à de nouveaux patients
+  const [patientsPerDoctor, setPatientsPerDoctor] = useState(0); // H - Nombre moyen de nouveaux patients prescrits par médecin
+  const [kolAdjustment, setKolAdjustment] = useState(0); // KOL - Ajustement lié à l'influence des leaders d'opinion
+  const [valuePerPatient, setValuePerPatient] = useState(0); // J - Valeur de revenu générée par patient incrémental
+  const [costPerDoctor, setCostPerDoctor] = useState(0); // L - Coût variable par médecin
+  const [fixedCosts, setFixedCosts] = useState(0); // M - Coût fixe total du programme
 
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false); // Nouvel état pour suivre l'état du calcul
   const [calculationResult, setCalculationResult] = useState(null);
-  const [items, setItems] = useState();
-
+  const [items, setItems] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     axiosInstance
-      .get("getActivityItemsByActivityId/2")
+      .get("getActivityItemsByActivityId/4")
       .then((response) => {
         setItems(response.data);
       })
@@ -58,70 +55,74 @@ const CalculateAct2 = () => {
     return true;
   };
 
-  const calculateRoi = async () => {
+  const calculateRoi = () => {
+    // Validation simple
     if (!validateNumeric(numDoctors, 0))
       return alert("Nombre de médecins invalide");
+    if (!validateNumeric(percentRemember, 0, 100))
+      return alert("Pourcentage de médecins ayant retenu le message invalide");
+    if (!validateNumeric(percentPositive, 0, 100))
+      return alert(
+        "Pourcentage de médecins ayant une perception positive invalide"
+      );
+    if (!validateNumeric(percentPrescribing, 0, 100))
+      return alert("Pourcentage de médecins qui prescrivent invalide");
     if (!validateNumeric(patientsPerDoctor, 0))
       return alert("Nombre de patients par médecin invalide");
-    if (!validateNumeric(percentContinue, 0, 100))
-      return alert("Pourcentage de patients continuant invalide");
-    if (!validateNumeric(newPatientsPerDoctor, 0))
-      return alert("Nombre de nouveaux patients par médecin invalide");
+    if (!validateNumeric(kolAdjustment, 0))
+      return alert("Ajustement KOL invalide");
     if (!validateNumeric(valuePerPatient, 0))
       return alert("Valeur par patient invalide");
     if (!validateNumeric(costPerDoctor, 0))
       return alert("Coût par médecin invalide");
     if (!validateNumeric(fixedCosts, 0)) return alert("Coûts fixes invalides");
 
-    setLoading(true);
+    // Conversion des pourcentages
 
-    try {
-      78;
+    // Variables
+    const A = numDoctors;
+    const B = percentRemember / 100;
+    const D = percentPositive / 100;
+    const F = percentPrescribing / 100;
+    const H = patientsPerDoctor;
+    const KOL = kolAdjustment;
+    const J = valuePerPatient;
+    const L = costPerDoctor;
+    const M = fixedCosts;
 
-      const A = numDoctors;
-      const B = patientsPerDoctor;
-      const D = percentContinue;
-      const F = newPatientsPerDoctor;
-      const H = valuePerPatient;
-      const J = costPerDoctor;
-      const K = fixedCosts;
+    // Calculs
+    const C = A * B; // Nombre de médecins exposés au message
+    const E = C * D; // Nombre de médecins ayant une perception positive
+    const G = E * F; // Nombre de médecins prescrivant à de nouveaux patients
+    const I = G * H + KOL; // Nombre de patients incrémentaux gagnés
+    const K = I * J; // Ventes incrémentales générées
+    const N = L * A + M; // Coût total du programme
 
-      // Calculs
-      const C = A * B; // Nombre total de patients inscrits
-      const E = C * D; // Nombre de patients poursuivant le traitement après l'étude
-      const G = A * (E / A + F); // Patients incrémentaux obtenus grâce à l'étude
-      const I = G * H; // Ventes incrémentales
-      const L = J * A + K; // Coût total du programme
+    // Vérification pour éviter la division par zéro
+    const ROI = N > 0 ? (K / N) * 100 : 0;
 
-      // Vérification pour éviter la division par zéro
-      const ROI = L > 0 ? (I / L) * 100 : 0;
-
-      setCalculationResult({
-        roi: ROI,
-        totalPatients: C,
-        continuingPatients: E,
-        incrementalPatients: G,
-        incrementalSales: I,
-        totalCost: L,
-      });
-      setCalculated(true); // Set to true once the calculation is done
-    } catch (error) {
-      alert("Error calculating ROI. Please try again.");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    setCalculationResult({
+      roi: ROI,
+      doctorsExposed: C,
+      doctorsPositive: E,
+      doctorsPrescribing: G,
+      incrementalPatients: I,
+      incrementalSales: K,
+      totalCost: N,
+    });
   };
 
   const handleReset = () => {
-    setNumDoctors();
-    setPatientsPerDoctor();
-    setPercentContinue();
-    setNewPatientsPerDoctor();
-    setValuePerPatient();
-    setCostPerDoctor();
-    setFixedCosts();
-    setCalculationResult();
+    setNumDoctors(0);
+    setPercentRemember(0);
+    setPercentPositive(0);
+    setPercentPrescribing(0);
+    setPatientsPerDoctor(0);
+    setKolAdjustment(0);
+    setValuePerPatient(0);
+    setCostPerDoctor(0);
+    setFixedCosts(0);
+    setCalculationResult(null);
   };
 
   const handleSubmit = async (e) => {
@@ -130,53 +131,48 @@ const CalculateAct2 = () => {
       alert("Veuillez d'abord ajouter des éléments d'activité");
       return;
     }
-
     const formData = {
       A: numDoctors,
-      B: patientsPerDoctor,
-      D: percentContinue,
-      F: newPatientsPerDoctor,
-      H: valuePerPatient,
-      J: costPerDoctor,
-      K: fixedCosts,
+      B: percentRemember,
+      D: percentPositive,
+      F: percentPrescribing,
+      H: patientsPerDoctor,
+      KOL: kolAdjustment,
+      J: valuePerPatient,
+      L: costPerDoctor,
+      M: fixedCosts,
 
       id_A: items[0]?.id,
       id_B: items[1]?.id,
       id_D: items[2]?.id,
       id_F: items[3]?.id,
       id_H: items[4]?.id,
-      id_J: items[5]?.id,
-      id_K: items[6]?.id,
-      id_ROI: items[7]?.id,
+      id_KOL: items[5]?.id,
+      id_J: items[6]?.id,
+      id_L: items[7]?.id,
+      id_M: items[8]?.id,
+      id_ROI: items[9]?.id,
     };
 
     try {
-      // Effectuer l'appel API avec axios pour envoyer les données
       const response = await axiosInstance.post("insertIntoTable2", formData);
       console.log(response.status);
-      // Check response status
       if (response.status === 201) {
-        // If successful, show success message
         message.success("Les données ont été insérées avec succès.");
-          navigate("/DisplayActivity");
+        navigate("/DisplayActivity");
       } else {
-        // In case of unexpected status code
         alert("Une erreur est survenue lors de l'insertion.");
       }
     } catch (error) {
       console.log(error);
-      // Ensure the error response is available
       if (error.response) {
-        // Show backend error message if available
         alert(
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
       } else if (error.request) {
-        // If no response received from the server
         alert("Aucune réponse reçue du serveur.");
       } else {
-        // If an error occurred while setting up the request
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
@@ -185,12 +181,12 @@ const CalculateAct2 = () => {
   return (
     <Layout className="min-h-screen">
       <TheHeader />
+
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          {" "}
-          <form type="submit" onSubmit={handleSubmit}>
+          <form>
             <Card>
-              <Title level={4}>Essai clinique </Title>
+              <Title level={4}>Paramètres de calcul</Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -200,7 +196,7 @@ const CalculateAct2 = () => {
                     htmlFor="numDoctors"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre de médecins participant à l'étude (A)
+                    Nombre de médecins participants à la conférence (A)
                   </label>
                   <Input
                     id="numDoctors"
@@ -212,13 +208,73 @@ const CalculateAct2 = () => {
                   />
                 </div>
 
-                {/* B - Patients par médecin */}
+                {/* B - % médecins retenus */}
+                <div>
+                  <label
+                    htmlFor="percentRemember"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Pourcentage de médecins ayant retenu le message (B)
+                  </label>
+                  <Input
+                    id="percentRemember"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentRemember}
+                    onChange={(e) => setPercentRemember(Number(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* D - % médecins positifs */}
+                <div>
+                  <label
+                    htmlFor="percentPositive"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Pourcentage de médecins ayant une perception positive (D)
+                  </label>
+                  <Input
+                    id="percentPositive"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPositive}
+                    onChange={(e) => setPercentPositive(Number(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* F - % médecins prescripteurs */}
+                <div>
+                  <label
+                    htmlFor="percentPrescribing"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Pourcentage de médecins qui prescrivent à de nouveaux
+                    patients (F)
+                  </label>
+                  <Input
+                    id="percentPrescribing"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPrescribing}
+                    onChange={(e) =>
+                      setPercentPrescribing(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* H - Patients par médecin */}
                 <div>
                   <label
                     htmlFor="patientsPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre moyen de patients inscrits par médecin (B)
+                    Nombre moyen de nouveaux patients prescrits par médecin (H)
                   </label>
                   <Input
                     id="patientsPerDoctor"
@@ -232,53 +288,31 @@ const CalculateAct2 = () => {
                   />
                 </div>
 
-                {/* D - % Patients continuant */}
+                {/* KOL - Ajustement leaders d'opinion */}
                 <div>
                   <label
-                    htmlFor="percentContinue"
+                    htmlFor="kolAdjustment"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage moyen de patients qui continuent le traitement
-                    (D)
+                    Ajustement lié à l'influence des leaders d'opinion (KOL)
                   </label>
                   <Input
-                    id="percentContinue"
+                    id="kolAdjustment"
                     type="number"
                     min="0"
-                    max="100"
-                    value={percentContinue}
-                    onChange={(e) => setPercentContinue(Number(e.target.value))}
+                    value={kolAdjustment}
+                    onChange={(e) => setKolAdjustment(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
-                {/* F - Nouveaux patients */}
-                <div>
-                  <label
-                    htmlFor="newPatientsPerDoctor"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Nombre de nouveaux patients traités par médecin (F)
-                  </label>
-                  <Input
-                    id="newPatientsPerDoctor"
-                    type="number"
-                    min="0"
-                    value={newPatientsPerDoctor}
-                    onChange={(e) =>
-                      setNewPatientsPerDoctor(Number(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                {/* H - Valeur patient */}
+                {/* J - Valeur patient */}
                 <div>
                   <label
                     htmlFor="valuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur du revenu par patient incrémental € (H)
+                    Valeur de revenu générée par patient incrémental € (J)
                   </label>
                   <Input
                     id="valuePerPatient"
@@ -290,14 +324,13 @@ const CalculateAct2 = () => {
                   />
                 </div>
 
-                {/* J - Coût par médecin */}
-
+                {/* L - Coût par médecin */}
                 <div>
                   <label
                     htmlFor="costPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût variable par médecin € (J)
+                    Coût variable par médecin € (L)
                   </label>
                   <Input
                     id="costPerDoctor"
@@ -309,13 +342,13 @@ const CalculateAct2 = () => {
                   />
                 </div>
 
-                {/* K - Coûts fixes */}
+                {/* M - Coûts fixes */}
                 <div>
                   <label
                     htmlFor="fixedCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût fixe total de l'étude € (K)
+                    Coût fixe total du programme € (M)
                   </label>
                   <Input
                     id="fixedCosts"
@@ -369,7 +402,7 @@ const CalculateAct2 = () => {
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
                   </Button>
-                  <Link to="../DisplayActivity">
+                  <Link to="/">
                     <Button variant="secondary">Retour</Button>
                   </Link>
                 </div>
@@ -412,15 +445,15 @@ const CalculateAct2 = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                     <Card>
                       <Statistic
-                        title="Total Patients Inscrits"
-                        value={calculationResult.totalPatients}
+                        title="Médecins Exposés"
+                        value={calculationResult.doctorsExposed}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Patients Poursuivant"
-                        value={calculationResult.continuingPatients}
+                        title="Médecins Positifs"
+                        value={calculationResult.doctorsPositive}
                         precision={0}
                       />
                     </Card>
@@ -452,4 +485,4 @@ const CalculateAct2 = () => {
   );
 };
 
-export default CalculateAct2;
+export default CalculateAct4;

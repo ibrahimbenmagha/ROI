@@ -36,11 +36,11 @@ class activity2 extends Controller
         $K = $validated['K'];
 
         // Calculs
-        $C = $A * $B;// Nombre total de patients inscrits
-        $E = $C * $D;// Nombre de patients poursuivant le traitement après l'étude
-        $G = $A * ($E + $F);// Patients incrémentaux obtenus grâce à l’étude
-        $I = $G * $H;// Ventes incrémentales
-        $L = ($J * $A) + $K;// Coût total du programme
+        $C = $A * $B; // Nombre total de patients inscrits
+        $E = $C * $D; // Nombre de patients poursuivant le traitement après l'étude
+        $G = $A * ($E + $F); // Patients incrémentaux obtenus grâce à l’étude
+        $I = $G * $H; // Ventes incrémentales
+        $L = ($J * $A) + $K; // Coût total du programme
 
         // Vérification pour éviter la division par zéro
         $ROI = ($L > 0) ? round($I / $L, 4) : 0;
@@ -56,7 +56,7 @@ class activity2 extends Controller
     }
 
     public function insertIntoTable2(Request $request)
-    {
+    {   try{
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre de médecins participant à l'étude
             'B' => 'required|numeric|min:0', // Nombre moyen de patients inscrits par médecin
@@ -76,7 +76,7 @@ class activity2 extends Controller
         $id_K = $request['id_K'];
         $id_ROI = $request['id_ROI'];
 
-        $D = $validated['D'] / 100; 
+        $D = $validated['D'] / 100;
 
         $A = $validated['A'];
         $B = $validated['B'];
@@ -85,25 +85,22 @@ class activity2 extends Controller
         $J = $validated['J'];
         $K = $validated['K'];
 
-        
+
         // Calculs
         $C = $A * $B;       // Nombre total de patients inscrits
         $E = $B * $D;       // Nombre de patients poursuivant le traitement après l'étude
         $G = $A * ($E + $F); // Patients incrémentaux obtenus grâce à l’étude
         $I = $G * $H;       // Ventes incrémentales
         $L = ($J * $A) + $K; // Coût total du programme
-
         $ROI = ($L > 0) ? round($I / $L, 4) : 0;
 
-        // $ActByLabo = $request['ActByLabo'];
-        $ActByLabo = $request->cookie('activityId');
-        
-        $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
 
-        if(!($verify===2)){
+        $ActByLabo = $request->cookie('activityId');
+        $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
+        if (!($verify === 2)) {
             return response()->json([
                 'message' => 'value/activity not match',
-                'id' =>$verify
+                'id' => $verify
             ], 409);
         }
         if (ActivityItemValue::where('ActivityByLaboId', $ActByLabo)->exists()) {
@@ -113,7 +110,7 @@ class activity2 extends Controller
         }
 
         // Insertion des valeurs dans la table ActivityItemValue
-        $values = ActivityItemValue::insert([
+        $values = [
             ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
             ['activityItemId' => $id_B, 'ActivityByLaboId' => $ActByLabo, 'value' => $B],
             ['activityItemId' => $id_D, 'ActivityByLaboId' => $ActByLabo, 'value' => $D],
@@ -122,14 +119,20 @@ class activity2 extends Controller
             ['activityItemId' => $id_J, 'ActivityByLaboId' => $ActByLabo, 'value' => $J],
             ['activityItemId' => $id_K, 'ActivityByLaboId' => $ActByLabo, 'value' => $K],
             ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
-        ]);
-
+        ];
+        ActivityItemValue::insert($values);
         return response()->json([
-            'message' => 'Data successfully inserted'
+            'message' => 'Values inserted successfully'
         ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            "message" => 'Failed to insert values',
+            "error" => $e->getMessage()
+        ], 500);
+    }
     }
 
-    public function updateActivity2Values(Request $request)     
+    public function updateActivity2Values(Request $request)
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0',
@@ -171,10 +174,10 @@ class activity2 extends Controller
         ];
         $activityByLaboId = $request['ActivityByLaboId'];
         $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-        if(!($verify===2)){
+        if (!($verify === 2)) {
             return response()->json([
                 'message' => 'value/activity not match',
-                'id' =>$verify
+                'id' => $verify
             ], 409);
         }
 
@@ -196,5 +199,4 @@ class activity2 extends Controller
             ], 500);
         }
     }
-
 }

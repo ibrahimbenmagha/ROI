@@ -168,7 +168,7 @@ const CalculateAct3 = () => {
     const response = await axiosInstance.post("insertIntoTable3", formData);
 
     // Vérification de la réussite de la requête
-    if (response.status === 201 || response.status === 409) {
+    if (response.status === 201) {
       // alert("Les données ont été insérées avec succès.");
       message.success("Les données ont été insérées avec succès.");
       handleReset();
