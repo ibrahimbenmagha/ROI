@@ -185,6 +185,10 @@ const CalculateAct3 = () => {
     setCalculated(false);
   };
 
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) {
@@ -215,29 +219,28 @@ const CalculateAct3 = () => {
       id_ROI: items[9].id,
     };
     try {
-      // Effectuer l'appel API avec axios pour envoyer les données
       const response = await axiosInstance.post("insertIntoTable3", formData);
-
-      // Vérification de la réussite de la requête
       if (response.status === 201) {
-        // alert("Les données ont été insérées avec succès.");
         message.success("Les données ont été insérées avec succès.");
+        deleteCookie("activityNumber");
         navigate("/DisplayActivity");
+      } else {
+        alert("Une erreur est survenue lors de l'insertion.");
       }
     } catch (error) {
-      // Gestion des erreurs
+      console.log(error);
       if (error.response) {
-        // Afficher le message d'erreur du backend
         alert(
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
+      } else if (error.request) {
+        alert("Aucune réponse reçue du serveur.");
       } else {
-        // Afficher une erreur de requête
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
-  };
+};
   return (
     <Layout className="min-h-screen">
       <TheHeader />

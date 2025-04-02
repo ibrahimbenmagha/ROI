@@ -145,6 +145,10 @@ const CalculateAct5 = () => {
     setCalculationResult(null);
   };
 
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) {
@@ -176,9 +180,9 @@ const CalculateAct5 = () => {
 
     try {
       const response = await axiosInstance.post("insertIntoTable5", formData);
-      console.log(response.status);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
+        deleteCookie("activityNumber");
         navigate("/DisplayActivity");
       } else {
         alert("Une erreur est survenue lors de l'insertion.");

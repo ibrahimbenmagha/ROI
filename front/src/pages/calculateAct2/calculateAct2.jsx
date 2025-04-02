@@ -44,14 +44,14 @@ const CalculateAct2 = () => {
     const match = location.pathname.match(/CalculateAct(\d+)/);
     const activityNumber = match ? parseInt(match[1]) : null;
     document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
-    
-    if (!sessionStorage.getItem('reloaded')) {
-      sessionStorage.setItem('reloaded', 'true');
+
+    if (!sessionStorage.getItem("reloaded")) {
+      sessionStorage.setItem("reloaded", "true");
       window.location.reload();
-  } else {
+    } else {
       // Réinitialiser l'indicateur après le rechargement
-      sessionStorage.removeItem('reloaded');
-  }
+      sessionStorage.removeItem("reloaded");
+    }
     axiosInstance
       .get("getActivityItemsByActivityId/2")
       .then((response) => {
@@ -88,8 +88,6 @@ const CalculateAct2 = () => {
     setLoading(true);
 
     try {
-      78;
-
       const A = numDoctors;
       const B = patientsPerDoctor;
       const D = percentContinue;
@@ -136,6 +134,10 @@ const CalculateAct2 = () => {
     setCalculationResult();
   };
 
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) {
@@ -165,30 +167,23 @@ const CalculateAct2 = () => {
     try {
       // Effectuer l'appel API avec axios pour envoyer les données
       const response = await axiosInstance.post("insertIntoTable2", formData);
-      console.log(response.status);
-      // Check response status
       if (response.status === 201) {
-        // If successful, show success message
         message.success("Les données ont été insérées avec succès.");
+        deleteCookie("activityNumber");
         navigate("/DisplayActivity");
       } else {
-        // In case of unexpected status code
         alert("Une erreur est survenue lors de l'insertion.");
       }
     } catch (error) {
       console.log(error);
-      // Ensure the error response is available
       if (error.response) {
-        // Show backend error message if available
         alert(
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
       } else if (error.request) {
-        // If no response received from the server
         alert("Aucune réponse reçue du serveur.");
       } else {
-        // If an error occurred while setting up the request
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
@@ -202,7 +197,9 @@ const CalculateAct2 = () => {
           {" "}
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
-              <Title level={4} style={{ textAlign: "center" }}>Essai clinique </Title>
+              <Title level={4} style={{ textAlign: "center" }}>
+                Essai clinique{" "}
+              </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

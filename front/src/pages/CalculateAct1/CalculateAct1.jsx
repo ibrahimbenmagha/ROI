@@ -48,13 +48,13 @@ const CalculateAct1 = () => {
     const match = location.pathname.match(/CalculateAct(\d+)/);
     const activityNumber = match ? parseInt(match[1]) : null;
     document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
-    if (!sessionStorage.getItem('reloaded')) {
-      sessionStorage.setItem('reloaded', 'true');
+    if (!sessionStorage.getItem("reloaded")) {
+      sessionStorage.setItem("reloaded", "true");
       window.location.reload();
-  } else {
+    } else {
       // Réinitialiser l'indicateur après le rechargement
-      sessionStorage.removeItem('reloaded');
-  }
+      sessionStorage.removeItem("reloaded");
+    }
     axiosInstance
       .get("getActivityItemsByActivityId/1")
       .then((response) => {
@@ -79,6 +79,10 @@ const CalculateAct1 = () => {
     setCalculated(false); // Réinitialiser l'état calculé lorsque la réinitialisation se produit
   };
 
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault(); // Empêche la soumission par défaut du formulaire
 
@@ -86,8 +90,6 @@ const CalculateAct1 = () => {
       alert("Les données nécessaires ne sont pas encore disponibles.");
       return;
     }
-
-    // Préparer les données à envoyer au backend
     const formData = {
       A: numDoctors,
       B: samplesPerDoctor,
@@ -111,31 +113,27 @@ const CalculateAct1 = () => {
     };
 
     try {
-      // Effectuer l'appel API avec axios pour envoyer les données
       const response = await axiosInstance.post("insetrIntoTable1", formData);
-
-      // Vérification de la réussite de la requête
-      if (response.status === 201) {
-        // alert("Les données ont été insérées avec succès.");
-        message.success("Les données ont été insérées avec succès.");
-        navigate("/DisplayActivity");
-
-        // handleReset();
-      }
-    } catch (error) {
-      // Gestion des erreurs
-      if (error.response) {
-        // Afficher le message d'erreur du backend
-        alert(
-          error.response.data.message ||
-            "Une erreur est survenue lors de l'insertion."
-        );
-        console.log(response);
-      } else {
-        // Afficher une erreur de requête
-        alert("Une erreur est survenue lors de l'envoi de la requête.");
-      }
-    }
+          if (response.status === 201) {
+            message.success("Les données ont été insérées avec succès.");
+            deleteCookie("activityNumber");
+            navigate("/DisplayActivity");
+          } else {
+            alert("Une erreur est survenue lors de l'insertion.");
+          }
+        } catch (error) {
+          console.log(error);
+          if (error.response) {
+            alert(
+              error.response.data.message ||
+                "Une erreur est survenue lors de l'insertion."
+            );
+          } else if (error.request) {
+            alert("Aucune réponse reçue du serveur.");
+          } else {
+            alert("Une erreur est survenue lors de l'envoi de la requête.");
+          }
+        }
   };
 
   const validateNumeric = (value, min, max = null) => {
@@ -198,7 +196,9 @@ const CalculateAct1 = () => {
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
-              <Title level={4} style={{ textAlign: "center" }}>Distribution des échantillons</Title>
+              <Title level={4} style={{ textAlign: "center" }}>
+                Distribution des échantillons
+              </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

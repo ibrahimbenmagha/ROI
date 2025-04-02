@@ -79,6 +79,22 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("insertIntoTable6", [Activity6::class, "insertIntoTable6"]);
     Route::post("updateActivity6Values", [Activity6::class, "updateActivity6Values"]);
 
+    Route::post("calculateROIAct7", [Activity7::class, "calculateROIAct7"]);
+    Route::post("insertIntoTable7", [Activity7::class, "insertIntoTable7"]);
+    Route::post("updateActivity7Values", [Activity7::class, "updateActivity7Values"]);
+
+    Route::post("calculateROIAct8", [Activity8::class, "calculateROIAct8"]);
+    Route::post("insertIntoTable8", [Activity8::class, "insertIntoTable8"]);
+    Route::post("updateActivity8Values", [Activity8::class, "updateActivity8Values"]);
+
+    Route::post("calculateROIAct9", [Activity9::class, "calculateROIAct9"]);
+    Route::post("insertIntoTable9", [Activity9::class, "insertIntoTable9"]);
+    Route::post("updateActivity9Values", [Activity9::class, "updateActivity9Values"]);
+
+    Route::post("calculateROIAct10", [Activity10::class, "calculateROIAct10"]);
+    Route::post("insertIntoTable10", [Activity10::class, "insertIntoTable10"]);
+    Route::post("updateActivity10Values", [Activity10::class, "updateActivity10Values"]);
+
 });
 
 // Routes accessibles à tous les utilisateurs authentifiés

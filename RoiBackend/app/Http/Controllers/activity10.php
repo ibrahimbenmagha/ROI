@@ -93,7 +93,7 @@ class activity10 extends Controller
             $K = $I * $J;       // Ventes incrémentales générées
             $ROI = ($L > 0) ? round($K / $L, 4) : 0; // Calcul du retour sur investissement
 
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
 
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],

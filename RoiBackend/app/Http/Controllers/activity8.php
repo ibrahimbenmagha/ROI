@@ -112,7 +112,7 @@ class activity8 extends Controller
 
             $ROI = ($R > 0) ? round($Q / $R, 4) : 0;  // ROI
 
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
 
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],

@@ -145,6 +145,10 @@ const CalculateAct4 = () => {
     setCalculated(false);
   };
 
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) {
@@ -176,9 +180,9 @@ const CalculateAct4 = () => {
 
     try {
       const response = await axiosInstance.post("insertIntoTable4", formData);
-      console.log(response.status);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
+        deleteCookie("activityNumber");
         navigate("/DisplayActivity");
       } else {
         alert("Une erreur est survenue lors de l'insertion.");
@@ -196,8 +200,7 @@ const CalculateAct4 = () => {
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
-  };
-
+};
   return (
     <Layout className="min-h-screen">
       <TheHeader />

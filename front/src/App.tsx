@@ -19,6 +19,10 @@ import CalculateAct3 from "./pages/CalculateAct3/CalculateAct3";
 import CalculateAct4 from "./pages/CalculateAct4/CalculateAct4";
 import CalculateAct5 from "./pages/CalculateAct5/CalculateAct5";
 import CalculateAct6 from "./pages/CalculateAct6/CalculateAct6";
+import CalculateAct7 from "./pages/CalculateAct7/CalculateAct7";
+import CalculateAct8 from "./pages/CalculateAct8/CalculateAct8";
+import CalculateAct9 from "./pages/CalculateAct9/CalculateAct9";
+import CalculateAct10 from "./pages/CalculateAct10/CalculateAct10";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import DashboardLogin from "./pages/Dashboard/DashboardLogin";
@@ -144,6 +148,50 @@ const App = () => (
               <LaboRoute>
                 <ActRoute>
                   <CalculateAct6 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct7"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct7 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct8"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct8 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct9"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct9 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct10"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct10 />
                 </ActRoute>
               </LaboRoute>
             }

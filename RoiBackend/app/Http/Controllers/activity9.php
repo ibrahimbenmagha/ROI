@@ -13,6 +13,7 @@ class activity9 extends Controller
 
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0',  // Number of doctors who read the publications
+                'B' => 'required|numeric|min:0|', //Nombre d’insertions publicitaires prévues dans l’ensemble des publications ciblées
                 'C' => 'required|numeric|min:0|max:100', // Percentage of doctors who remember the brand
                 'E' => 'required|numeric|min:0|max:100', // Percentage of doctors prescribing after exposure
                 'G' => 'required|numeric|min:0', // Average number of new patients per prescriber
@@ -26,6 +27,7 @@ class activity9 extends Controller
 
             // Retrieve the request variables
             $A = $validated['A']; // Number of doctors who read the publications
+            $B = $validated['B']; // Number of insertions publicitaires prévues dans l’ensemble des publications ciblées
             $G = $validated['G']; // Average number of new patients per prescriber
             $I = $validated['I']; // Revenue per new patient
             $K = $validated['K']; // Media purchase costs
@@ -65,6 +67,7 @@ class activity9 extends Controller
 
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0',  //Nombre de médecins ayant lu au moins une des publications contenant une annonce produit
+                'B' => 'required|numeric|min:0|', //Nombre d’insertions publicitaires prévues dans l’ensemble des publications ciblées
                 'C' => 'required|numeric|min:0|max:100', // Pourcentage des médecins lecteurs capables de se souvenir de la marque et du message après exposition aux annonces
                 'E' => 'required|numeric|min:0|max:100', // Pourcentage des médecins ayant mémorisé la publicité qui commencent à prescrire le produit à de nouveaux patients
                 'G' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous traitement par chaque médecin prescripteur
@@ -78,6 +81,7 @@ class activity9 extends Controller
 
             // Retrieve the request variables
             $A = $validated['A'];
+            $B = $validated['B'];
             $G = $validated['G'];
             $I = $validated['I'];
             $K = $validated['K'];
@@ -92,10 +96,11 @@ class activity9 extends Controller
             // ROI calculation
             $ROI = ($M > 0) ? round($J / $M, 4) : 0;  // Return on investment (ROI)
 
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
 
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
+                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
                 ['activityItemId' => $request['id_C'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $C],
                 ['activityItemId' => $request['id_E'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $E],
                 ['activityItemId' => $request['id_G'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $G],
