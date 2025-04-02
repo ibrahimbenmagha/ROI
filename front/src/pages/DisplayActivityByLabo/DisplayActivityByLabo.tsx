@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "antd";
 import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "../../axiosConfig";
 import TheHeader from "../Header/Header";
 import Head from "../../components/Head";
 
-const storeActivityIdInCookie = (id) => {
+const storeActivityIdInCookie = (id,ActivityId) => {
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
+  document.cookie = `activityNumber=${ActivityId}; path=/; max-age=3600`;
 };
 
 const DisplayActivity = () => {
-  const [activities, setActivities] = useState([]); 
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axiosInstance
       .get("getAllActivityByLaboInfosByLaboId")
-          //getAllActivityByLaboInfosByLaboId
+      //getAllActivityByLaboInfosByLaboId
       .then((response) => {
         setActivities(response.data);
         setLoading(false);
@@ -103,10 +104,9 @@ const DisplayActivity = () => {
                       <span className="font-semibold">Année:</span>{" "}
                       {activity.year}
                     </p>
-                    <p className="text-gray-600">
-                      <span className="font-semibold">ID:</span>{" "}
-                      {activity.id}
-                    </p>
+                    {/* <p className="text-gray-600">
+                      <span className="font-semibold">list:</span> {activity.ActivityId}
+                    </p> */}
                     <span className="text-gray-600"></span>
                   </CardContent>
                 </span>
@@ -119,7 +119,7 @@ const DisplayActivity = () => {
                     <Button
                       type="primary"
                       style={{ width: "100%" }}
-                      onClick={() => storeActivityIdInCookie(activity.id)}
+                      onClick={() => storeActivityIdInCookie(activity.id,activity.ActivityId)}
                     >
                       Calculer
                     </Button>

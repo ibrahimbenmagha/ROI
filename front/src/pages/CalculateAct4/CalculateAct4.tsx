@@ -8,8 +8,12 @@ import {
   Alert,
   message,
 } from "antd";
-import { CalculatorOutlined, ReloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  CalculatorOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -35,8 +39,19 @@ const CalculateAct4 = () => {
   const [calculationResult, setCalculationResult] = useState(null);
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const match = location.pathname.match(/CalculateAct(\d+)/);
+    const activityNumber = match ? parseInt(match[1]) : null;
+    document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
+
+    if (!sessionStorage.getItem("reloaded")) {
+      sessionStorage.setItem("reloaded", "true");
+      window.location.reload();
+    } else {
+      sessionStorage.removeItem("reloaded");
+    }
     axiosInstance
       .get("getActivityItemsByActivityId/4")
       .then((response) => {
@@ -189,9 +204,11 @@ const CalculateAct4 = () => {
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          <form  onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <Card>
-              <Title level={4} style={{textAlign:"center"}}>Conférences</Title>
+              <Title level={4} style={{ textAlign: "center" }}>
+                Conférences
+              </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -201,7 +218,7 @@ const CalculateAct4 = () => {
                     htmlFor="numDoctors"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre de médecins participants à la conférence 
+                    Nombre de médecins participants à la conférence
                   </label>
                   <Input
                     id="numDoctors"
@@ -238,7 +255,7 @@ const CalculateAct4 = () => {
                     htmlFor="percentPositive"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage de médecins ayant une perception positive 
+                    Pourcentage de médecins ayant une perception positive
                   </label>
                   <Input
                     id="percentPositive"
@@ -279,7 +296,7 @@ const CalculateAct4 = () => {
                     htmlFor="patientsPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre moyen de nouveaux patients prescrits par médecin 
+                    Nombre moyen de nouveaux patients prescrits par médecin
                   </label>
                   <Input
                     id="patientsPerDoctor"
@@ -299,7 +316,7 @@ const CalculateAct4 = () => {
                     htmlFor="kolAdjustment"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Ajustement lié à l'influence des leaders d'opinion 
+                    Ajustement lié à l'influence des leaders d'opinion
                   </label>
                   <Input
                     id="kolAdjustment"
@@ -335,7 +352,7 @@ const CalculateAct4 = () => {
                     htmlFor="costPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût variable par médecin € 
+                    Coût variable par médecin €
                   </label>
                   <Input
                     id="costPerDoctor"
@@ -353,7 +370,7 @@ const CalculateAct4 = () => {
                     htmlFor="fixedCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût fixe total du programme € 
+                    Coût fixe total du programme €
                   </label>
                   <Input
                     id="fixedCosts"

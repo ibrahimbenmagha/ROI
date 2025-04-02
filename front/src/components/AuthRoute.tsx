@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../axiosConfig"; // Ajuste le chemin
+import { ca } from "date-fns/locale";
+import {message} from "antd";
 
 // Composant de chargement pendant la vérification
 const LoadingComponent = () => (
@@ -11,7 +13,7 @@ const LoadingComponent = () => (
       alignItems: "center",
       height: "100vh",
     }}
-  > 
+  >
     Chargement...
   </div>
 );
@@ -83,7 +85,6 @@ export const AdminRoute = ({ children }) => {
   return authenticated ? children : null;
 };
 
-// Route d'authentification qui redirige les utilisateurs déjà connectés
 export const AuthRoute = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -101,7 +102,7 @@ export const AuthRoute = ({ children }) => {
             navigate("/Dashboard");
           }
           // setShouldRedirect(true);
-        }else{
+        } else {
           navigate("/Login");
         }
       } catch (error) {
@@ -119,4 +120,56 @@ export const AuthRoute = ({ children }) => {
   }
 
   return !shouldRedirect ? children : null;
+};
+
+export const ActRoute = ({ children }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [accessGranted, setAccessGranted] = useState(false); // État pour gérer l'accès
+
+  useEffect(() => {
+    const checkActivityAccess = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/checkActivity");
+        if (response.data.authorised == false) {
+          message.error("Vous n'êtes pas habilité à accéder à cette activité");
+          navigate("/Home");
+        } else if (response.data.authorised === true) {
+          // const pat = response.data.activityNumber;
+          message.success("Vous êtes bien autorisé");
+          setAccessGranted(true); 
+          // navigate(/CalculateAct${pat});
+        }else {
+          message.error("Acune reponse d'autorisation");
+          navigate("/Home");
+        }
+      } catch (error) {
+        message.error("Erreur de vérification");
+        navigate("/Home");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkActivityAccess();
+  }, [navigate]);
+
+  // Si la vérification est en cours, afficher le composant de chargement
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        Chargement...
+      </div>
+    );
+  }
+
+  // Si l'accès est autorisé, afficher le composant enfant
+  return accessGranted ? children : null;
 };

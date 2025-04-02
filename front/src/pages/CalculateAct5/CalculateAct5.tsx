@@ -6,7 +6,6 @@ import {
   Divider,
   Statistic,
   Alert,
-  Spin,
   message,
 } from "antd";
 import {
@@ -14,27 +13,26 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import TheHeader from "../Header/Header";
 import axiosInstance from "../../axiosConfig";
+import TheHeader from "../Header/Header";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
-const CalculateAct3 = () => {
+const CalculateAct5 = () => {
   // États pour stocker les valeurs du formulaire
-  const [totalDoctors, setTotalDoctors] = useState(0);
-  const [emailsPerDoctor, setEmailsPerDoctor] = useState(0);
-  const [percentRememberEmail, setPercentRememberEmail] = useState(0);
-  const [percentRememberBrand, setPercentRememberBrand] = useState(0);
-  const [percentPrescribing, setPercentPrescribing] = useState(0);
-  const [newPatientsPerDoctor, setNewPatientsPerDoctor] = useState(0);
-  const [valuePerPatient, setValuePerPatient] = useState(0);
-  const [costPerEmail, setCostPerEmail] = useState(0);
-  const [fixedCosts, setFixedCosts] = useState(0);
+  const [numDoctors, setNumDoctors] = useState(0); // A - Nombre de médecins participant aux tables rondes
+  const [roundTablesPerDoctor, setRoundTablesPerDoctor] = useState(0); // B - Nombre moyen de tables rondes assistées par médecin par an
+  const [doctorsPerRoundTable, setDoctorsPerRoundTable] = useState(0); // D - Nombre moyen de médecins par table ronde
+  const [percentPositiveChange, setPercentPositiveChange] = useState(0); // F - Pourcentage de médecins ayant changé positivement leur perception
+  const [percentPrescribing, setPercentPrescribing] = useState(0); // H - Pourcentage de médecins influencés qui vont prescrire
+  const [newPatientsPerDoctor, setNewPatientsPerDoctor] = useState(0); // J - Nombre moyen de nouveaux patients mis sous traitement par médecin
+  const [valuePerPatient, setValuePerPatient] = useState(0); // L - Valeur du revenu par patient incrémental
+  const [costPerRoundTable, setCostPerRoundTable] = useState(0); // N - Coût variable par table ronde
+  const [fixedCosts, setFixedCosts] = useState(0); // O - Coût fixe total du programme
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
   const [calculationResult, setCalculationResult] = useState(null);
@@ -53,9 +51,8 @@ const CalculateAct3 = () => {
     } else {
       sessionStorage.removeItem("reloaded");
     }
-
     axiosInstance
-      .get("getActivityItemsByActivityId/3")
+      .get("getActivityItemsByActivityId/5")
       .then((response) => {
         setItems(response.data);
       })
@@ -64,6 +61,7 @@ const CalculateAct3 = () => {
       });
   }, []);
 
+  // Fonction pour valider une entrée numérique
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
     if (isNaN(num)) return false;
@@ -72,117 +70,79 @@ const CalculateAct3 = () => {
     return true;
   };
 
-  const calculateRoi = async () => {
-    // Validation des inputs
-    const validationChecks = [
-      {
-        value: totalDoctors,
-        message: "Nombre total de médecins invalide",
-        minValue: 0,
-      },
-      {
-        value: emailsPerDoctor,
-        message: "Nombre d'emails par médecin invalide",
-        minValue: 0,
-      },
-      {
-        value: percentRememberEmail,
-        message: "Pourcentage des médecins se rappelant de l'email invalide",
-        minValue: 0,
-        maxValue: 100,
-      },
-      {
-        value: percentRememberBrand,
-        message: "Pourcentage des médecins se rappelant de la marque invalide",
-        minValue: 0,
-        maxValue: 100,
-      },
-      {
-        value: percentPrescribing,
-        message: "Pourcentage des médecins prescrivant invalide",
-        minValue: 0,
-        maxValue: 100,
-      },
-      {
-        value: newPatientsPerDoctor,
-        message: "Nombre de nouveaux patients par médecin invalide",
-        minValue: 0,
-      },
-      {
-        value: valuePerPatient,
-        message: "Valeur par patient invalide",
-        minValue: 0,
-      },
-      { value: costPerEmail, message: "Coût par email invalide", minValue: 0 },
-      { value: fixedCosts, message: "Coûts fixes invalides", minValue: 0 },
-    ];
+  // Calculer le ROI
+  const calculateRoi = () => {
+    // Validation simple
+    if (!validateNumeric(numDoctors, 0))
+      return alert("Nombre de médecins invalide");
+    if (!validateNumeric(roundTablesPerDoctor, 0))
+      return alert("Nombre de tables rondes par médecin invalide");
+    if (!validateNumeric(doctorsPerRoundTable, 0))
+      return alert("Nombre de médecins par table ronde invalide");
+    if (!validateNumeric(percentPositiveChange, 0, 100))
+      return alert(
+        "Pourcentage de médecins ayant changé positivement leur perception invalide"
+      );
+    if (!validateNumeric(percentPrescribing, 0, 100))
+      return alert("Pourcentage de médecins qui prescrivent invalide");
+    if (!validateNumeric(newPatientsPerDoctor, 0))
+      return alert("Nombre de nouveaux patients par médecin invalide");
+    if (!validateNumeric(valuePerPatient, 0))
+      return alert("Valeur par patient invalide");
+    if (!validateNumeric(costPerRoundTable, 0))
+      return alert("Coût par table ronde invalide");
+    if (!validateNumeric(fixedCosts, 0)) return alert("Coûts fixes invalides");
 
-    // Validation groupée
-    for (const check of validationChecks) {
-      if (!validateNumeric(check.value, check.minValue, check.maxValue)) {
-        alert(check.message);
-        return;
-      }
-    }
+    // Variables
+    const A = numDoctors;
+    const B = roundTablesPerDoctor;
+    const D = doctorsPerRoundTable;
+    const F = percentPositiveChange / 100;
+    const H = percentPrescribing / 100;
+    const J = newPatientsPerDoctor;
+    const L = valuePerPatient;
+    const N = costPerRoundTable;
+    const O = fixedCosts;
 
-    setLoading(true);
-    setCalculated(false);
+    // Calculs
+    const C = A * B; // Nombre total de contacts médecins
+    const E = C / D; // Nombre total de tables rondes requises
+    const G = A * F; // Nombre de médecins ayant changé positivement leur perception
+    const I = G * H; // Nombre de médecins prescrivant
+    const K = I * J; // Nombre de patients incrémentaux gagnés
+    const M = K * L; // Ventes incrémentales
+    const P = N * E + O; // Coût total du programme
+    const Q = P / C; // Coût par contact médecin
 
-    try {
-      // Conversion des pourcentages
+    // Vérification pour éviter la division par zéro
+    const ROI = P > 0 ? (M / P) * 100 : 0;
 
-      // Variables
-      const A = totalDoctors;
-      const B = emailsPerDoctor;
-      const C = percentRememberEmail / 100;
-      const E = percentRememberBrand / 100;
-      const G = percentPrescribing / 100;
-      const I = newPatientsPerDoctor;
-      const K = valuePerPatient;
-      const M = costPerEmail;
-      const N = fixedCosts;
-
-      // Calculs
-      const D = A * C; // Nombre de médecins ayant reçu et rappelé l'email
-      const F = D * E; // Nombre de médecins se rappelant du produit et du message
-      const H = F * G; // Nombre de médecins prescrivant à la suite de l'email
-      const J = H * I; // Nombre de patients incrémentaux générés par l'email
-      const L = J * K; // Ventes incrémentales générées
-      const O = M * A * B + N; // Coût total du programme
-      const ROI = O > 0 ? (L / O) * 100 : 0; // Retour sur investissement (ROI)
-
-      setCalculationResult({
-        roi: ROI,
-        doctorsRememberEmail: D,
-        doctorsRememberBrand: F,
-        doctorsPrescribing: H,
-        incrementalPatients: J,
-        incrementalSales: L,
-        totalCost: O,
-      });
-
-      setCalculated(true);
-    } catch (error) {
-      alert("Erreur lors du calcul du ROI. Veuillez réessayer.");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    setCalculationResult({
+      roi: ROI,
+      doctorContacts: C,
+      totalRoundTables: E,
+      doctorsPositive: G,
+      doctorsPrescribing: I,
+      incrementalPatients: K,
+      incrementalSales: M,
+      totalCost: P,
+      costPerContact: Q,
+    });
+    setCalculated(true); // Set calculated to true after the calculation
   };
 
+  // Réinitialiser le formulaire
   const handleReset = () => {
-    setTotalDoctors(0);
-    setEmailsPerDoctor(0);
-    setPercentRememberEmail(0);
-    setPercentRememberBrand(0);
+    setNumDoctors(0);
+    setRoundTablesPerDoctor(0);
+    setDoctorsPerRoundTable(0);
+    setPercentPositiveChange(0);
     setPercentPrescribing(0);
     setNewPatientsPerDoctor(0);
     setValuePerPatient(0);
-    setCostPerEmail(0);
+    setCostPerRoundTable(0);
     setFixedCosts(0);
     setCalculationResult(null);
-    setLoading(false);
-    setCalculated(false);
   };
 
   const handleSubmit = async (e) => {
@@ -191,154 +151,155 @@ const CalculateAct3 = () => {
       alert("Veuillez d'abord ajouter des éléments d'activité");
       return;
     }
-
     const formData = {
-      A: totalDoctors,
-      B: emailsPerDoctor,
-      C: percentRememberEmail,
-      E: percentRememberBrand,
-      G: percentPrescribing,
-      I: newPatientsPerDoctor,
-      K: valuePerPatient,
-      M: costPerEmail,
-      N: fixedCosts,
+      A: numDoctors,
+      B: roundTablesPerDoctor,
+      D: doctorsPerRoundTable,
+      F: percentPositiveChange,
+      H: percentPrescribing,
+      J: newPatientsPerDoctor,
+      L: valuePerPatient,
+      N: costPerRoundTable,
+      O: fixedCosts,
 
-      id_A: items[0].id,
-      id_B: items[1].id,
-      id_C: items[2].id,
-      id_E: items[3].id,
-      id_G: items[4].id,
-      id_I: items[5].id,
-      id_K: items[6].id,
-      id_M: items[7].id,
-      id_N: items[8].id,
-      id_ROI: items[9].id,
+      id_A: items[0]?.id,
+      id_B: items[1]?.id,
+      id_D: items[2]?.id,
+      id_F: items[3]?.id,
+      id_H: items[4]?.id,
+      id_J: items[5]?.id,
+      id_L: items[6]?.id,
+      id_N: items[7]?.id,
+      id_O: items[8]?.id,
+      id_ROI: items[9]?.id,
     };
-    try {
-      // Effectuer l'appel API avec axios pour envoyer les données
-      const response = await axiosInstance.post("insertIntoTable3", formData);
 
-      // Vérification de la réussite de la requête
+    try {
+      const response = await axiosInstance.post("insertIntoTable5", formData);
+      console.log(response.status);
       if (response.status === 201) {
-        // alert("Les données ont été insérées avec succès.");
         message.success("Les données ont été insérées avec succès.");
         navigate("/DisplayActivity");
+      } else {
+        alert("Une erreur est survenue lors de l'insertion.");
       }
     } catch (error) {
-      // Gestion des erreurs
+      console.log(error);
       if (error.response) {
-        // Afficher le message d'erreur du backend
         alert(
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
+      } else if (error.request) {
+        alert("Aucune réponse reçue du serveur.");
       } else {
-        // Afficher une erreur de requête
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
   };
+
   return (
     <Layout className="min-h-screen">
       <TheHeader />
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          <form type="submit" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <Card>
               <Title level={4} style={{ textAlign: "center" }}>
-                Mailing
+                Tables Rondes
               </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* A - Nombre total de médecins */}
+                {/* A - Nombre de médecins */}
                 <div>
                   <label
-                    htmlFor="totalDoctors"
+                    htmlFor="numDoctors"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre total de médecins ciblés par l'email (A)
+                    Nombre de médecins participant aux tables rondes (A)
                   </label>
                   <Input
-                    id="totalDoctors"
+                    id="numDoctors"
                     type="number"
                     min="0"
-                    value={totalDoctors}
-                    onChange={(e) => setTotalDoctors(Number(e.target.value))}
+                    value={numDoctors}
+                    onChange={(e) => setNumDoctors(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
-                {/* B - Emails par médecin */}
+                {/* B - Tables rondes par médecin */}
                 <div>
                   <label
-                    htmlFor="emailsPerDoctor"
+                    htmlFor="roundTablesPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre moyen d'emails envoyés par médecin (B)
+                    Nombre moyen de tables rondes assistées par médecin par an
+                    (B)
                   </label>
                   <Input
-                    id="emailsPerDoctor"
+                    id="roundTablesPerDoctor"
                     type="number"
                     min="0"
-                    value={emailsPerDoctor}
-                    onChange={(e) => setEmailsPerDoctor(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* C - % Médecins se rappelant de l'email */}
-                <div>
-                  <label
-                    htmlFor="percentRememberEmail"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage de médecins se rappelant avoir reçu l'email (C)
-                  </label>
-                  <Input
-                    id="percentRememberEmail"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={percentRememberEmail}
+                    value={roundTablesPerDoctor}
                     onChange={(e) =>
-                      setPercentRememberEmail(Number(e.target.value))
+                      setRoundTablesPerDoctor(Number(e.target.value))
                     }
                     className="w-full"
                   />
                 </div>
 
-                {/* E - % Médecins se rappelant de la marque */}
+                {/* D - Médecins par table ronde */}
                 <div>
                   <label
-                    htmlFor="percentRememberBrand"
+                    htmlFor="doctorsPerRoundTable"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage de médecins se rappelant de la marque et du
-                    message (E)
+                    Nombre moyen de médecins par table ronde (D)
                   </label>
                   <Input
-                    id="percentRememberBrand"
+                    id="doctorsPerRoundTable"
                     type="number"
                     min="0"
-                    max="100"
-                    value={percentRememberBrand}
+                    value={doctorsPerRoundTable}
                     onChange={(e) =>
-                      setPercentRememberBrand(Number(e.target.value))
+                      setDoctorsPerRoundTable(Number(e.target.value))
                     }
                     className="w-full"
                   />
                 </div>
 
-                {/* G - % Médecins prescrivant */}
+                {/* F - % Médecins perception positive */}
+                <div>
+                  <label
+                    htmlFor="percentPositiveChange"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Pourcentage de médecins ayant changé positivement leur
+                    perception (F)
+                  </label>
+                  <Input
+                    id="percentPositiveChange"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPositiveChange}
+                    onChange={(e) =>
+                      setPercentPositiveChange(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* H - % Médecins prescripteurs */}
                 <div>
                   <label
                     htmlFor="percentPrescribing"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Pourcentage de médecins prescrivant Prexige à de nouveaux
-                    patients (G)
+                    Pourcentage de médecins influencés qui vont prescrire (H)
                   </label>
                   <Input
                     id="percentPrescribing"
@@ -353,14 +314,14 @@ const CalculateAct3 = () => {
                   />
                 </div>
 
-                {/* I - Nouveaux patients par médecin */}
+                {/* J - Nouveaux patients par médecin */}
                 <div>
                   <label
                     htmlFor="newPatientsPerDoctor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Nombre moyen de nouveaux patients mis sous Prexige par
-                    médecin (I)
+                    Nombre moyen de nouveaux patients mis sous traitement par
+                    médecin (J)
                   </label>
                   <Input
                     id="newPatientsPerDoctor"
@@ -374,13 +335,13 @@ const CalculateAct3 = () => {
                   />
                 </div>
 
-                {/* K - Valeur patient */}
+                {/* L - Valeur patient */}
                 <div>
                   <label
                     htmlFor="valuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur du revenu par patient incrémental € (K)
+                    Valeur du revenu par patient incrémental € (L)
                   </label>
                   <Input
                     id="valuePerPatient"
@@ -392,31 +353,33 @@ const CalculateAct3 = () => {
                   />
                 </div>
 
-                {/* M - Coût par email */}
+                {/* N - Coût par table ronde */}
                 <div>
                   <label
-                    htmlFor="costPerEmail"
+                    htmlFor="costPerRoundTable"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût variable par email envoyé € (M)
+                    Coût variable par table ronde € (N)
                   </label>
                   <Input
-                    id="costPerEmail"
+                    id="costPerRoundTable"
                     type="number"
                     min="0"
-                    value={costPerEmail}
-                    onChange={(e) => setCostPerEmail(Number(e.target.value))}
+                    value={costPerRoundTable}
+                    onChange={(e) =>
+                      setCostPerRoundTable(Number(e.target.value))
+                    }
                     className="w-full"
                   />
                 </div>
 
-                {/* N - Coûts fixes */}
+                {/* O - Coûts fixes */}
                 <div>
                   <label
                     htmlFor="fixedCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût fixe total du programme € (N)
+                    Coût fixe total du programme € (O)
                   </label>
                   <Input
                     id="fixedCosts"
@@ -449,22 +412,23 @@ const CalculateAct3 = () => {
                   )}
                 </Button>
 
+                <Button
+                  className="bg-primary"
+                  type="submit"
+                  disabled={loading || !calculated} // Désactiver si le calcul n'est pas encore fait
+                  style={{ backgroundColor: "#1890ff" }}
+                >
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <CheckCircleOutlined className="mr-2" />
+                      Insérer les données
+                    </>
+                  )}
+                </Button>
+
                 <div className="flex gap-4">
-                  <Button
-                    className="bg-primary"
-                    type="submit"
-                    disabled={loading || !calculated}
-                    style={{ backgroundColor: "#1890ff" }}
-                  >
-                    {loading ? (
-                      <Spin size="small" />
-                    ) : (
-                      <>
-                        <CheckCircleOutlined className="mr-2" />
-                        Inserer les donnees
-                      </>
-                    )}
-                  </Button>
                   <Button variant="outline" onClick={handleReset}>
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
@@ -509,27 +473,34 @@ const CalculateAct3 = () => {
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                     <Card>
                       <Statistic
-                        title="Médecins se rappelant de l'email"
-                        value={calculationResult.doctorsRememberEmail}
+                        title="Total Contacts Médecins"
+                        value={calculationResult.doctorContacts}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Médecins se rappelant de la marque"
-                        value={calculationResult.doctorsRememberBrand}
+                        title="Nombre Tables Rondes"
+                        value={calculationResult.totalRoundTables}
+                        precision={0}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Médecins Perception Positive"
+                        value={calculationResult.doctorsPositive}
                         precision={0}
                       />
                     </Card>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                     <Card>
                       <Statistic
-                        title="Médecins prescrivant Prexige"
+                        title="Médecins Prescrivant"
                         value={calculationResult.doctorsPrescribing}
                         precision={0}
                       />
@@ -539,6 +510,14 @@ const CalculateAct3 = () => {
                         title="Patients Incrémentaux"
                         value={calculationResult.incrementalPatients}
                         precision={0}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Coût Par Contact Médecin"
+                        value={calculationResult.costPerContact}
+                        precision={2}
+                        suffix="€"
                       />
                     </Card>
                   </div>
@@ -562,4 +541,4 @@ const CalculateAct3 = () => {
   );
 };
 
-export default CalculateAct3;
+export default CalculateAct5;

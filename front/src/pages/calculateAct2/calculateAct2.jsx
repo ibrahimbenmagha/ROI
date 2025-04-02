@@ -13,7 +13,7 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -38,8 +38,20 @@ const CalculateAct2 = () => {
   const [items, setItems] = useState();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const match = location.pathname.match(/CalculateAct(\d+)/);
+    const activityNumber = match ? parseInt(match[1]) : null;
+    document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
+    
+    if (!sessionStorage.getItem('reloaded')) {
+      sessionStorage.setItem('reloaded', 'true');
+      window.location.reload();
+  } else {
+      // Réinitialiser l'indicateur après le rechargement
+      sessionStorage.removeItem('reloaded');
+  }
     axiosInstance
       .get("getActivityItemsByActivityId/2")
       .then((response) => {
@@ -158,7 +170,7 @@ const CalculateAct2 = () => {
       if (response.status === 201) {
         // If successful, show success message
         message.success("Les données ont été insérées avec succès.");
-          navigate("/DisplayActivity");
+        navigate("/DisplayActivity");
       } else {
         // In case of unexpected status code
         alert("Une erreur est survenue lors de l'insertion.");
@@ -190,7 +202,7 @@ const CalculateAct2 = () => {
           {" "}
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
-              <Title level={4}>Essai clinique </Title>
+              <Title level={4} style={{ textAlign: "center" }}>Essai clinique </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

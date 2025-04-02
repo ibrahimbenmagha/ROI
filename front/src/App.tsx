@@ -17,11 +17,18 @@ import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
 import CalculateAct3 from "./pages/CalculateAct3/CalculateAct3";
 import CalculateAct4 from "./pages/CalculateAct4/CalculateAct4";
+import CalculateAct5 from "./pages/CalculateAct5/CalculateAct5";
+import CalculateAct6 from "./pages/CalculateAct6/CalculateAct6";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import DashboardLogin from "./pages/Dashboard/DashboardLogin";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
-import { LaboRoute, AdminRoute, AuthRoute } from "./components/AuthRoute";
+import {
+  LaboRoute,
+  AdminRoute,
+  AuthRoute,
+  ActRoute,
+} from "./components/AuthRoute";
 
 const queryClient = new QueryClient();
 
@@ -83,7 +90,9 @@ const App = () => (
             path="/CalculateAct1"
             element={
               <LaboRoute>
-                <CalculateAct1 />
+                <ActRoute>
+                  <CalculateAct1 />
+                </ActRoute>
               </LaboRoute>
             }
           />
@@ -91,7 +100,9 @@ const App = () => (
             path="/CalculateAct2"
             element={
               <LaboRoute>
-                <CalculateAct2 />
+                <ActRoute>
+                  <CalculateAct2 />
+                </ActRoute>
               </LaboRoute>
             }
           />
@@ -99,7 +110,9 @@ const App = () => (
             path="/CalculateAct3"
             element={
               <LaboRoute>
-                <CalculateAct3 />
+                <ActRoute>
+                  <CalculateAct3 />
+                </ActRoute>
               </LaboRoute>
             }
           />
@@ -108,7 +121,30 @@ const App = () => (
             path="/CalculateAct4"
             element={
               <LaboRoute>
-                <CalculateAct4 />
+                <ActRoute>
+                  <CalculateAct4 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+          <Route
+            path="/CalculateAct5"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct5 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct6"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct6 />
+                </ActRoute>
               </LaboRoute>
             }
           />

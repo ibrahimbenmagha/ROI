@@ -94,7 +94,7 @@ class activity5 extends Controller
             $Q = $P / $C;//Coût par contact médecin (Q)
 
             $ROI = ($P > 0) ? round($M / $P, 4) : 0;
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
                 ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
@@ -134,7 +134,7 @@ class activity5 extends Controller
             ], 500);
         }
     }
-
+    
     public function updateActivity5Values(Request $request)
     {
         try {

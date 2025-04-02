@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\ActivityByLabo;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Helpers\JwtHelper; // Adjust the namespace as needed
@@ -18,6 +19,35 @@ class AuthController extends Controller
     {
         // $this->middleware('auth:api', ['except' => ['login']]);
     }
+
+    public function checkActivity(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
+        $ActByLabo = $request->cookie('activityId');
+        $activityNumber = $request->cookie('activityNumber');
+
+        $activity = ActivityByLabo::find($ActByLabo);
+
+        // Vérification des conditions selon votre logique
+        if (!$activity || $activity->id != $ActByLabo || $activity->ActivityId != $activityNumber || $activity->laboId != $laboId) {
+            return response()->json([
+                'authorised' => false,
+                "activity" =>  $activity->id,
+                'ActByLabo' => $ActByLabo,
+                "activityId" => $activity->activityId,
+                "activityNumber"=> $activityNumber,
+                "laboId_DB"=> $activity->laboId,
+                "laboId"=> $laboId,
+            ]);
+        } else {
+            return response()->json([
+                'authorised' => true,
+                'activityNumber' => $activityNumber,
+                "a7a" => $activity
+            ]);
+        }
+    }
+
 
     public function checkAuth(Request $request)
     {
@@ -65,7 +95,6 @@ class AuthController extends Controller
                     'user.Role' => $user->Role,
                     'labo.status' => $laboratoire->status,
                 ])->refresh();
-                
             } else if ($user->Role == 'Admin') {
                 $customToken = auth()->claims([
                     'user.email' => $user->email,
@@ -112,31 +141,25 @@ class AuthController extends Controller
     }
 
 
-   public function logout(Request $request)
-   {
-       try {
-           // Invalide le token actuel
-           auth()->logout();
+    public function logout(Request $request)
+    {
+        try {
+            // Invalide le token actuel
+            auth()->logout();
             $token = $request->cookie('access_token');
             JWTAuth::removeToken($token);
-           return response()->json(['message' => 'Successfully logged out'], 200);
+            return response()->json(['message' => 'Successfully logged out'], 200);
             //    ->cookie('access_token', '', -1, '/', null, true, true); // Supprime le cookie
-       } catch (\Exception $e) {
-           return response()->json(['message' => 'Failed to logout, please try again. Error: ' . $e->getMessage()], 500);
-       }
-   }
-
-
-    
-
-
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to logout, please try again. Error: ' . $e->getMessage()], 500);
+        }
+    }
 
 
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh());
     }
-
 
 
     protected function respondWithToken($token)

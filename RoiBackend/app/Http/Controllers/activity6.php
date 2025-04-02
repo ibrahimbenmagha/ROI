@@ -91,7 +91,7 @@ class activity6 extends Controller
 
             // Calcul du ROI
             $ROI = ($M > 0) ? round($L / $M, 4) : 0; // ROI, évite la division par zéro
-            $activityByLaboId = $request['ActivityByLaboId'];
+            $activityByLaboId = $request->cookie('activityId');
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
                 ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],

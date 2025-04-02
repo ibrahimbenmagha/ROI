@@ -14,7 +14,7 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TheHeader from "../Header/Header";
@@ -41,11 +41,20 @@ const CalculateAct1 = () => {
   const [calculated, setCalculated] = useState(false); // Nouvel état pour suivre l'état du calcul
   const [items, setItems] = useState([]);
 
-
   const navigate = useNavigate();
-
+  const location = useLocation();
 
   useEffect(() => {
+    const match = location.pathname.match(/CalculateAct(\d+)/);
+    const activityNumber = match ? parseInt(match[1]) : null;
+    document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
+    if (!sessionStorage.getItem('reloaded')) {
+      sessionStorage.setItem('reloaded', 'true');
+      window.location.reload();
+  } else {
+      // Réinitialiser l'indicateur après le rechargement
+      sessionStorage.removeItem('reloaded');
+  }
     axiosInstance
       .get("getActivityItemsByActivityId/1")
       .then((response) => {
@@ -121,15 +130,13 @@ const CalculateAct1 = () => {
           error.response.data.message ||
             "Une erreur est survenue lors de l'insertion."
         );
-        console.log(response)
+        console.log(response);
       } else {
         // Afficher une erreur de requête
         alert("Une erreur est survenue lors de l'envoi de la requête.");
       }
     }
   };
-
-
 
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
@@ -191,7 +198,7 @@ const CalculateAct1 = () => {
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
-              <Title level={4}>Paramètres de calcul</Title>
+              <Title level={4} style={{ textAlign: "center" }}>Distribution des échantillons</Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
