@@ -46,16 +46,25 @@ class activity5 extends Controller
         $ROI = ($P > 0) ? round($M / $P, 4) : 0;
 
         return response()->json([
+            'nombre_medecins_participants_tables_rondes' => $A,
+            'nombre_moyen_tables_rondes_assistees_par_medecin' => $B,
+            'nombre_moyen_medecins_par_table_ronde' => $D,
+            'pourcentage_medecins_ayant_change_perception' => $validated['F'],
+            'pourcentage_medecins_influences_vont_prescrire' => $validated['H'],
+            'nombre_moyen_nouveaux_patients_par_medecin' => $J,
+            'valeur_revenu_par_patient_incremental' => $L,
+            'cout_variable_par_table_ronde' => $N,
+            'cout_fixe_total_programme' => $O,
+            'nombre_total_contacts_medecins' => $C,
+            'nombre_total_tables_rondes_requises' => $E,
+            'nombre_medecins_ayant_change_perception' => $G,
+            'nombre_medecins_prescrivant' => $I,
+            'nombre_patients_incrementaux_gagnes' => $K,
+            'ventes_incrementales' => $M,
+            'cout_total_programme' => $P,
+            'cout_par_contact_medecin' => $Q,
             'ROI' => $ROI,
-            'C' => $C,
-            'E' => $E,
-            'G' => $G,
-            'I' => $I,
-            'K' => $K,
-            'M' => $M,
-            'P' => $P,
-            'Q' => $Q,
-        ], 201);
+        ], 200);
     }
 
     public function insertIntoTable5(Request $request)

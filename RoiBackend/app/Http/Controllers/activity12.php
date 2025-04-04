@@ -102,7 +102,7 @@ class activity12 extends Controller
 
             ActivityItemValue::insert($values);
             $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-            ->update(['is_calculated' => true]);543
+            ->update(['is_calculated' => true]);
 
             return response()->json(['message' => 'Values inserted successfully'], 201);
         } catch (\Exception $e) {

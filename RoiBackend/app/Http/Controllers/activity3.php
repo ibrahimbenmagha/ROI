@@ -16,15 +16,16 @@ class activity3 extends Controller
 
     public function calculateROIAct3(Request $request)
     {
+        // Validation des données entrantes
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par l’email
+            'B' => 'required|numeric|min:0', // Nombre moyen d’emails envoyés par médecin
             'C' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se rappelant avoir reçu l’email
             'E' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se rappelant de la marque et du message
             'G' => 'required|numeric|min:0|max:100', // Pourcentage de médecins prescrivant Prexige à de nouveaux patients après réception du message
             'I' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous Prexige par médecin
             'K' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
             'M' => 'required|numeric|min:0', // Coût variable par email envoyé
-            'B' => 'required|numeric|min:0', // Nombre moyen d’emails envoyés par médecin
             'N' => 'required|numeric|min:0', // Coût fixe total du programme
         ]);
 
@@ -33,6 +34,7 @@ class activity3 extends Controller
         $E = $validated['E'] / 100;
         $G = $validated['G'] / 100;
 
+        // Variables
         $A = $validated['A'];
         $I = $validated['I'];
         $K = $validated['K'];
@@ -49,16 +51,27 @@ class activity3 extends Controller
         $O = ($M * $A * $B) + $N; // Coût total du programme
         $ROI = ($O > 0) ? round($L / $O, 4) : 0; // Retour sur investissement (ROI)
 
+        // Retourner les données avec les mêmes clés que dans la requête, y compris les calculs
         return response()->json([
+            'nombre_total_de_médecins_ciblés_par_email' => $validated['A'],
+            'nombre_moyen_d_emails_envoyés_par_médecin' => $validated['B'],
+            'pourcentage_de_médecins_se_rappelant_avoir_reçu_email' => $validated['C'],
+            'pourcentage_de_médecins_se_rappelant_marque_message' => $validated['E'],
+            'pourcentage_de_médecins_prescrivant_prexige_nouveaux_patients' => $validated['G'],
+            'nombre_moyen_de_nouveaux_patients_mis_sous_prexige_par_médecin' => $validated['I'],
+            'valeur_du_revenu_par_patient_incremental' => $validated['K'],
+            'cout_variable_par_email_envoye' => $validated['M'],
+            'cout_fixe_total_du_programme' => $validated['N'],
+            'nombre_de_médecins_ayant_reçu_et_rappelé_email' => $D,
+            'nombre_de_médecins_se_rappelant_du_produit_message' => $F,
+            'nombre_de_médecins_prescrivant_prexige_email' => $H,
+            'nombre_de_patients_incrementaux_generes_par_email' => $J,
+            'ventes_incrementales_generées' => $L,
+            'cout_total_du_programme' => $O,
             'ROI' => $ROI,
-            'D' => $D,
-            'F' => $F,
-            'H' => $H,
-            'J' => $J,
-            'L' => $L,
-            'O' => $O,
         ], 201);
     }
+
 
     public function insertIntoTable3(Request $request)
     {
@@ -96,13 +109,13 @@ class activity3 extends Controller
             $O = ($M * $A * $B) + $N; // Coût total du programme
             $ROI = ($O > 0) ? round($L / $O, 4) : 0; // Retour sur investissement (ROI)
 
-            
-            $activityByLaboId = $request->cookie('activityId'); 
+
+            $activityByLaboId = $request->cookie('activityId');
             $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if(!($verify==3)){
+            if (!($verify == 3)) {
                 return response()->json([
                     'message' => 'value/activity not match',
-                    'id' =>$verify
+                    'id' => $verify
                 ], 409);
             }
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
@@ -128,7 +141,7 @@ class activity3 extends Controller
 
             ActivityItemValue::insert($values);
             $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-            ->update(['is_calculated' => true]);
+                ->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Values inserted successfully'
@@ -189,10 +202,10 @@ class activity3 extends Controller
         ];
         $activityByLaboId = $request['ActivityByLaboId'];
         $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-        if(!($verify===3)){
+        if (!($verify === 3)) {
             return response()->json([
                 'message' => 'value/activity not match',
-                'id' =>$verify
+                'id' => $verify
             ], 409);
         }
 
@@ -214,7 +227,4 @@ class activity3 extends Controller
             ], 500);
         }
     }
-
-
-
 }

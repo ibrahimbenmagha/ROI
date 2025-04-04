@@ -20,11 +20,11 @@ class activity6 extends Controller
             'M1' => 'required|numeric|min:0', // Coût variable par représentant
             'M2' => 'required|numeric|min:0', // Nombre total de représentants
         ]);
-
+    
         // Conversion des pourcentages en valeurs décimales
         $E = $validated['E'] / 100;
         $G = $validated['G'] / 100;
-
+    
         // Récupération des variables de la requête
         $A = $validated['A']; // Nombre total de médecins ciblés
         $B = $validated['B']; // Nombre moyen de visites par médecin
@@ -32,29 +32,38 @@ class activity6 extends Controller
         $K = $validated['K']; // Valeur du revenu par patient
         $M1 = $validated['M1']; // Coût variable par représentant
         $M2 = $validated['M2']; // Nombre total de représentants
-
-
+    
+        // Calculs
         $C = $A * $B; // Nombre total de visites (détails)
         $F = $A * $E; // Nombre de médecins se rappelant du message
         $H = $F * $G; // Nombre de médecins prescrivant Prexige
         $J = $H * $I; // Nombre de patients incrémentaux
         $L = $J * $K; // Ventes incrémentales
         $M = $M1 * $M2; // Coût total du programme
-
+    
         // Calcul du ROI
         $ROI = ($M > 0) ? round($L / $M, 4) : 0; // ROI, évite la division par zéro
-
+    
         // Retour de la réponse avec les résultats
         return response()->json([
+            'nombre_medecins_cibles_par_representant' => $A,
+            'nombre_moyen_visites_par_medecin' => $B,
+            'pourcentage_medecins_se_rappelant_message' => $validated['E'],
+            'pourcentage_medecins_prescrivant_praxige' => $validated['G'],
+            'nombre_moyen_nouveaux_patients_par_medecin' => $I,
+            'valeur_revenu_par_patient_incremental' => $K,
+            'cout_variable_par_representant' => $M1,
+            'nombre_total_representants' => $M2,
+            'nombre_total_visites' => $C,
+            'nombre_medecins_se_rappelant_du_message' => $F,
+            'nombre_medecins_prescrivant_praxige' => $H,
+            'nombre_patients_incrementaux' => $J,
+            'ventes_incrementales' => $L,
+            'cout_total_programme' => $M,
             'ROI' => $ROI,
-            'C' => $C, // Nombre total de visites
-            'F' => $F, // Nombre de médecins se rappelant du message
-            'H' => $H, // Nombre de médecins prescrivant Prexige
-            'J' => $J, // Nombre de patients incrémentaux
-            'L' => $L, // Ventes incrémentales
-            'M' => $M, // Coût total du programme
-        ], 201);
+        ], 200);
     }
+    
 
     public function insertIntoTable6(Request $request)
     {

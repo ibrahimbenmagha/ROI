@@ -179,7 +179,7 @@ class ActivitiesController extends Controller
     public function getActivitiesByLaboInfosById(Request $request, $id)
     {
         $id = $request['id'];
-        $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id )
+        $ActivitiesByLaboInfos = ActivityByLabo::where('activitybylabo.id', $id)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')
@@ -210,7 +210,7 @@ class ActivitiesController extends Controller
         }
 
         $Activities = ActivityByLabo::where('laboId', $laboId)
-            ->where('is_calculated' , false)
+            ->where('is_calculated', false)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')
@@ -245,7 +245,7 @@ class ActivitiesController extends Controller
         }
 
         $Activities = ActivityByLabo::where('laboId', $laboId)
-            ->where('is_calculated' , true)
+            ->where('is_calculated', true)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')
@@ -272,14 +272,16 @@ class ActivitiesController extends Controller
 
     public function getCalculatedActivityData(Request $request)
     {
-        $activityByLaboId = $request['activityId'];
+        // $activityByLaboId = $request['activityId'];
+        $activityByLaboId = $request->cookie('activityId');
+
         if (!$activityByLaboId) {
             return response()->json(['message' => 'Activity ID not found'], 400);
         }
         try {
             $data = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
                 ->join('activityItems', 'ActivityItemValues.activityItemId', '=', 'activityItems.id')
-                ->select('activityItems.name as itemName', 'ActivityItemValues.value')
+                ->select('activityItems.name as itemName', 'ActivityItemValues.value as value')
                 ->get();
             return response()->json($data, 200);
         } catch (\Exception $e) {

@@ -9,9 +9,8 @@ import {deleteCookie } from "../../axiosConfig";
 import TheHeader from "../Header/Header";
 import Head from "../../components/Head";
 
-const storeActivityIdInCookie = (id,ActivityId) => {
+const storeActivityIdInCookie = (id) => {
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
-  document.cookie = `activityNumber=${ActivityId}; path=/; max-age=3600`;
 };
 
 const DisplayActivity = () => {
@@ -20,8 +19,7 @@ const DisplayActivity = () => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    deleteCookie("activityId");
-    deleteCookie("activityNumber");
+    // deleteCookie("activityId");
 
     axiosInstance
       .get("getAllCalculatedActivityByLaboInfosByLaboId")
@@ -115,13 +113,13 @@ const DisplayActivity = () => {
                 </span>
                 <span style={styles.ButtonSpan}>
                   <Link
-                    to={`/CalculateAct${activity.ActivityId}`}
+                    to='/RoiResultCard'
                     style={{ width: "100%" }}
                   >
                     <Button
                       type="primary"
                       style={{ width: "100%" }}
-                      onClick={() => storeActivityIdInCookie(activity.id,activity.ActivityId)}
+                      onClick={() => storeActivityIdInCookie(activity.id)}
                     >
                       Calculer
                     </Button>

@@ -44,14 +44,23 @@ class activity4 extends Controller
         $ROI = ($N > 0) ? round($K / $N, 4) : 0;
 
         return response()->json([
+            'nombre_medecins_participants_conférence' => $A,
+            'pourcentage_medecins_retention_message' => $validated['B'],
+            'pourcentage_medecins_perception_positive' => $validated['D'],
+            'pourcentage_medecins_prescription_nouveaux_patients' => $validated['F'],
+            'nombre_moyen_nouveaux_patients_prescrits_par_medecin' => $H,
+            'ajustement_influence_KOL' => $KOL,
+            'revenu_par_patient_incremental' => $J,
+            'cout_variable_par_medecin' => $L,
+            'cout_fixe_total_programme' => $M,
+            'nombre_medecins_exposes_message' => $C,
+            'nombre_medecins_perception_positive' => $E,
+            'nombre_medecins_prescrivant_nouveaux_patients' => $G,
+            'nombre_patients_incrementaux_gagnes' => $I,
+            'ventes_incrementales' => $K,
+            'cout_total_programme' => $N,
             'ROI' => $ROI,
-            'C' => $C,
-            'E' => $E,
-            'G' => $G,
-            'I' => $I,
-            'K' => $K,
-            'N' => $N,
-        ], 201);
+        ], 200);
     }
 
     public function insertIntoTable4(Request $request)

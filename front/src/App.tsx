@@ -14,6 +14,7 @@ import LoginForm from "./pages/LoginForm/LoginForm";
 import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
 import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
 import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
+import RoiResultCard from "./pages/RoiResultCard/RoiResultCard.tsx";
 
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
@@ -83,6 +84,14 @@ const App = () => (
             element={
               <LaboRoute>
                 <CreateActivity />
+              </LaboRoute>
+            }
+          />
+          <Route
+            path="RoiResultCard"
+            element={
+              <LaboRoute>
+                <RoiResultCard />
               </LaboRoute>
             }
           />
