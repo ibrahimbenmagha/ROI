@@ -24,23 +24,22 @@ import {deleteCookie } from "../../axiosConfig";
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
-const CalculateAct8 = () => {
+const CalculateAct12 = () => {
   // États pour stocker les valeurs du formulaire
-  const [totalPopulation, setTotalPopulation] = useState(0); // A - Population totale
-  const [diseaseRate, setDiseaseRate] = useState(0); // B - Taux d'incidence de la maladie
-  const [satisfiedRate, setSatisfiedRate] = useState(0); // D - Pourcentage des patients déjà traités et satisfaits
-  const [targetedRate, setTargetedRate] = useState(0); // F - Pourcentage des patients visés par la campagne en ligne
-  const [uniqueVisits, setUniqueVisits] = useState(0); // H - Nombre total de visites uniques sur le site
-  const [interestedRate, setInterestedRate] = useState(0); // J - Pourcentage des visiteurs intéressés
-  const [consultedRate, setConsultedRate] = useState(0); // L - Pourcentage des visiteurs ayant consulté un médecin
-  const [prescriptionRate, setPrescriptionRate] = useState(0); // N - Pourcentage des patients ayant reçu une prescription
-  const [revenuePerPatient, setRevenuePerPatient] = useState(0); // P - Valeur du revenu par patient incrémental
-  const [campaignCost, setCampaignCost] = useState(0); // R - Coût total de la campagne digitale
+  const [numDoctors, setNumDoctors] = useState(0); // A - Nombre de médecins susceptibles de prescrire
+  const [percentUsingInternet, setPercentUsingInternet] = useState(50); // B - % des médecins utilisant internet
+  const [totalUniqueVisits, setTotalUniqueVisits] = useState(0); // D - Nombre total de visites uniques
+  const [percentInteracted, setPercentInteracted] = useState(50); // F - % des visiteurs ayant interagi
+  const [percentChangedPerception, setPercentChangedPerception] = useState(50); // H - % des médecins ayant changé de perception
+  const [percentLikelyToPrescribe, setPercentLikelyToPrescribe] = useState(50); // J - % des médecins susceptibles de prescrire
+  const [newPatientsPerDoctor, setNewPatientsPerDoctor] = useState(0); // L - Nombre moyen de nouveaux patients par médecin
+  const [revenuePerPatient, setRevenuePerPatient] = useState(0); // N - Valeur moyenne de revenu par patient
+  const [totalCost, setTotalCost] = useState(0); // P - Coût total du programme e-digital
 
   // État pour stocker les résultats
-  const [calculationResult, setCalculationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
+  const [calculationResult, setCalculationResult] = useState(null);
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,8 +55,9 @@ const CalculateAct8 = () => {
     } else {
       sessionStorage.removeItem("reloaded");
     }
+
     axiosInstance
-      .get("getActivityItemsByActivityId/8")
+      .get("getActivityItemsByActivityId/12")
       .then((response) => {
         setItems(response.data);
       })
@@ -66,6 +66,7 @@ const CalculateAct8 = () => {
       });
   }, []);
 
+  // Fonction pour valider une entrée numérique
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
     if (isNaN(num)) return false;
@@ -75,82 +76,81 @@ const CalculateAct8 = () => {
   };
 
   const calculateRoi = () => {
-    if (!validateNumeric(totalPopulation, 0))
-      return alert("Population totale invalide");
-    if (!validateNumeric(diseaseRate, 0, 100))
-      return alert("Taux d'incidence invalide");
-    if (!validateNumeric(satisfiedRate, 0, 100))
-      return alert("Pourcentage de patients satisfaits invalide");
-    if (!validateNumeric(targetedRate, 0, 100))
-      return alert("Pourcentage de patients visés invalide");
-    if (!validateNumeric(uniqueVisits, 0))
-      return alert("Nombre de visites unique invalide");
-    if (!validateNumeric(interestedRate, 0, 100))
-      return alert("Pourcentage de visiteurs intéressés invalide");
-    if (!validateNumeric(consultedRate, 0, 100))
-      return alert("Pourcentage de visiteurs ayant consulté invalide");
-    if (!validateNumeric(prescriptionRate, 0, 100))
+    // Validation simple
+    if (!validateNumeric(numDoctors, 0))
+      return alert("Nombre de médecins invalide");
+    if (!validateNumeric(percentUsingInternet, 0, 100))
+      return alert("Pourcentage des médecins utilisant internet invalide");
+    if (!validateNumeric(totalUniqueVisits, 0))
+      return alert("Nombre total de visites uniques invalide");
+    if (!validateNumeric(percentInteracted, 0, 100))
+      return alert("Pourcentage des visiteurs ayant interagi invalide");
+    if (!validateNumeric(percentChangedPerception, 0, 100))
       return alert(
-        "Pourcentage de patients ayant reçu une prescription invalide"
+        "Pourcentage des médecins ayant changé de perception invalide"
       );
+    if (!validateNumeric(percentLikelyToPrescribe, 0, 100))
+      return alert(
+        "Pourcentage des médecins susceptibles de prescrire invalide"
+      );
+    if (!validateNumeric(newPatientsPerDoctor, 0))
+      return alert("Nombre moyen de nouveaux patients par médecin invalide");
     if (!validateNumeric(revenuePerPatient, 0))
-      return alert("Valeur par patient invalide");
-    if (!validateNumeric(campaignCost, 0))
-      return alert("Coût de campagne invalide");
+      return alert("Valeur moyenne de revenu par patient invalide");
+    if (!validateNumeric(totalCost, 0))
+      return alert("Coût total du programme e-digital invalide");
+
+    // Conversion des pourcentages
+    const B = percentUsingInternet / 100;
+    const F = percentInteracted / 100;
+    const H = percentChangedPerception / 100;
+    const J = percentLikelyToPrescribe / 100;
 
     // Variables
-    const A = totalPopulation;
-    const B = diseaseRate / 100;
-    const D = satisfiedRate / 100;
-    const F = targetedRate / 100;
-    const H = uniqueVisits;
-    const J = interestedRate / 100;
-    const L = consultedRate / 100;
-    const N = prescriptionRate / 100;
-    const P = revenuePerPatient;
-    const R = campaignCost;
+    const A = numDoctors;
+    const D = totalUniqueVisits;
+    const L = newPatientsPerDoctor;
+    const N = revenuePerPatient;
+    const P = totalCost;
 
     // Calculs
-    const C = A * B; // Nombre total de patients souffrant de la maladie
-    const E = C * (1 - D); // Nombre de patients non traités ou insatisfaits
-    const G = E * F; // Nombre de patients ciblés par la campagne digitale
-    const I = H / G; // Taux d'efficacité d'atteinte des patients ciblés
-    const K = H * J; // Nombre de visiteurs uniques intéressés et sensibilisés
-    const M = K * L; // Nombre de visiteurs uniques ayant consulté un médecin
-    const O = M * N; // Nombre de patients ayant obtenu une prescription
-    const Q = O * P; // Ventes incrémentales générées
-
-    // Calcul du ROI
-    const ROI = R > 0 ? (Q / R) * 100 : 0;
+    const C = A * B; // Taille de l'audience digitale potentielle
+    const E = D / C; // Taux d'efficacité sur les médecins cibles
+    const G = D * F; // Médecins ayant démontré un intérêt qualifié
+    const I = G * H; // Médecins ayant changé positivement leur perception
+    const K = I * J; // Médecins prescrivant le produit
+    const M = K * L; // Nombre total de patients incrémentaux
+    const O = M * N; // Ventes incrémentales générées
+    const ROI = P > 0 ? (O / P) * 100 : 0; // Calcul du ROI (en pourcentage)
 
     setCalculationResult({
       roi: ROI,
-      incrementalSales: Q,
-      totalPatients: C,
-      untreatedPatients: E,
-      targetedPatients: G,
-      efficacyRate: I,
-      interestedVisitors: K,
-      consultedVisitors: M,
-      prescribedPatients: O,
-      totalCost: R,
+      audiencePotential: C,
+      effectivenessRate: E,
+      interestedDoctors: G,
+      changedPerceptionDoctors: I,
+      prescribingDoctors: K,
+      incrementalPatients: M,
+      incrementalSales: O,
+      totalCost: P,
     });
     setCalculated(true);
+
   };
 
   const handleReset = () => {
-    setTotalPopulation(0);
-    setDiseaseRate(0);
-    setSatisfiedRate(0);
-    setTargetedRate(0);
-    setUniqueVisits(0);
-    setInterestedRate(0);
-    setConsultedRate(0);
-    setPrescriptionRate(0);
+    setNumDoctors(0);
+    setPercentUsingInternet(50);
+    setTotalUniqueVisits(0);
+    setPercentInteracted(50);
+    setPercentChangedPerception(50);
+    setPercentLikelyToPrescribe(50);
+    setNewPatientsPerDoctor(0);
     setRevenuePerPatient(0);
-    setCampaignCost(0);
+    setTotalCost(0);
     setCalculationResult(null);
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -158,17 +158,17 @@ const CalculateAct8 = () => {
       alert("Veuillez d'abord ajouter des éléments d'activité");
       return;
     }
+
     const formData = {
-      A: totalPopulation,
-      B: diseaseRate,
-      D: satisfiedRate,
-      F: targetedRate,
-      H: uniqueVisits,
-      J: interestedRate,
-      L: consultedRate,
-      N: prescriptionRate,
-      P: revenuePerPatient,
-      R: campaignCost,
+      A: numDoctors,
+      B: percentUsingInternet,
+      D: totalUniqueVisits,
+      F: percentInteracted,
+      H: percentChangedPerception,
+      J: percentLikelyToPrescribe,
+      L: newPatientsPerDoctor,
+      N: revenuePerPatient,
+      P: totalCost,
       id_A: items[0]?.id,
       id_B: items[1]?.id,
       id_D: items[2]?.id,
@@ -178,11 +178,10 @@ const CalculateAct8 = () => {
       id_L: items[6]?.id,
       id_N: items[7]?.id,
       id_P: items[8]?.id,
-      id_R: items[9]?.id,
-      id_ROI: items[10]?.id,
+      id_ROI: items[9]?.id,
     };
     try {
-      const response = await axiosInstance.post("insertIntoTable8", formData);
+      const response = await axiosInstance.post("insertIntoTable12", formData);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");
@@ -209,175 +208,164 @@ const CalculateAct8 = () => {
   return (
     <Layout className="min-h-screen">
       <TheHeader />
+
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <form onSubmit={handleSubmit}>
             <Card>
-              <Title level={4} style={{ textAlign: "center" }}>
-                Publicité directe au consommateur en ligne
-              </Title>
+              <Title level={4}>Paramètres de calcul</Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* A - Population totale */}
+                {/* A - Nombre de médecins */}
                 <div>
                   <label
-                    htmlFor="totalPopulation"
+                    htmlFor="numDoctors"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Population totale (A)
+                    Nombre de médecins susceptibles de prescrire (A)
                   </label>
                   <Input
-                    id="totalPopulation"
+                    id="numDoctors"
                     type="number"
                     min="0"
-                    value={totalPopulation}
-                    onChange={(e) => setTotalPopulation(Number(e.target.value))}
+                    value={numDoctors}
+                    onChange={(e) => setNumDoctors(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
-                {/* B - Taux d'incidence */}
+                {/* B - % des médecins utilisant internet */}
                 <div>
                   <label
-                    htmlFor="diseaseRate"
+                    htmlFor="percentUsingInternet"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Taux d'incidence de la maladie % (B)
+                    % des médecins utilisant internet (B)
                   </label>
                   <Input
-                    id="diseaseRate"
+                    id="percentUsingInternet"
                     type="number"
                     min="0"
                     max="100"
-                    value={diseaseRate}
-                    onChange={(e) => setDiseaseRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* D - Patients satisfaits */}
-                <div>
-                  <label
-                    htmlFor="satisfiedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients déjà traités et satisfaits % (D)
-                  </label>
-                  <Input
-                    id="satisfiedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={satisfiedRate}
-                    onChange={(e) => setSatisfiedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* F - Patients visés */}
-                <div>
-                  <label
-                    htmlFor="targetedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients visés par la campagne % (F)
-                  </label>
-                  <Input
-                    id="targetedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={targetedRate}
-                    onChange={(e) => setTargetedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* H - Visites uniques */}
-                <div>
-                  <label
-                    htmlFor="uniqueVisits"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Nombre total de visites uniques sur le site (H)
-                  </label>
-                  <Input
-                    id="uniqueVisits"
-                    type="number"
-                    min="0"
-                    value={uniqueVisits}
-                    onChange={(e) => setUniqueVisits(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* J - Visiteurs intéressés */}
-                <div>
-                  <label
-                    htmlFor="interestedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des visiteurs intéressés % (J)
-                  </label>
-                  <Input
-                    id="interestedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={interestedRate}
-                    onChange={(e) => setInterestedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* L - Visiteurs ayant consulté */}
-                <div>
-                  <label
-                    htmlFor="consultedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des visiteurs ayant consulté un médecin % (L)
-                  </label>
-                  <Input
-                    id="consultedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={consultedRate}
-                    onChange={(e) => setConsultedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* N - Patients avec prescription */}
-                <div>
-                  <label
-                    htmlFor="prescriptionRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients ayant reçu une prescription % (N)
-                  </label>
-                  <Input
-                    id="prescriptionRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={prescriptionRate}
+                    value={percentUsingInternet}
                     onChange={(e) =>
-                      setPrescriptionRate(Number(e.target.value))
+                      setPercentUsingInternet(Number(e.target.value))
                     }
                     className="w-full"
                   />
                 </div>
 
-                {/* P - Valeur du revenu */}
+                {/* D - Nombre total de visites uniques */}
+                <div>
+                  <label
+                    htmlFor="totalUniqueVisits"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Nombre total de visites uniques (D)
+                  </label>
+                  <Input
+                    id="totalUniqueVisits"
+                    type="number"
+                    min="0"
+                    value={totalUniqueVisits}
+                    onChange={(e) =>
+                      setTotalUniqueVisits(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* F - % des visiteurs ayant interagi */}
+                <div>
+                  <label
+                    htmlFor="percentInteracted"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    % des visiteurs ayant interagi (F)
+                  </label>
+                  <Input
+                    id="percentInteracted"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentInteracted}
+                    onChange={(e) =>
+                      setPercentInteracted(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* H - % des médecins ayant changé de perception */}
+                <div>
+                  <label
+                    htmlFor="percentChangedPerception"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    % des médecins ayant changé de perception (H)
+                  </label>
+                  <Input
+                    id="percentChangedPerception"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentChangedPerception}
+                    onChange={(e) =>
+                      setPercentChangedPerception(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* J - % des médecins susceptibles de prescrire */}
+                <div>
+                  <label
+                    htmlFor="percentLikelyToPrescribe"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    % des médecins susceptibles de prescrire (J)
+                  </label>
+                  <Input
+                    id="percentLikelyToPrescribe"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentLikelyToPrescribe}
+                    onChange={(e) =>
+                      setPercentLikelyToPrescribe(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* L - Nombre moyen de nouveaux patients */}
+                <div>
+                  <label
+                    htmlFor="newPatientsPerDoctor"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Nombre moyen de nouveaux patients par médecin (L)
+                  </label>
+                  <Input
+                    id="newPatientsPerDoctor"
+                    type="number"
+                    min="0"
+                    value={newPatientsPerDoctor}
+                    onChange={(e) =>
+                      setNewPatientsPerDoctor(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* N - Valeur moyenne de revenu */}
                 <div>
                   <label
                     htmlFor="revenuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur du revenu par patient incrémental € (P)
+                    Valeur moyenne de revenu par patient € (N)
                   </label>
                   <Input
                     id="revenuePerPatient"
@@ -391,20 +379,20 @@ const CalculateAct8 = () => {
                   />
                 </div>
 
-                {/* R - Coût de la campagne */}
+                {/* P - Coût total du programme */}
                 <div>
                   <label
-                    htmlFor="campaignCost"
+                    htmlFor="totalCost"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût total de la campagne digitale € (R)
+                    Coût total du programme e-digital € (P)
                   </label>
                   <Input
-                    id="campaignCost"
+                    id="totalCost"
                     type="number"
                     min="0"
-                    value={campaignCost}
-                    onChange={(e) => setCampaignCost(Number(e.target.value))}
+                    value={totalCost}
+                    onChange={(e) => setTotalCost(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
@@ -433,7 +421,7 @@ const CalculateAct8 = () => {
                 <Button
                   className="bg-primary"
                   type="submit"
-                  disabled={loading || !calculated} // Désactiver si le calcul n'est pas encore fait
+                  disabled={loading || !calculated}
                   style={{ backgroundColor: "#1890ff" }}
                 >
                   {loading ? (
@@ -447,7 +435,7 @@ const CalculateAct8 = () => {
                 </Button>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" onClick={handleReset} type="button">
+                  <Button variant="outline" onClick={handleReset}>
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
                   </Button>
@@ -494,22 +482,46 @@ const CalculateAct8 = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                     <Card>
                       <Statistic
-                        title="Patients Potentiels"
-                        value={calculationResult.totalPatients}
+                        title="Audience Digitale"
+                        value={calculationResult.audiencePotential}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Visiteurs Intéressés"
-                        value={calculationResult.interestedVisitors}
+                        title="Taux d'Efficacité"
+                        value={calculationResult.effectivenessRate}
+                        precision={2}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Médecins Intéressés"
+                        value={calculationResult.interestedDoctors}
+                        precision={0}
+                      />
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                    <Card>
+                      <Statistic
+                        title="Perception Changée"
+                        value={calculationResult.changedPerceptionDoctors}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Patients Traités"
-                        value={calculationResult.prescribedPatients}
+                        title="Médecins Prescripteurs"
+                        value={calculationResult.prescribingDoctors}
+                        precision={0}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Patients Incrémentaux"
+                        value={calculationResult.incrementalPatients}
                         precision={0}
                       />
                     </Card>
@@ -534,4 +546,4 @@ const CalculateAct8 = () => {
   );
 };
 
-export default CalculateAct8;
+export default CalculateAct12;

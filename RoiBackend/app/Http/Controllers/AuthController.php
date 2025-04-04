@@ -10,6 +10,7 @@ use App\Models\ActivityByLabo;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Helpers\JwtHelper; // Adjust the namespace as needed
+use Illuminate\Support\Facades\Hash;
 
 
 class AuthController extends Controller
@@ -35,9 +36,9 @@ class AuthController extends Controller
                 "activity" =>  $activity->id,
                 'ActByLabo' => $ActByLabo,
                 "activityId" => $activity->activityId,
-                "activityNumber"=> $activityNumber,
-                "laboId_DB"=> $activity->laboId,
-                "laboId"=> $laboId,
+                "activityNumber" => $activityNumber,
+                "laboId_DB" => $activity->laboId,
+                "laboId" => $laboId,
             ]);
         } else {
             return response()->json([
@@ -48,7 +49,35 @@ class AuthController extends Controller
         }
     }
 
+    public function verifyPassword(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
 
+        if (!$laboId) {
+            return response()->json(['error' => 'Labo ID introuvable'], 400);
+        }
+
+        // Récupérer le laboratoire correspondant
+        $laboratoire = DB::table('labo')->where('id', $laboId)->first();
+
+        if (!$laboratoire) {
+            return response()->json(['error' => 'Laboratoire non trouvé'], 404);
+        }
+
+        // Récupérer l'utilisateur associé à ce laboratoire
+        $user = DB::table('users')->where('id', $laboratoire->userId)->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+        }
+
+        // Vérifier si le mot de passe fourni correspond au mot de passe enregistré
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json(['success' => false, 'error' => 'Mot de passe incorrect'], 400);
+        }
+
+        return response()->json(['success' => true], 200);
+    }
     public function checkAuth(Request $request)
     {
         try {
@@ -133,13 +162,10 @@ class AuthController extends Controller
         }
     }
 
-
-
     public function me()
     {
         return response()->json(auth()->user());
     }
-
 
     public function logout(Request $request)
     {
@@ -147,7 +173,7 @@ class AuthController extends Controller
             // Invalide le token actuel
             auth()->logout();
             $token = $request->cookie('access_token');
-            JWTAuth::removeToken($token);
+            JwtHelper::removeToken($request);
             return response()->json(['message' => 'Successfully logged out'], 200);
             //    ->cookie('access_token', '', -1, '/', null, true, true); // Supprime le cookie
         } catch (\Exception $e) {
@@ -160,7 +186,6 @@ class AuthController extends Controller
     {
         return $this->respondWithToken(auth()->refresh());
     }
-
 
     protected function respondWithToken($token)
     {

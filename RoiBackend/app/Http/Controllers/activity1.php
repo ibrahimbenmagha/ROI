@@ -61,7 +61,7 @@ class Activity1 extends Controller
         ], 201);
     }
 
-    public function insertIntoTable1(Request $request)
+    public function insetrIntoTable1(Request $request)
     {
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
@@ -75,7 +75,7 @@ class Activity1 extends Controller
             'N' => 'required|numeric|min:0', // input de Coûts fixes du programme
 
         ]);
-        $id_A = $request['id_A'];//id de de Nombre de médecins recevant des échantillons dans la table activityItems
+        $id_A = $request['id_A']; //id de de Nombre de médecins recevant des échantillons dans la table activityItems
         $id_B = $request['id_B'];
         $id_D = $request['id_D'];
         $id_E = $request['id_E'];
@@ -106,25 +106,25 @@ class Activity1 extends Controller
         $L = $J * $K;
         $O = ($M * $C) + $N;
         $ROI = ($O > 0) ? round($L / $O, 4) : 0;
-        
+
         $ActByLabo = $request->cookie('activityId');
         $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
 
 
-        if(!($verify===1)){
+        if (!($verify === 1)) {
             return response()->json([
                 'message' => 'value/activity not match',
-                'id' =>$verify
+                'id' => $verify
             ], 409);
         }
 
         if (ActivityItemValue::where('ActivityByLaboId', $request['ActByLabo'])->exists()) {
             return response()->json([
                 'message' => 'Duplicated values for 1 Activity are dineided',
-                
+
             ], 409);
         }
-       
+
         $values = ActivityItemValue::insert(
             values: [
                 ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
@@ -139,6 +139,10 @@ class Activity1 extends Controller
                 ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
             ]
         );
+        $UPDATE = ActivityByLabo::where('id', $ActByLabo)
+            ->update(['is_calculated' => true]);
+
+
         return response()->json([
             'message' => 'Good request',
             // 'data' => $values
@@ -217,10 +221,10 @@ class Activity1 extends Controller
             ['activityItemId' => $id_ROI, 'value' => $ROI],
         ];
         $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-        if(!($verify===1)){
+        if (!($verify === 1)) {
             return response()->json([
                 'message' => 'value/activity not match',
-                'id' =>$verify
+                'id' => $verify
             ], 409);
         }
         try {
@@ -240,10 +244,5 @@ class Activity1 extends Controller
                 "error" => $e->getMessage()
             ], 500);
         }
-
     }
-
-
-
-
 }

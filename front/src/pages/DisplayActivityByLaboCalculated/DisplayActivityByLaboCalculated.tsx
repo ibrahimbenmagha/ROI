@@ -24,8 +24,8 @@ const DisplayActivity = () => {
     deleteCookie("activityNumber");
 
     axiosInstance
-      .get("getAllActivityByLaboInfosByLaboId")
-      //getAllActivityByLaboInfosByLaboId
+      .get("getAllCalculatedActivityByLaboInfosByLaboId")
+      //getAllCalculatedActivityByLaboInfosByLaboId
       .then((response) => {
         setActivities(response.data);
         setLoading(false);
@@ -109,9 +109,7 @@ const DisplayActivity = () => {
                       <span className="font-semibold">Année:</span>{" "}
                       {activity.year}
                     </p>
-                    {/* <p className="text-gray-600">
-                      <span className="font-semibold">list:</span> {activity.ActivityId}
-                    </p> */}
+
                     <span className="text-gray-600"></span>
                   </CardContent>
                 </span>
@@ -119,7 +117,6 @@ const DisplayActivity = () => {
                   <Link
                     to={`/CalculateAct${activity.ActivityId}`}
                     style={{ width: "100%" }}
-                    // Enregistrer l'ID dans le cookie au clic
                   >
                     <Button
                       type="primary"

@@ -24,23 +24,18 @@ import {deleteCookie } from "../../axiosConfig";
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
-const CalculateAct8 = () => {
+const CalculateAct11 = () => {
   // États pour stocker les valeurs du formulaire
-  const [totalPopulation, setTotalPopulation] = useState(0); // A - Population totale
-  const [diseaseRate, setDiseaseRate] = useState(0); // B - Taux d'incidence de la maladie
-  const [satisfiedRate, setSatisfiedRate] = useState(0); // D - Pourcentage des patients déjà traités et satisfaits
-  const [targetedRate, setTargetedRate] = useState(0); // F - Pourcentage des patients visés par la campagne en ligne
-  const [uniqueVisits, setUniqueVisits] = useState(0); // H - Nombre total de visites uniques sur le site
-  const [interestedRate, setInterestedRate] = useState(0); // J - Pourcentage des visiteurs intéressés
-  const [consultedRate, setConsultedRate] = useState(0); // L - Pourcentage des visiteurs ayant consulté un médecin
-  const [prescriptionRate, setPrescriptionRate] = useState(0); // N - Pourcentage des patients ayant reçu une prescription
-  const [revenuePerPatient, setRevenuePerPatient] = useState(0); // P - Valeur du revenu par patient incrémental
-  const [campaignCost, setCampaignCost] = useState(0); // R - Coût total de la campagne digitale
+  const [numConsumers, setNumConsumers] = useState(0); // A - Nombre de consommateurs exposés à l'activité
+  const [percentMemorizing, setPercentMemorizing] = useState(0); // B - % de consommateurs mémorisant le message
+  const [percentConsulting, setPercentConsulting] = useState(0); // D - % de consommateurs ayant consulté après l'exposition
+  const [percentPrescription, setPercentPrescription] = useState(0); // F - % des consultations aboutissant à une prescription
+  const [revenuePerPatient, setRevenuePerPatient] = useState(0); // H - Revenu moyen généré par patient
+  const [totalCost, setTotalCost] = useState(0); // J - Coût fixe total de l'activité
 
-  // État pour stocker les résultats
-  const [calculationResult, setCalculationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
+  const [calculationResult, setCalculationResult] = useState(null);
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,8 +51,9 @@ const CalculateAct8 = () => {
     } else {
       sessionStorage.removeItem("reloaded");
     }
+
     axiosInstance
-      .get("getActivityItemsByActivityId/8")
+      .get("getActivityItemsByActivityId/11")
       .then((response) => {
         setItems(response.data);
       })
@@ -66,6 +62,7 @@ const CalculateAct8 = () => {
       });
   }, []);
 
+  // Fonction pour valider une entrée numérique
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
     if (isNaN(num)) return false;
@@ -74,82 +71,67 @@ const CalculateAct8 = () => {
     return true;
   };
 
+  // Calculer le ROI
   const calculateRoi = () => {
-    if (!validateNumeric(totalPopulation, 0))
-      return alert("Population totale invalide");
-    if (!validateNumeric(diseaseRate, 0, 100))
-      return alert("Taux d'incidence invalide");
-    if (!validateNumeric(satisfiedRate, 0, 100))
-      return alert("Pourcentage de patients satisfaits invalide");
-    if (!validateNumeric(targetedRate, 0, 100))
-      return alert("Pourcentage de patients visés invalide");
-    if (!validateNumeric(uniqueVisits, 0))
-      return alert("Nombre de visites unique invalide");
-    if (!validateNumeric(interestedRate, 0, 100))
-      return alert("Pourcentage de visiteurs intéressés invalide");
-    if (!validateNumeric(consultedRate, 0, 100))
-      return alert("Pourcentage de visiteurs ayant consulté invalide");
-    if (!validateNumeric(prescriptionRate, 0, 100))
+    // Validation simple
+    if (!validateNumeric(numConsumers, 0))
+      return alert("Nombre de consommateurs invalide");
+    if (!validateNumeric(percentMemorizing, 0, 100))
       return alert(
-        "Pourcentage de patients ayant reçu une prescription invalide"
+        "Pourcentage de consommateurs mémorisant le message invalide"
+      );
+    if (!validateNumeric(percentConsulting, 0, 100))
+      return alert(
+        "Pourcentage de consommateurs ayant consulté après l'exposition invalide"
+      );
+    if (!validateNumeric(percentPrescription, 0, 100))
+      return alert(
+        "Pourcentage des consultations aboutissant à une prescription invalide"
       );
     if (!validateNumeric(revenuePerPatient, 0))
-      return alert("Valeur par patient invalide");
-    if (!validateNumeric(campaignCost, 0))
-      return alert("Coût de campagne invalide");
+      return alert("Revenu moyen par patient invalide");
+    if (!validateNumeric(totalCost, 0))
+      return alert("Coût total de l'activité invalide");
+
+    // Conversion des pourcentages
+    const B = percentMemorizing / 100;
+    const D = percentConsulting / 100;
+    const F = percentPrescription / 100;
 
     // Variables
-    const A = totalPopulation;
-    const B = diseaseRate / 100;
-    const D = satisfiedRate / 100;
-    const F = targetedRate / 100;
-    const H = uniqueVisits;
-    const J = interestedRate / 100;
-    const L = consultedRate / 100;
-    const N = prescriptionRate / 100;
-    const P = revenuePerPatient;
-    const R = campaignCost;
+    const A = numConsumers;
+    const H = revenuePerPatient;
+    const J = totalCost;
 
-    // Calculs
-    const C = A * B; // Nombre total de patients souffrant de la maladie
-    const E = C * (1 - D); // Nombre de patients non traités ou insatisfaits
-    const G = E * F; // Nombre de patients ciblés par la campagne digitale
-    const I = H / G; // Taux d'efficacité d'atteinte des patients ciblés
-    const K = H * J; // Nombre de visiteurs uniques intéressés et sensibilisés
-    const M = K * L; // Nombre de visiteurs uniques ayant consulté un médecin
-    const O = M * N; // Nombre de patients ayant obtenu une prescription
-    const Q = O * P; // Ventes incrémentales générées
-
-    // Calcul du ROI
-    const ROI = R > 0 ? (Q / R) * 100 : 0;
+    // Calculs des métriques
+    const C = A * B; // Nombre de consommateurs ayant mémorisé le message
+    const E = C * D; // Nombre de consultations générées
+    const G = E * F; // Nombre total de patients incrémentaux
+    const I = G * H; // Ventes incrémentales générées
+    const ROI = J > 0 ? (I / J) * 100 : 0; // Calcul du ROI (en pourcentage)
 
     setCalculationResult({
       roi: ROI,
-      incrementalSales: Q,
-      totalPatients: C,
-      untreatedPatients: E,
-      targetedPatients: G,
-      efficacyRate: I,
-      interestedVisitors: K,
-      consultedVisitors: M,
-      prescribedPatients: O,
-      totalCost: R,
+      consumersMemorizing: C,
+      consultationsGenerated: E,
+      incrementalPatients: G,
+      incrementalSales: I,
+      totalCost: J,
     });
+
     setCalculated(true);
   };
 
+  // Réinitialiser le formulaire
   const handleReset = () => {
-    setTotalPopulation(0);
-    setDiseaseRate(0);
-    setSatisfiedRate(0);
-    setTargetedRate(0);
-    setUniqueVisits(0);
-    setInterestedRate(0);
-    setConsultedRate(0);
-    setPrescriptionRate(0);
+    setNumConsumers(0);
+    setPercentMemorizing(0);
+    setPercentConsulting(0);
+    setPercentPrescription(0);
     setRevenuePerPatient(0);
-    setCampaignCost(0);
+    setTotalCost(0);
     setCalculationResult(null);
+    setCalculated(false);
   };
 
   const handleSubmit = async (e) => {
@@ -158,31 +140,26 @@ const CalculateAct8 = () => {
       alert("Veuillez d'abord ajouter des éléments d'activité");
       return;
     }
+
     const formData = {
-      A: totalPopulation,
-      B: diseaseRate,
-      D: satisfiedRate,
-      F: targetedRate,
-      H: uniqueVisits,
-      J: interestedRate,
-      L: consultedRate,
-      N: prescriptionRate,
-      P: revenuePerPatient,
-      R: campaignCost,
+      A: numConsumers,
+      B: percentMemorizing,
+      D: percentConsulting,
+      F: percentPrescription,
+      H: revenuePerPatient,
+      J: totalCost,
+
       id_A: items[0]?.id,
       id_B: items[1]?.id,
       id_D: items[2]?.id,
       id_F: items[3]?.id,
       id_H: items[4]?.id,
       id_J: items[5]?.id,
-      id_L: items[6]?.id,
-      id_N: items[7]?.id,
-      id_P: items[8]?.id,
-      id_R: items[9]?.id,
-      id_ROI: items[10]?.id,
+      id_ROI: items[6]?.id,
     };
+
     try {
-      const response = await axiosInstance.post("insertIntoTable8", formData);
+      const response = await axiosInstance.post("insertIntoTable11", formData);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");
@@ -209,175 +186,105 @@ const CalculateAct8 = () => {
   return (
     <Layout className="min-h-screen">
       <TheHeader />
+
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <form onSubmit={handleSubmit}>
             <Card>
               <Title level={4} style={{ textAlign: "center" }}>
-                Publicité directe au consommateur en ligne
+                Campagnes de Communication Grand Public
               </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* A - Population totale */}
+                {/* A - Nombre de consommateurs exposés */}
                 <div>
                   <label
-                    htmlFor="totalPopulation"
+                    htmlFor="numConsumers"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Population totale (A)
+                    Nombre de consommateurs exposés à l'activité (A)
                   </label>
                   <Input
-                    id="totalPopulation"
+                    id="numConsumers"
                     type="number"
                     min="0"
-                    value={totalPopulation}
-                    onChange={(e) => setTotalPopulation(Number(e.target.value))}
+                    value={numConsumers}
+                    onChange={(e) => setNumConsumers(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
 
-                {/* B - Taux d'incidence */}
+                {/* B - % de consommateurs mémorisant le message */}
                 <div>
                   <label
-                    htmlFor="diseaseRate"
+                    htmlFor="percentMemorizing"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Taux d'incidence de la maladie % (B)
+                    % de consommateurs mémorisant le message (B)
                   </label>
                   <Input
-                    id="diseaseRate"
+                    id="percentMemorizing"
                     type="number"
                     min="0"
                     max="100"
-                    value={diseaseRate}
-                    onChange={(e) => setDiseaseRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* D - Patients satisfaits */}
-                <div>
-                  <label
-                    htmlFor="satisfiedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients déjà traités et satisfaits % (D)
-                  </label>
-                  <Input
-                    id="satisfiedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={satisfiedRate}
-                    onChange={(e) => setSatisfiedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* F - Patients visés */}
-                <div>
-                  <label
-                    htmlFor="targetedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients visés par la campagne % (F)
-                  </label>
-                  <Input
-                    id="targetedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={targetedRate}
-                    onChange={(e) => setTargetedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* H - Visites uniques */}
-                <div>
-                  <label
-                    htmlFor="uniqueVisits"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Nombre total de visites uniques sur le site (H)
-                  </label>
-                  <Input
-                    id="uniqueVisits"
-                    type="number"
-                    min="0"
-                    value={uniqueVisits}
-                    onChange={(e) => setUniqueVisits(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* J - Visiteurs intéressés */}
-                <div>
-                  <label
-                    htmlFor="interestedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des visiteurs intéressés % (J)
-                  </label>
-                  <Input
-                    id="interestedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={interestedRate}
-                    onChange={(e) => setInterestedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* L - Visiteurs ayant consulté */}
-                <div>
-                  <label
-                    htmlFor="consultedRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des visiteurs ayant consulté un médecin % (L)
-                  </label>
-                  <Input
-                    id="consultedRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={consultedRate}
-                    onChange={(e) => setConsultedRate(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* N - Patients avec prescription */}
-                <div>
-                  <label
-                    htmlFor="prescriptionRate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Pourcentage des patients ayant reçu une prescription % (N)
-                  </label>
-                  <Input
-                    id="prescriptionRate"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={prescriptionRate}
+                    value={percentMemorizing}
                     onChange={(e) =>
-                      setPrescriptionRate(Number(e.target.value))
+                      setPercentMemorizing(Number(e.target.value))
                     }
                     className="w-full"
                   />
                 </div>
 
-                {/* P - Valeur du revenu */}
+                {/* D - % de consommateurs ayant consulté après l'exposition */}
+                <div>
+                  <label
+                    htmlFor="percentConsulting"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    % de consommateurs ayant consulté après l'exposition (D)
+                  </label>
+                  <Input
+                    id="percentConsulting"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentConsulting}
+                    onChange={(e) =>
+                      setPercentConsulting(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* F - % des consultations aboutissant à une prescription */}
+                <div>
+                  <label
+                    htmlFor="percentPrescription"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    % des consultations aboutissant à une prescription (F)
+                  </label>
+                  <Input
+                    id="percentPrescription"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPrescription}
+                    onChange={(e) =>
+                      setPercentPrescription(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* H - Revenu moyen par patient */}
                 <div>
                   <label
                     htmlFor="revenuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur du revenu par patient incrémental € (P)
+                    Revenu moyen généré par patient € (H)
                   </label>
                   <Input
                     id="revenuePerPatient"
@@ -391,27 +298,26 @@ const CalculateAct8 = () => {
                   />
                 </div>
 
-                {/* R - Coût de la campagne */}
+                {/* J - Coût total de l'activité */}
                 <div>
                   <label
-                    htmlFor="campaignCost"
+                    htmlFor="totalCost"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coût total de la campagne digitale € (R)
+                    Coût fixe total de l'activité € (J)
                   </label>
                   <Input
-                    id="campaignCost"
+                    id="totalCost"
                     type="number"
                     min="0"
-                    value={campaignCost}
-                    onChange={(e) => setCampaignCost(Number(e.target.value))}
+                    value={totalCost}
+                    onChange={(e) => setTotalCost(Number(e.target.value))}
                     className="w-full"
                   />
                 </div>
               </div>
 
               <Divider />
-
               <div className="flex flex-col sm:flex-row justify-between gap-4">
                 <Button
                   onClick={calculateRoi}
@@ -433,7 +339,7 @@ const CalculateAct8 = () => {
                 <Button
                   className="bg-primary"
                   type="submit"
-                  disabled={loading || !calculated} // Désactiver si le calcul n'est pas encore fait
+                  disabled={loading || !calculated}
                   style={{ backgroundColor: "#1890ff" }}
                 >
                   {loading ? (
@@ -447,7 +353,7 @@ const CalculateAct8 = () => {
                 </Button>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" onClick={handleReset} type="button">
+                  <Button variant="outline" onClick={handleReset}>
                     <ReloadOutlined className="mr-2" />
                     Réinitialiser
                   </Button>
@@ -494,22 +400,22 @@ const CalculateAct8 = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                     <Card>
                       <Statistic
-                        title="Patients Potentiels"
-                        value={calculationResult.totalPatients}
+                        title="Consommateurs Mémorisant"
+                        value={calculationResult.consumersMemorizing}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Visiteurs Intéressés"
-                        value={calculationResult.interestedVisitors}
+                        title="Consultations Générées"
+                        value={calculationResult.consultationsGenerated}
                         precision={0}
                       />
                     </Card>
                     <Card>
                       <Statistic
-                        title="Patients Traités"
-                        value={calculationResult.prescribedPatients}
+                        title="Patients Incrémentaux"
+                        value={calculationResult.incrementalPatients}
                         precision={0}
                       />
                     </Card>
@@ -534,4 +440,4 @@ const CalculateAct8 = () => {
   );
 };
 
-export default CalculateAct8;
+export default CalculateAct11;

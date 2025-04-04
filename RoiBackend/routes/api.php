@@ -15,6 +15,9 @@ use App\Http\Controllers\Activity7;
 use App\Http\Controllers\Activity8;
 use App\Http\Controllers\Activity9;
 use App\Http\Controllers\Activity10;
+use App\Http\Controllers\Activity11;
+use App\Http\Controllers\Activity12;
+
 
 
 
@@ -31,6 +34,9 @@ Route::prefix('auth')->group(function () {
     Route::get('checkActivity', [AuthController::class, 'checkActivity']);
 });
 
+Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
+
+
 // Routes pour Admin
 Route::middleware(['check.role:Admin'])->group(function () {
     Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
@@ -46,17 +52,28 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('getActivitiesByLaboInfosById/{id}', [ActivitiesController::class, 'getActivitiesByLaboInfosById']);
     Route::get('getAllActivityByLaboName/{Name}', [ActivitiesController::class, 'getAllActivityByLaboName']);
     Route::get('getAllActivitiesByLabo', [ActivitiesController::class, 'getAllActivitiesByLabo']);
+
+    //getAllCalculatedActivityByLaboInfosByLaboId
 });
 
 // Routes pour Labo (ajustez le rôle si nécessaire)
 Route::middleware(['check.role:Laboratoire'])->group(function () {
+    // deleteByLabo
     Route::get('GetLaboInfosByLaboId/{id}', [LaboController::class, 'GetLaboInfosByLaboId']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
+    Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
+
+    // Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
+
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
-    
+
+    Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData' ]);
+
+    Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
+
     // Routes spécifiques pour les activités
     Route::post("calculateROIAct1", [Activity1::class, "calculateROIAct1"]);
-    Route::post("insertIntoTable1", [Activity1::class, "insertIntoTable1"]);
+    Route::post("insetrIntoTable1", [Activity1::class, "insetrIntoTable1"]);
     Route::post("updateActivity1Values", [Activity1::class, "updateActivity1Values"]);
 
     Route::post("calculateROIAct2", [Activity2::class, "calculateROIAct2"]);
@@ -95,6 +112,14 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("insertIntoTable10", [Activity10::class, "insertIntoTable10"]);
     Route::post("updateActivity10Values", [Activity10::class, "updateActivity10Values"]);
 
+    Route::post("calculateROIAct11", [Activity11::class, "calculateROIAct11"]);
+    Route::post("insertIntoTable11", [Activity11::class, "insertIntoTable11"]);
+    Route::post("updateActivity11Values", [Activity11::class, "updateActivity11Values"]);
+
+    Route::post("calculateROIAct11", [Activity12::class, "calculateROIAct12"]);
+    Route::post("insertIntoTable12", [Activity12::class, "insertIntoTable12"]);
+    Route::post("updateActivity12Values", [Activity12::class, "updateActivity12Values"]);
+
 });
 
 // Routes accessibles à tous les utilisateurs authentifiés
@@ -107,3 +132,5 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
 });
+
+

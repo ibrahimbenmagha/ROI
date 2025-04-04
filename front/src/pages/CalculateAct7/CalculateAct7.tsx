@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 
 import TheHeader from "../Header/Header";
 import axiosInstance from "../../axiosConfig";
+import {deleteCookie } from "../../axiosConfig";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -136,9 +137,6 @@ const CalculateAct7 = () => {
     setCalculationResult(null);
   };
 
-  const deleteCookie = (name) => {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -171,6 +169,7 @@ const CalculateAct7 = () => {
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");
+        deleteCookie("activityId");
         navigate("/DisplayActivity");
       } else {
         alert("Une erreur est survenue lors de l'insertion.");

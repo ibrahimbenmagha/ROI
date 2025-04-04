@@ -1,5 +1,5 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom"; // Utiliser useNavigate pour redirection
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Card,
   Button,
@@ -9,24 +9,25 @@ import {
   Col,
   Space,
   Divider,
+  message,
+  Modal,
+  Input
 } from "antd";
 import {
-  LeftOutlined,
-  RightOutlined,
-  QuestionCircleOutlined,
   DownloadOutlined,
   UploadOutlined,
   ReloadOutlined,
   PrinterOutlined,
-  LogoutOutlined, // Importer l'icône de déconnexion
 } from "@ant-design/icons";
 
 import Head from "./Header/Header";
+import axiosInstance from "../axiosConfig";
+import {deleteCookie } from "../axiosConfig";
 
-const { Header, Content, Footer } = Layout;
+
+const { Content, Footer } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
-// Feature card component
 const FeatureCard = ({ title, description, icon, link }) => {
   return (
     <Card
@@ -47,6 +48,14 @@ const FeatureCard = ({ title, description, icon, link }) => {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [visible, setVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+ useEffect(() => {
+  deleteCookie("activityId");
+  deleteCookie("activityNumber");
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -57,121 +66,99 @@ const Index = () => {
     }
   };
 
+  const showDeleteModal = () => {
+    setVisible(true);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+    setPassword("");
+  };
+
+  const deleteByLabo = async () => {
+    if (!password) {
+      message.error("Veuillez entrer votre mot de passe.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axiosInstance.post("/verify-password", { password });
+      if (response.data.success) {
+        await axiosInstance.delete("deleteLaboData");
+        message.success("Les données ont été supprimées avec succès.");
+        setVisible(false);
+        setPassword("");
+      } else {
+        message.error("Mot de passe incorrect.");
+      }
+    } catch (error) {
+      message.error("Erreur lors de la suppression: " + (error.response?.data?.error || error.message));
+    }
+    setLoading(false);
+  };
+
   return (
     <Layout className="min-h-screen">
-      <Head/>
-
+      <Head />
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Row gutter={[32, 32]}>
-            {/* Entries Block */}
             <Col xs={24} md={12}>
-              <Title
-                level={4}
-                style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}
-              >
+              <Title level={4} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}>
                 Saisies
               </Title>
-
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                <FeatureCard
-                  title="Informations de Base"
-                  description="Configuration initiale pour la planification"
-                  icon="📋"
-                  link="/CreateActivity"
-                />
-
-                <FeatureCard
-                  title="Listes des activites a calculer"
-                  description="Les activites non calcules"
-                  icon="👤"
-                  link="/DisplayActivity"
-                />
-
-                <FeatureCard
-                  title="Évaluation Plan Tactique"
-                  description="Mesurer l'efficacité des stratégies marketing"
-                  icon="📊"
-                  link="/tactical-plan"
-                />
+                <FeatureCard title="Informations de Base" description="Configuration initiale pour la planification" icon="📋" link="/CreateActivity" />
+                <FeatureCard title="Listes des activites a calculer" description="Les activites non calcules" icon="👤" link="/DisplayActivity" />
+                <FeatureCard title="Évaluation Plan Tactique" description="Mesurer l'efficacité des stratégies marketing" icon="📊" link="/tactical-plan" />
               </Space>
             </Col>
-
-            {/* Outputs Block */}
             <Col xs={24} md={12}>
-              <Title
-                level={4}
-                style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}
-              >
+              <Title level={4} style={{ borderBottom: "1px solid #f0f0f0", paddingBottom: 8 }}>
                 Résultats
               </Title>
-
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                <FeatureCard
-                  title="Analyse Seuil de Rentabilité"
-                  description="Analyser les seuils de rentabilité pour les investissements"
-                  icon="📈"
-                  link="/threshold-analysis"
-                />
-
-                <FeatureCard
-                  title="Aperçu ROI"
-                  description="Vue complète du retour sur investissement"
-                  icon="💰"
-                  link="/roi-overview"
-                />
-
-                <FeatureCard
-                  title="Résumé Année de Planification"
-                  description="Résumé des activités de l'année planifiée"
-                  icon="📅"
-                  link="/year-summary"
-                />
-
-                <FeatureCard
-                  title="Optimisation Mix Marketing"
-                  description="Optimisez votre mix marketing pour de meilleurs résultats"
-                  icon="🎯"
-                  link="/marketing-mix"
-                />
-
-                <FeatureCard
-                  title="Comparaison Stratégies Marketing"
-                  description="Comparez différentes approches marketing"
-                  icon="⚖️"
-                  link="/strategies-comparison"
-                />
+                <FeatureCard title="Analyse Seuil de Rentabilité" description="Analyser les seuils de rentabilité pour les investissements" icon="📈" link="/threshold-analysis" />
+                <FeatureCard title="Aperçu ROI" description="Vue complète du retour sur investissement sur les activites calules" icon="💰" link="/DisplayCalculatedActivity" />
+                <FeatureCard title="Résumé Année de Planification" description="Résumé des activités de l'année planifiée" icon="📅" link="/year-summary" />
+                <FeatureCard title="Optimisation Mix Marketing" description="Optimisez votre mix marketing pour de meilleurs résultats" icon="🎯" link="/marketing-mix" />
+                <FeatureCard title="Comparaison Stratégies Marketing" description="Comparez différentes approches marketing" icon="⚖️" link="/strategies-comparison" />
               </Space>
             </Col>
           </Row>
-
-          {/* Action Buttons */}
           <Divider style={{ margin: "40px 0 24px" }} />
           <Row justify="space-between" gutter={[16, 16]}>
             <Col>
-              {/* <Space size={8}>
-
-                <Button icon={<QuestionCircleOutlined />}>Aide</Button>
-              </Space> */}
             </Col>
-
             <Col>
               <Space size={8}>
                 <Button icon={<DownloadOutlined />}>Exporter</Button>
                 <Button icon={<UploadOutlined />}>Importer</Button>
+                <Button icon={<ReloadOutlined />} onClick={showDeleteModal}>Réinitialiser</Button>
                 <Button icon={<PrinterOutlined />}>Imprimer</Button>
               </Space>
             </Col>
           </Row>
         </div>
       </Content>
-
-      {/* Footer */}
       <Footer style={{ textAlign: "center", background: "#f0f0f0" }}>
         <Text type="secondary">
-          © 2023 Calculateur ROI pour Laboratoire Médical. Tous droits réservés.
+          © 2025 Calculateur ROI pour Laboratoire Médical. Tous droits réservés.
         </Text>
       </Footer>
+      <Modal
+        title="Confirmation de suppression"
+        visible={visible}
+        onOk={deleteByLabo}
+        onCancel={handleCancel}
+        confirmLoading={loading}
+        okText="Confirmer"
+        cancelText="Annuler"
+      >
+        <p>Veuillez entrer votre mot de passe pour confirmer la suppression :</p>
+        <Input.Password value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" />
+      </Modal>
     </Layout>
   );
 };

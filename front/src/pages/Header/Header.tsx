@@ -12,18 +12,28 @@ const { Title } = Typography;
 
 const Head = () => {
   const navigate = useNavigate();
-
   const handleLogout = async () => {
     try {
+      // Affichage de l'indicateur de chargement
+      message.loading("Logging out...", 0); // Indicateur de chargement pendant la requête
+  
+      // Appel à l'API pour se déconnecter
       await axiosInstance.post("/auth/logout");
-
+  
+      // Nettoyer le token dans le localStorage ou cookie après déconnexion
+      localStorage.removeItem('access_token'); // Suppression du token dans le localStorage (si utilisé)
+      // Si vous utilisez un cookie, vous pouvez aussi le supprimer ici, par exemple :
+      // document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;";
+  
+      // Afficher un message de succès et rediriger l'utilisateur vers la page de connexion
       message.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
-      message.error("Failed to logout, please try again");
+      // Afficher un message d'erreur si quelque chose va mal
+      message.error(`Failed to logout, please try again. Error: ${error.response?.data?.message || error.message}`);
     }
-
   };
+  
 
   return (
     <Header

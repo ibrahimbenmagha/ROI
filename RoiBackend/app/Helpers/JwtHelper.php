@@ -133,4 +133,45 @@ class JWTHelper
             return false;
         }
     }
+
+    // public static function expireToken(Request $request)
+    // {
+    //     try {
+    //         if ($request === null) {
+    //             $request = request();
+    //         }
+
+    //         // Récupérer le token existant
+    //         $token = $request->cookie('access_token') ?? $request->bearerToken();
+
+    //         if (!$token) {
+    //             return response()->json(['error' => 'Token not found'], 400);
+    //         }
+
+    //         // Utiliser la fonction parseToken pour décoder le token
+    //         $payloadData = self::parseToken($token);
+
+    //         if ($payloadData === null) {
+    //             return response()->json(['error' => 'Invalid token format'], 400);
+    //         }
+
+    //         // Modifier la date d'expiration
+    //         $payloadData['exp'] = time() - 3600; // Expiration fixée à 1 heure dans le passé
+
+    //         // Utiliser l'API JWT de Laravel pour créer un nouveau token avec le payload modifié
+    //         $newToken = auth()->claims($payloadData)->refresh();
+
+    //         // Retourner une réponse avec le token expiré
+    //         return response()->json([
+    //             'message' => 'Token expired successfully',
+    //             'expired_token' => $newToken
+    //         ])->cookie('access_token', $newToken, -1, '/', null, true, true);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Failed to expire token: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
+
+
 }

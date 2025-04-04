@@ -124,7 +124,8 @@ class activity4 extends Controller
                 ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
             ];
             ActivityItemValue::insert($values);
-
+            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
+            ->update(['is_calculated' => true]);
             return response()->json([
                 'message' => 'Values inserted successfully'
             ], 201);

@@ -81,7 +81,6 @@ class ActivitiesController extends Controller
         }
     }
 
-
     public function createActivity(Request $request)
     {
         try {
@@ -233,6 +232,58 @@ class ActivitiesController extends Controller
             return response()->json($Activities, 200);
         } else {
             return response()->json(['message' => 'No activities found for the given labo'], 404);
+        }
+    }
+
+    public function getAllCalculatedActivityByLaboInfosByLaboId(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
+        if (!$laboId) {
+            return response()->json([
+                'message' => 'Information du laboratoire non trouvée dans le token.'
+            ], 401);
+        }
+
+        $Activities = ActivityByLabo::where('laboId', $laboId)
+            ->where('is_calculated' , true)
+            ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
+            ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
+            ->join('users', 'labo.userId', '=', 'users.id')
+            ->select(
+                'activitieslist.id',
+                'activitieslist.Name',
+                'activitybylabo.id',
+                'activitybylabo.laboId',
+                'activitybylabo.ActivityId',
+                'activitybylabo.year',
+                'labo.Name as LaboName',
+                'users.FirstName',
+                'users.LastName'
+            )->orderBy('activitieslist.id')
+            ->get();
+
+
+        if ($Activities->isNotEmpty()) {
+            return response()->json($Activities, 200);
+        } else {
+            return response()->json(['message' => 'No activities found for the given labo'], 404);
+        }
+    }
+
+    public function getCalculatedActivityData(Request $request)
+    {
+        $activityByLaboId = $request['activityId'];
+        if (!$activityByLaboId) {
+            return response()->json(['message' => 'Activity ID not found'], 400);
+        }
+        try {
+            $data = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+                ->join('activityItems', 'ActivityItemValues.activityItemId', '=', 'activityItems.id')
+                ->select('activityItems.name as itemName', 'ActivityItemValues.value')
+                ->get();
+            return response()->json($data, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to retrieve data', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -392,7 +443,7 @@ class ActivitiesController extends Controller
 
     public function deleteActivityValues(Request $request)
     {
-        $ActivityByLaboId = $request["ActivityByLaboId"];
+        $ActivityByLaboId = $laboId = JWTHelper::getLaboId($request);
         try {
             // Suppression des valeurs liées à l'activité
             ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
@@ -405,6 +456,27 @@ class ActivitiesController extends Controller
                 'message' => 'Failed to delete values',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+
+    public function deleteLaboData(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
+        // $laboId = $request["laboId"];
+        if (!$laboId) {
+            return response()->json(['error' => 'Labo ID not found'], 400);
+        }
+
+        try {
+            // DB:statement();
+            ActivityItemValue::whereHas('activityByLabo', function ($query) use ($laboId) {
+                $query->where('laboId', $laboId);
+            })->delete();
+            ActivityByLabo::where('laboId', $laboId)->delete();
+            return response()->json(['success' => 'Labo data deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
 }

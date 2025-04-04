@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axiosInstance from "../../axiosConfig";
+import {deleteCookie } from "../../axiosConfig";
 import TheHeader from "../Header/Header";
 
 const { Header, Content } = Layout;
@@ -145,9 +146,6 @@ const CalculateAct5 = () => {
     setCalculationResult(null);
   };
 
-  const deleteCookie = (name) => {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,6 +181,7 @@ const CalculateAct5 = () => {
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");
+        deleteCookie("activityId");
         navigate("/DisplayActivity");
       } else {
         alert("Une erreur est survenue lors de l'insertion.");

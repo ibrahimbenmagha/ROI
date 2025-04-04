@@ -13,6 +13,8 @@ import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
 import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
 import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
+import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
+
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
 import CalculateAct3 from "./pages/CalculateAct3/CalculateAct3";
@@ -23,6 +25,8 @@ import CalculateAct7 from "./pages/CalculateAct7/CalculateAct7";
 import CalculateAct8 from "./pages/CalculateAct8/CalculateAct8";
 import CalculateAct9 from "./pages/CalculateAct9/CalculateAct9";
 import CalculateAct10 from "./pages/CalculateAct10/CalculateAct10";
+import CalculateAct11 from "./pages/CalculateAct11/CalculateAct11";
+import CalculateAct12 from "./pages/CalculateAct12/CalculateAct12";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import DashboardLogin from "./pages/Dashboard/DashboardLogin";
@@ -90,6 +94,15 @@ const App = () => (
               </LaboRoute>
             }
           />
+          <Route
+            path="/DisplayCalculatedActivity"
+            element={
+              <LaboRoute>
+                <DisplayCalculatedActivity />
+              </LaboRoute>
+            }
+          />
+
           <Route
             path="/CalculateAct1"
             element={
@@ -192,6 +205,28 @@ const App = () => (
               <LaboRoute>
                 <ActRoute>
                   <CalculateAct10 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct11"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct11 />
+                </ActRoute>
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="/CalculateAct12"
+            element={
+              <LaboRoute>
+                <ActRoute>
+                  <CalculateAct12 />
                 </ActRoute>
               </LaboRoute>
             }
