@@ -11,6 +11,7 @@ import "antd/dist/reset.css";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
+
 import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
 import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
 import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
@@ -37,6 +38,7 @@ import {
   AdminRoute,
   AuthRoute,
   ActRoute,
+  CalcRoute,
 } from "./components/AuthRoute";
 
 const queryClient = new QueryClient();
@@ -91,7 +93,9 @@ const App = () => (
             path="RoiResultCard"
             element={
               <LaboRoute>
-                <RoiResultCard />
+                <CalcRoute>
+                  <RoiResultCard />
+                </CalcRoute>
               </LaboRoute>
             }
           />

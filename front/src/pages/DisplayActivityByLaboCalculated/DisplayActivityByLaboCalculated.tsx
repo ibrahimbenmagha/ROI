@@ -19,7 +19,7 @@ const DisplayActivity = () => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    // deleteCookie("activityId");
+    deleteCookie("activityId");
 
     axiosInstance
       .get("getAllCalculatedActivityByLaboInfosByLaboId")

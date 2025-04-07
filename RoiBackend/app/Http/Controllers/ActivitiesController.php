@@ -10,11 +10,14 @@ use App\Models\Labo;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityItem;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Activity1_12;
 
 
 
 class ActivitiesController extends Controller
 {
+
+
 
     public function CreateActivityByLabo(Request $request)
     {
@@ -270,24 +273,44 @@ class ActivitiesController extends Controller
         }
     }
 
-    public function getCalculatedActivityData(Request $request)
+    public function calculateDynamicROI(Request $request)
     {
-        // $activityByLaboId = $request['activityId'];
-        $activityByLaboId = $request->cookie('activityId');
-
-        if (!$activityByLaboId) {
-            return response()->json(['message' => 'Activity ID not found'], 400);
-        }
         try {
-            $data = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
-                ->join('activityItems', 'ActivityItemValues.activityItemId', '=', 'activityItems.id')
-                ->select('activityItems.name as itemName', 'ActivityItemValues.value as value')
-                ->get();
-            return response()->json($data, 200);
+            // Récupérer l'identifiant de l'activité par labo
+            $activityByLaboId = $request->cookie('activityId');
+    
+            if (!$activityByLaboId) {
+                return response()->json(['message' => 'Activity ID is missing.'], 400);
+            }
+    
+            // Vérifier à quelle activité il correspond
+            $activity = ActivityByLabo::find($activityByLaboId);
+            if (!$activity) {
+                return response()->json(['message' => 'Activity not found.'], 404);
+            }
+    
+            $activityId = $activity->ActivityId; // ID dans activitylist (1 à 12)
+    
+            // Générer dynamiquement le nom de la méthode à appeler
+            $method = "calculateROIAct_" . $activityId;
+            $controller = new Activity1_12();
+
+            // Vérifier que la méthode existe bien dans ce contrôleur
+            if (!method_exists($controller, $method)) {
+                return response()->json(['message' => "No calculation method defined for activity ID $activityId $method ."], 500);
+            }
+    
+            // Appeler dynamiquement la bonne fonction
+            return $controller->$method($request);
+    
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to retrieve data', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Erreur interne lors du calcul du ROI',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+    
 
     public function getAllActivityByLaboName(Request $request, $Name)
     {
@@ -445,10 +468,14 @@ class ActivitiesController extends Controller
 
     public function deleteActivityValues(Request $request)
     {
-        $ActivityByLaboId = $laboId = JWTHelper::getLaboId($request);
+        // $ActivityByLaboId = $request->cookie('activityId');
+        $ActivityByLaboId = $request['activityId'];
+
         try {
             // Suppression des valeurs liées à l'activité
-            ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+            ActivityItemValue::where('id', $ActivityByLaboId)->delete();
+            $UPDATE = ActivityByLabo::where('id', $ActivityByLaboId)
+            ->update(['is_calculated' => false]);
 
             return response()->json([
                 'message' => 'Values deleted successfully'
@@ -458,7 +485,8 @@ class ActivitiesController extends Controller
                 'message' => 'Failed to delete values',
                 'error' => $e->getMessage()
             ], 500);
-        }
+        };
+
     }
 
 

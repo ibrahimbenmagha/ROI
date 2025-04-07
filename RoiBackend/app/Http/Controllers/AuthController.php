@@ -21,6 +21,76 @@ class AuthController extends Controller
         // $this->middleware('auth:api', ['except' => ['login']]);
     }
 
+
+    public function checkCalculated(Request $request) {
+        // Retrieve laboId from JWT token
+        $laboId = JWTHelper::getLaboId($request);
+        
+        // Retrieve activityId from cookies, with a check to ensure it exists
+        $actByLabo = $request->cookie('activityId');
+        if (!$actByLabo) {
+            return response()->json([
+                'authorised' => false,
+                'error' => 'Activity ID not found in cookies'
+            ]);
+        }
+        try {
+            // Retrieve the activity record by activityId
+            $check = ActivityByLabo::where("id", $actByLabo)->select("is_calculated")->first();
+            
+            // Check if the record exists and handle accordingly
+            if ($check) {
+                return response()->json([
+                    'authorised' => $check->is_calculated,
+                    'data' => $check
+                ]);
+            } else {
+                return response()->json([
+                    'authorised' => false,
+                    'data' => null,
+                    'error' => 'ActivityByLabo not found'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'authorised' => false,
+                'error' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+
+    // public function checkCalculated(Request $request) {
+    //     $laboId = JWTHelper::getLaboId($request);
+    
+    //     $actByLabo = $request->cookie('activityId');
+    
+    //     // Retrieve the activity record
+    //     $check = ActivityByLabo::where("id", $actByLabo)->select("is_calculated")->first();
+    
+    //     // Check if the record exists and handle accordingly
+    //     if ($check) {
+    //         if ($check->is_calculated) {
+    //             return response()->json([
+    //                 'authorised' => true,
+    //                 "data" => $check
+    //             ]);
+    //         } else {
+    //             return response()->json([
+    //                 'authorised' => false,
+    //                 "data" => $check
+    //             ]);
+    //         }
+    //     } else {
+    //         return response()->json([
+    //             'authorised' => false,
+    //             "data" => null,
+    //             'error' => 'ActivityByLabo not found'
+    //         ]);
+    //     }
+    // }
+    
+
     public function checkActivity(Request $request)
     {
         $laboId = JWTHelper::getLaboId($request);

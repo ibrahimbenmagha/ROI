@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { jsPDF } from "jspdf";
+//<DeleteOutlined />
 import { Layout, Typography, Spin, Empty } from "antd";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../axiosConfig";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,7 +25,13 @@ import {
   ArrowLeftOutlined,
   PrinterOutlined,
   DownloadOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
+
+import axiosInstance from "../../axiosConfig";
+import { deleteCookie } from "../../axiosConfig";
+
+import TheHeader from "../Header/Header";
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -39,17 +46,23 @@ const DisplayCalculatedData = () => {
   const [activityData, setActivityData] = useState<respType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!sessionStorage.getItem("reloaded")) {
+      sessionStorage.setItem("reloaded", "true");
+      window.location.reload();
+    } else {
+      // Réinitialiser l'indicateur après le rechargement
+      sessionStorage.removeItem("reloaded");
+    }
     fetchActivityData();
   }, []);
 
   const fetchActivityData = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("calculateROIAct_1");
+      const response = await axiosInstance.get("calculateDynamicROI");
       if (response.status === 200) {
         var list = Object.entries(response.data).map(([key, value]) => ({
           key,
@@ -68,7 +81,6 @@ const DisplayCalculatedData = () => {
       setLoading(false);
     }
   };
-
   const handlePrint = () => {
     window.print();
   };
@@ -76,9 +88,9 @@ const DisplayCalculatedData = () => {
   const handleExport = () => {
     // Function to convert data to CSV
     const convertToCSV = (data: ActivityItemData[]) => {
-      const header = "Nom de l'élément,Valeur\n";
+      const header = "L itmem de l activite\n";
       const rows = data
-        .map((item) => `"${item.itemName}","${item.value}"`)
+        .map((item) => `"${item.key}","${item.value}"`)
         .join("\n");
       return header + rows;
     };
@@ -100,15 +112,33 @@ const DisplayCalculatedData = () => {
     document.body.removeChild(link);
   };
 
+  const handleExportPdf = () => {
+
+    // Fonction pour formater les données à exporter dans le PDF
+  const convertToText = (data: ActivityItemData[]) => {
+    const header = "L'item de l'activité\n\n"; // Titre du document PDF
+    const rows = data
+      .map((item) => `${item.key}: ${item.value}`)
+      .join("\n");
+    return header + rows;
+  };
+
+  // Récupérer les données sous forme de texte
+  const pdfContent = convertToText(activityData);
+
+  // Créer un document PDF avec jsPDF
+  const doc = new jsPDF();
+
+  // Ajouter le contenu au PDF
+  doc.text(pdfContent, 10, 10); // Positionnement du texte dans le PDF
+
+  // Enregistrer le fichier PDF avec un nom spécifique
+  doc.save('activity-data.pdf');
+};
+
   return (
     <Layout className="min-h-screen">
-      <Header style={{ background: "#1A1F2C", padding: "0 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <Title level={3} style={{ color: "white", margin: "16px 0" }}>
-            Résultats de Calcul ROI
-          </Title>
-        </div>
-      </Header>
+      <TheHeader />
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
@@ -179,11 +209,33 @@ const DisplayCalculatedData = () => {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
+                  onClick={() => navigate("/DisplayCalculatedActivity")}
+                >
+                  <ArrowLeftOutlined className="mr-2" />
+                  Retour
+                </Button>
+                <Button
+                  variant="outline"
+                  // onClick={() => }
+                >
+                  <DeleteOutlined className="mr-2" />
+                  Mettre A 0 
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={handleExport}
                   disabled={loading || activityData.length === 0}
                 >
                   <DownloadOutlined className="mr-2" />
                   Exporter CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExportPdf}
+                  disabled={loading || activityData.length === 0}
+                >
+                  <DownloadOutlined className="mr-2" />
+                  Exporter PDF
                 </Button>
                 <Button
                   variant="outline"

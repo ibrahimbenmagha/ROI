@@ -173,3 +173,77 @@ export const ActRoute = ({ children }) => {
   // Si l'accès est autorisé, afficher le composant enfant
   return accessGranted ? children : null;
 };
+
+
+export const CalcRoute = ({ children }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkCalculatedStatus = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/checkCalculated");
+        if (response.data.authorised == true) {
+          setIsAuthorized(true);
+          navigate("/RoiResultCard");
+          message.success("Active bien trouve");
+
+
+        } else if(response.data.authorised == false) {
+          navigate("/DisplayCalculatedActivity");
+          message.error("Activite non calcule");
+        }
+      } catch (error) {
+        navigate("/DisplayCalculatedActivity");
+        message.error("Errror de navigation reseyer plus tard");
+
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkCalculatedStatus();
+  }, [navigate]);
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
+
+  // Render children only if the user is authorized
+  return isAuthorized ? children : null;
+};
+
+
+// export const CalcRoute = ({children}) =>{
+//   const navigate = useNavigate();
+//   const [loading, setLoading] = useState(true);
+//   const [checkCalculated, setCheckCalculated] = useState(false);
+//   const location = useLocation();
+//   useEffect(() => {
+//     const checkckalc = async () => {
+//       try {
+//         const response = await axiosInstance.get("/auth/checkCalculated");
+//         if (
+//           response.data.authorised === true 
+//         ) {
+//           setCheckCalculated(true);
+//         } else {
+//           navigate("/RoiResultCard");
+//         }
+//       } catch (error) {
+//         navigate("/DisplayCalculatedActivity");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     checkckalc();
+//   }, [navigate]);
+//   if (loading) {
+//     return <LoadingComponent />;
+//   }
+
+//   return checkCalculated ? children : null;
+// };
