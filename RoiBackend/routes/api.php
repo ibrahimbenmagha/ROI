@@ -111,8 +111,11 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
+    Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
 
 });
+
+
 
 // Routes accessibles à tous les utilisateurs authentifiés
 Route::middleware('check.role:Admin,Laboratoire')->group(function () {

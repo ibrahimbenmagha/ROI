@@ -469,7 +469,7 @@ class ActivitiesController extends Controller
     public function deleteActivityValues(Request $request)
     {
         // $ActivityByLaboId = $request->cookie('activityId');
-        $ActivityByLaboId = $request['activityId'];
+        $ActivityByLaboId = $request->cookie('activityId');
 
         try {
             // Suppression des valeurs liées à l'activité
@@ -509,4 +509,35 @@ class ActivitiesController extends Controller
             return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
+
+
+    public function deletelabovalues(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
+        if (empty($laboId)) {
+            return response()->json([
+                'message' => 'Labo ID is required and must be valid.',
+            ], 400); // Code 400 : Bad Request
+        }
+        try {
+            $activityByLaboIds = ActivityByLabo::where('laboId', $laboId)->pluck('id')->toArray();
+    
+            // Suppression des valeurs dans activityItemValues qui ont ActivityByLaboId correspondant
+            ActivityItemValue::whereIn('ActivityByLaboId', $activityByLaboIds)->delete();
+    
+            // Mise à jour du champ is_calculated à false pour toutes les entrées liées au laboId
+            $UPDATE = ActivityByLabo::where('laboId', $laboId)
+                ->update(['is_calculated' => false]);
+    
+            return response()->json([
+                'message' => 'Values deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete values',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 }

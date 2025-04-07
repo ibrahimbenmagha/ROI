@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
-//<DeleteOutlined />
-import { Layout, Typography, Spin, Empty } from "antd";
-import { useNavigate, Link } from "react-router-dom";
+import { Layout, Typography, Spin, Empty, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Card,
   CardContent,
@@ -53,7 +43,6 @@ const DisplayCalculatedData = () => {
       sessionStorage.setItem("reloaded", "true");
       window.location.reload();
     } else {
-      // Réinitialiser l'indicateur après le rechargement
       sessionStorage.removeItem("reloaded");
     }
     fetchActivityData();
@@ -81,27 +70,18 @@ const DisplayCalculatedData = () => {
       setLoading(false);
     }
   };
-  const handlePrint = () => {
-    window.print();
-  };
 
   const handleExport = () => {
-    // Function to convert data to CSV
     const convertToCSV = (data: ActivityItemData[]) => {
-      const header = "L itmem de l activite\n";
+      const header = "L'item de l'activité\n";
       const rows = data
         .map((item) => `"${item.key}","${item.value}"`)
         .join("\n");
       return header + rows;
     };
 
-    // Create CSV content
     const csvContent = convertToCSV(activityData);
-
-    // Create a Blob with the CSV content
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-
-    // Create a download link and trigger the download
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -113,36 +93,46 @@ const DisplayCalculatedData = () => {
   };
 
   const handleExportPdf = () => {
+    const convertToText = (data: ActivityItemData[]) => {
+      const header = "L'item de l'activité\n\n"; // Titre du document PDF
+      const rows = data.map((item) => `${item.key}: ${item.value}`).join("\n");
+      return header + rows;
+    };
 
-    // Fonction pour formater les données à exporter dans le PDF
-  const convertToText = (data: ActivityItemData[]) => {
-    const header = "L'item de l'activité\n\n"; // Titre du document PDF
-    const rows = data
-      .map((item) => `${item.key}: ${item.value}`)
-      .join("\n");
-    return header + rows;
+    const pdfContent = convertToText(activityData);
+    const doc = new jsPDF();
+    doc.text(pdfContent, 10, 10);
+    doc.save("activity-data.pdf");
   };
 
-  // Récupérer les données sous forme de texte
-  const pdfContent = convertToText(activityData);
+  const deleteActivityValues = async (e) => {
+    e.preventDefault();
 
-  // Créer un document PDF avec jsPDF
-  const doc = new jsPDF();
-
-  // Ajouter le contenu au PDF
-  doc.text(pdfContent, 10, 10); // Positionnement du texte dans le PDF
-
-  // Enregistrer le fichier PDF avec un nom spécifique
-  doc.save('activity-data.pdf');
-};
+    // Affichage de la boîte de confirmation
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer les données ?"
+    );
+    if (confirmDelete) {
+      try {
+        await axiosInstance.delete("deleteActivityValues");
+        message.success("Les données ont été supprimées avec succès");
+        navigate("/Home");
+      } catch (error) {
+        console.error("Erreur lors de la suppression des données:", error);
+        alert("Erreur lors de la suppression des données");
+      }
+    } else {
+      // Si l'utilisateur annule, rien ne se passe
+      alert("La suppression des données a été annulée");
+    }
+  };
 
   return (
     <Layout className="min-h-screen">
       <TheHeader />
-
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <Card className="mb-6">
+          <Card className="mb-6 shadow-lg">
             <CardHeader>
               <CardTitle>Résultats du calcul ROI</CardTitle>
               <CardDescription>
@@ -165,66 +155,65 @@ const DisplayCalculatedData = () => {
                   className="py-6"
                 />
               ) : (
-                <Table>
-                  <TableCaption>Données de résultats calculés</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[300px]">Paramètre</TableHead>
-                      <TableHead>Valeur</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {activityData.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">
-                          {item.key}
-                        </TableCell>
-                        <TableCell>
-                          {typeof item.value === "number" && !isNaN(item.value)
-                            ? // Format numeric values
-                              item.key.toLowerCase().includes("roi")
-                              ? `${(Number(item.value) * 100).toFixed(2)}%`
-                              : item.key.toLowerCase().includes("coût") ||
-                                item.key.toLowerCase().includes("cout") ||
-                                item.key.toLowerCase().includes("vente") ||
-                                item.key.toLowerCase().includes("revenu")
-                              ? `${Number(item.value).toFixed(2)} €`
-                              : Number(item.value).toFixed(
-                                  item.value % 1 === 0 ? 0 : 2
-                                )
-                            : item.value.toString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {activityData.map((item, index) => (
+                    <div
+                      key={index}
+                      className="bg-white shadow-md p-4 rounded-md flex flex-col items-start"
+                    >
+                      <Text className="font-semibold text-sm">{item.key}</Text>
+                      <Text className="text-xl font-medium">
+                        {typeof item.value === "number" && !isNaN(item.value)
+                          ? item.key.toLowerCase().includes("roi")
+                            ? `${(Number(item.value) * 100).toFixed(2)}%`
+                            : item.key.toLowerCase().includes("coût") ||
+                              item.key.toLowerCase().includes("cout") ||
+                              item.key.toLowerCase().includes("vente") ||
+                              item.key.toLowerCase().includes("revenu")
+                            ? `${Number(item.value).toFixed(2)} €`
+                            : Number(item.value).toFixed(
+                                item.value % 1 === 0 ? 0 : 2
+                              )
+                          : item.value.toString()}
+                      </Text>
+                    </div>
+                  ))}
+                </div>
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => navigate("/")}>
+            <CardFooter className="flex justify-between items-center">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white"
+              >
                 <ArrowLeftOutlined className="mr-2" />
                 Retour à l'accueil
               </Button>
-              <div className="flex gap-2">
+
+              <div className="flex gap-4">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/DisplayCalculatedActivity")}
+                  className="flex items-center gap-2"
                 >
                   <ArrowLeftOutlined className="mr-2" />
                   Retour
                 </Button>
                 <Button
                   variant="outline"
-                  // onClick={() => }
+                  className="flex items-center gap-2"
+                  onClick={deleteActivityValues}
                 >
                   <DeleteOutlined className="mr-2" />
-                  Mettre A 0 
+                  Mettre A 0
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleExport}
                   disabled={loading || activityData.length === 0}
+                  className="flex items-center gap-2"
                 >
                   <DownloadOutlined className="mr-2" />
                   Exporter CSV
@@ -233,17 +222,10 @@ const DisplayCalculatedData = () => {
                   variant="outline"
                   onClick={handleExportPdf}
                   disabled={loading || activityData.length === 0}
+                  className="flex items-center gap-2"
                 >
                   <DownloadOutlined className="mr-2" />
                   Exporter PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handlePrint}
-                  disabled={loading || activityData.length === 0}
-                >
-                  <PrinterOutlined className="mr-2" />
-                  Imprimer
                 </Button>
               </div>
             </CardFooter>

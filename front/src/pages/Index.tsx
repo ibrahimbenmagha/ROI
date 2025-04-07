@@ -136,7 +136,6 @@ const Index = () => {
                 <Button icon={<DownloadOutlined />}>Exporter</Button>
                 <Button icon={<UploadOutlined />}>Importer</Button>
                 <Button icon={<ReloadOutlined />} onClick={showDeleteModal}>Réinitialiser</Button>
-                <Button icon={<PrinterOutlined />}>Imprimer</Button>
               </Space>
             </Col>
           </Row>
