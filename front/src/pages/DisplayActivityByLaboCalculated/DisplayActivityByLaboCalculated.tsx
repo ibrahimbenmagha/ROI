@@ -18,7 +18,7 @@ const storeActivityIdInCookie = (id) => {
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
 };
 
-const DisplayActivity = () => {
+const DisplayActivity = () => {  
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,19 +41,7 @@ const DisplayActivity = () => {
       });
   }, []);
 
-  const styles = {
-    md: {
-      display: "flex",
-      flexDirection: "row",
-    },
-    ButtonSpan: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      width: "40%",
-      paddingRight: "10px",
-    },
-  };
+
 
   const deleteLabovalues = async (e) => {
     e.preventDefault();
@@ -73,7 +61,19 @@ const DisplayActivity = () => {
       alert("La suppression des données a été annulée");
     }
   };
-
+  const styles = {
+    md: {
+      display: "flex",
+      flexDirection: "row",
+    },
+    ButtonSpan: {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "40%",
+      paddingRight: "10px",
+    },
+  };
   return (
     <div className="container mx-auto px-4 py-8">
       <TheHeader />
@@ -106,7 +106,8 @@ const DisplayActivity = () => {
             </Card>
           ))}
         </div>
-      ) : (
+      ) 
+      : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activities.length === 0 ? (
             <div>No activities available</div>
@@ -146,10 +147,18 @@ const DisplayActivity = () => {
                       style={{ width: "100%" }}
                       onClick={() => storeActivityIdInCookie(activity.id)}
                     >
-                      Calculer
+                      Conculter les details
                     </Button>
-                  </Link>
+                  </Link> 
+                  {/* <Button
+                      type="primary"
+                      style={{ width: "100%" }}
+                      onClick={() => storeActivityIdInCookie(activity.id)}
+                    >
+                      Conculter les details
+                    </Button> */}
                 </span>
+                
               </Card>
             ))
           )}
@@ -180,7 +189,7 @@ const DisplayActivity = () => {
               </div>
             </CardFooter>
     </div>
-  );
+  )
 };
 
 export default DisplayActivity;

@@ -17,8 +17,6 @@ use App\Http\Controllers\Activity1_12;
 class ActivitiesController extends Controller
 {
 
-
-
     public function CreateActivityByLabo(Request $request)
     {
         try {
@@ -276,33 +274,23 @@ class ActivitiesController extends Controller
     public function calculateDynamicROI(Request $request)
     {
         try {
-            // Récupérer l'identifiant de l'activité par labo
             $activityByLaboId = $request->cookie('activityId');
-    
+            // $activityByLaboId = $request['activityId'];
+
             if (!$activityByLaboId) {
                 return response()->json(['message' => 'Activity ID is missing.'], 400);
             }
-    
-            // Vérifier à quelle activité il correspond
             $activity = ActivityByLabo::find($activityByLaboId);
             if (!$activity) {
                 return response()->json(['message' => 'Activity not found.'], 404);
             }
-    
-            $activityId = $activity->ActivityId; // ID dans activitylist (1 à 12)
-    
-            // Générer dynamiquement le nom de la méthode à appeler
+            $activityId = $activity->ActivityId;
             $method = "calculateROIAct_" . $activityId;
             $controller = new Activity1_12();
-
-            // Vérifier que la méthode existe bien dans ce contrôleur
             if (!method_exists($controller, $method)) {
                 return response()->json(['message' => "No calculation method defined for activity ID $activityId $method ."], 500);
             }
-    
-            // Appeler dynamiquement la bonne fonction
             return $controller->$method($request);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur interne lors du calcul du ROI',
@@ -310,7 +298,6 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
-    
 
     public function getAllActivityByLaboName(Request $request, $Name)
     {
@@ -475,7 +462,7 @@ class ActivitiesController extends Controller
             // Suppression des valeurs liées à l'activité
             ActivityItemValue::where('id', $ActivityByLaboId)->delete();
             $UPDATE = ActivityByLabo::where('id', $ActivityByLaboId)
-            ->update(['is_calculated' => false]);
+                ->update(['is_calculated' => false]);
 
             return response()->json([
                 'message' => 'Values deleted successfully'
@@ -486,7 +473,6 @@ class ActivitiesController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         };
-
     }
 
 
@@ -521,14 +507,14 @@ class ActivitiesController extends Controller
         }
         try {
             $activityByLaboIds = ActivityByLabo::where('laboId', $laboId)->pluck('id')->toArray();
-    
+
             // Suppression des valeurs dans activityItemValues qui ont ActivityByLaboId correspondant
             ActivityItemValue::whereIn('ActivityByLaboId', $activityByLaboIds)->delete();
-    
+
             // Mise à jour du champ is_calculated à false pour toutes les entrées liées au laboId
             $UPDATE = ActivityByLabo::where('laboId', $laboId)
                 ->update(['is_calculated' => false]);
-    
+
             return response()->json([
                 'message' => 'Values deleted successfully'
             ], 200);
@@ -539,5 +525,4 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
-    
 }

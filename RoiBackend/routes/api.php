@@ -19,6 +19,11 @@ use App\Http\Controllers\Activity10;
 use App\Http\Controllers\Activity11;
 use App\Http\Controllers\Activity12;
 
+
+
+Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+
+
 // Routes publiques (pas besoin d'authentification)
 Route::prefix('auth')->group(function () {
     Route::post('loginadmin', [AuthController::class, 'loginadmin']);
@@ -58,7 +63,7 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
 
-    Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+    // Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
 
 
     Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);

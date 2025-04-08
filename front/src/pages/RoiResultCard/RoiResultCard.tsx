@@ -170,7 +170,7 @@ const DisplayCalculatedData = () => {
                               item.key.toLowerCase().includes("cout") ||
                               item.key.toLowerCase().includes("vente") ||
                               item.key.toLowerCase().includes("revenu")
-                            ? `${Number(item.value).toFixed(2)} €`
+                            ? `${Number(item.value).toFixed(2)} MAD`
                             : Number(item.value).toFixed(
                                 item.value % 1 === 0 ? 0 : 2
                               )
