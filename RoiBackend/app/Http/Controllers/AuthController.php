@@ -175,7 +175,38 @@ class AuthController extends Controller
             ]);
         }
     }
+    public function login2()
+    {
+        $credentials = request(['email', 'moDepasse']);
 
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        } else {
+            $user = Auth::user();
+            if ($user->Role == 'syndica') {
+                $syndic = DB::table('syndics')->where('utilisateur_id', $user->id)->first();
+                $customToken = auth()->claims([
+                    'labo_id' => $syndic ? $syndic->id : null,
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->prenom,
+                    'user.last_name' => $user->nom,
+                    'user.Role' => $user->role,
+                ])->refresh();
+            } else if ($user->Role == 'Admin') {
+                $customToken = auth()->claims([
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->FirstName,
+                    'user.last_name' => $user->LastName,
+                    'user.Role' => $user->role,
+                ])->refresh();
+            }
+            return response()->json([
+                // 'access_token' => $customToken,
+                'role' => $user->Role,
+            ], 200)
+                ->cookie('access_token', $customToken, 60, '/', null, true, true);
+        }
+    }
     public function login()
     {
         $credentials = request(['email', 'password']);
@@ -203,8 +234,8 @@ class AuthController extends Controller
                 ])->refresh();
             }
             return response()->json([
-                'access_token' => $customToken,
-                // 'role' => $user->Role,
+                // 'access_token' => $customToken,
+                'role' => $user->Role,
             ], 200)
                 ->cookie('access_token', $customToken, 60, '/', null, true, true);
         }

@@ -14,20 +14,20 @@ use App\Http\Controllers\Activity1_12;
 
 
 
+
+
 class ActivitiesController extends Controller
 {
 
     public function CreateActivityByLabo(Request $request)
     {
         try {
-
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
                 return response()->json([
                     'message' => 'Information du laboratoire non trouvée dans le token.'
                 ], 401);
             }
-
             if (ActivityByLabo::where([
                 ['ActivityId', $request->ActivityId],
                 ['laboId', $laboId],
@@ -521,6 +521,40 @@ class ActivitiesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete values',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteLaboNotCalculatedById(Request $request)
+    {
+        // $activityByLaboId = $request->input('activityId');
+        $activityByLaboId = $request->cookie('activityId');
+        $activityByLaboId=2;
+        if (empty($activityByLaboId)) {
+            return response()->json([
+                'message' => 'Activity ID is required and must be valid.',
+            ], 400);
+        }
+        try {
+            $activity = ActivityByLabo::find($activityByLaboId);
+
+            if (!$activity) {
+                return response()->json([
+                    'message' => 'Activity not found.',
+                ], 404);
+            }
+
+            if ($activity->is_calculated) {
+                return response()->json([
+                    'message' => 'Activity has values and cannot be deleted.',
+                ], 403); // 403 Forbidden
+            }
+            $activity->delete();
+            return response()->json(["message" => "Activity deleted successfully."], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete activity.',
                 'error' => $e->getMessage()
             ], 500);
         }

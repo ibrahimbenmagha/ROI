@@ -33,7 +33,7 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('check', [AuthController::class, 'checkAuth']);
     Route::get('checkActivity', [AuthController::class, 'checkActivity']);
-    Route::get('checkCalculated', [AuthController::class, 'checkCalculated']);    
+    Route::get('checkCalculated', [AuthController::class, 'checkCalculated']);
 });
 
 Route::middleware(['check.role:Admin'])->group(function () {
@@ -56,7 +56,7 @@ Route::middleware(['check.role:Admin'])->group(function () {
 
 Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
-    
+
     Route::get('GetLaboInfosByLaboId/{id}', [LaboController::class, 'GetLaboInfosByLaboId']);
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
@@ -116,8 +116,8 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
-    Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
-
+    Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);   
+    // Route::delete('deleteLaboNotCalculatedById', [ActivitiesController::class, 'deleteLaboNotCalculatedById']);
 });
 
 
@@ -132,3 +132,4 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
 });
+Route::delete('deleteLaboNotCalculatedById', [ActivitiesController::class, 'deleteLaboNotCalculatedById']);

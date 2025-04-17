@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "../../axiosConfig";
-import {deleteCookie } from "../../axiosConfig";
-
+import { deleteCookie, deleteLabovalues} from "../../axiosConfig";
 import TheHeader from "../Header/Header";
 import Head from "../../components/Head";
 
-const storeActivityIdInCookie = (id,ActivityId) => {
+
+const storeActivityIdInCookie = (id, ActivityId) => {
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
   document.cookie = `activityNumber=${ActivityId}; path=/; max-age=3600`;
 };
@@ -18,7 +18,7 @@ const DisplayActivity = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     deleteCookie("activityId");
     deleteCookie("activityNumber");
@@ -44,12 +44,32 @@ const DisplayActivity = () => {
     },
     ButtonSpan: {
       display: "flex",
+      flexDirection: "column", // <-- changer ici pour les empiler
       justifyContent: "center",
       alignItems: "center",
-      width: "40%",
+      width: "52%",
       paddingRight: "10px",
+      gap: "10px", // <-- ajout d'un espace entre les boutons
     },
   };
+
+  const deleteLabovalues = async (e) => {
+    e.preventDefault();
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer les données ?"
+    );
+    if (confirmDelete) {
+      try {
+        const response = await axiosInstance.delete("/deleteLaboNotCalculatedById");
+        message.success(response.data.message || "Les données ont été supprimées avec succès");
+      } catch (error) {
+        console.error("Erreur lors de la suppression des données:", error);
+          message.error("Erreur lors de la suppression des données");
+      }
+    } else {
+      alert("La suppression des données a été annulée");
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -109,26 +129,34 @@ const DisplayActivity = () => {
                       <span className="font-semibold">Année:</span>{" "}
                       {activity.year}
                     </p>
-                    {/* <p className="text-gray-600">
-                      <span className="font-semibold">list:</span> {activity.ActivityId}
-                    </p> */}
+
                     <span className="text-gray-600"></span>
                   </CardContent>
                 </span>
                 <span style={styles.ButtonSpan}>
                   <Link
                     to={`/CalculateAct${activity.ActivityId}`}
-                    style={{ width: "100%" }}
-                    // Enregistrer l'ID dans le cookie au clic
+                    style={{ width: "50%" }}
                   >
                     <Button
                       type="primary"
                       style={{ width: "100%" }}
-                      onClick={() => storeActivityIdInCookie(activity.id,activity.ActivityId)}
+                      onClick={() =>
+                        storeActivityIdInCookie(
+                          activity.id,
+                          activity.ActivityId
+                        )
+                      }
                     >
                       Calculer
-                    </Button>
+                    </Button>   
                   </Link>
+                  <Button
+                      type="primary"
+                      style={{ width: "50%" }}
+                      onClick={deleteLabovalues}>
+                      Suprimer
+                    </Button>
                 </span>
               </Card>
             ))

@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, message } from "antd";
 import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "../../axiosConfig";
-import {deleteCookie } from "../../axiosConfig";
+import { deleteCookie } from "../../axiosConfig";
 import {
   ArrowLeftOutlined,
   PrinterOutlined,
@@ -18,15 +24,15 @@ const storeActivityIdInCookie = (id) => {
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
 };
 
-const DisplayActivity = () => {  
+const DisplayActivity = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const navigate = useNavigate();
+
   useEffect(() => {
     deleteCookie("activityId");
-
     axiosInstance
       .get("getAllCalculatedActivityByLaboInfosByLaboId")
       //getAllCalculatedActivityByLaboInfosByLaboId
@@ -41,26 +47,6 @@ const DisplayActivity = () => {
       });
   }, []);
 
-
-
-  const deleteLabovalues = async (e) => {
-    e.preventDefault();
-    const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer les données ?"
-    );
-    if (confirmDelete) {
-      try {
-        const response = await axiosInstance.delete("/deletelabovalues");
-        message.success(response.data.message || "Les données ont été supprimées avec succès");
-        navigate("/Home");
-      } catch (error) {
-        console.error("Erreur lors de la suppression des données:", error);
-          message.error("Erreur lors de la suppression des données");
-      }
-    } else {
-      alert("La suppression des données a été annulée");
-    }
-  };
   const styles = {
     md: {
       display: "flex",
@@ -74,6 +60,28 @@ const DisplayActivity = () => {
       paddingRight: "10px",
     },
   };
+
+  const deleteLabovalues = async (e) => {
+    e.preventDefault();
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer les données ?"
+    );
+    if (confirmDelete) {
+      try {
+        const response = await axiosInstance.delete("/deletelabovalues");
+        message.success(
+          response.data.message || "Les données ont été supprimées avec succès"
+        );
+        navigate("/Home");
+      } catch (error) {
+        console.error("Erreur lors de la suppression des données:", error);
+        message.error("Erreur lors de la suppression des données");
+      }
+    } else {
+      alert("La suppression des données a été annulée");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <TheHeader />
@@ -106,8 +114,7 @@ const DisplayActivity = () => {
             </Card>
           ))}
         </div>
-      ) 
-      : (
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activities.length === 0 ? (
             <div>No activities available</div>
@@ -138,10 +145,7 @@ const DisplayActivity = () => {
                   </CardContent>
                 </span>
                 <span style={styles.ButtonSpan}>
-                  <Link
-                    to='/RoiResultCard'
-                    style={{ width: "100%" }}
-                  >
+                  <Link to="/RoiResultCard" style={{ width: "100%" }}>
                     <Button
                       type="primary"
                       style={{ width: "100%" }}
@@ -149,7 +153,7 @@ const DisplayActivity = () => {
                     >
                       Conculter les details
                     </Button>
-                  </Link> 
+                  </Link>
                   {/* <Button
                       type="primary"
                       style={{ width: "100%" }}
@@ -158,38 +162,34 @@ const DisplayActivity = () => {
                       Conculter les details
                     </Button> */}
                 </span>
-                
               </Card>
             ))
           )}
         </div>
       )}
-                  <CardFooter className="flex justify-between items-center">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/")}
-                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white"
-              >
-                <ArrowLeftOutlined className="mr-2" />
-                Retour à l'accueil
-              </Button>
+      <CardFooter className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white"
+        >
+          <ArrowLeftOutlined className="mr-2" />
+          Retour à l'accueil
+        </Button>
 
-              <div className="flex gap-4">
-
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={deleteLabovalues}
-                >
-                  <DeleteOutlined className="mr-2" />
-                  Mettre A 0
-                </Button>
-
- 
-              </div>
-            </CardFooter>
+        <div className="flex gap-4">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={deleteLabovalues}
+          >
+            <DeleteOutlined className="mr-2" />
+            Mettre A 0
+          </Button>
+        </div>
+      </CardFooter>
     </div>
-  )
+  );
 };
 
 export default DisplayActivity;
