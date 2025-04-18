@@ -16,9 +16,167 @@ use App\Http\Controllers\Activity1_12;
 
 
 
+
 class ActivitiesController extends Controller
 {
 
+    // public function CreateActivityByLabo(Request $request)
+    // {
+    //     try {
+    //         $laboId = JWTHelper::getLaboId($request);
+    //         if (!$laboId) {
+    //             return response()->json([
+    //                 'message' => 'Information du laboratoire non trouvée dans le token.'
+    //             ], 401);
+    //         }
+    //         if (ActivityByLabo::where([
+    //             ['ActivityId', $request->ActivityId],
+    //             ['laboId', $laboId],
+    //             ['year', $request->year]
+    //         ])->exists()) {
+    //             return response()->json([
+    //                 'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
+    //             ], 409);
+    //         }
+
+    //         // Validate the request data
+    //         $validated = $request->validate([
+    //             'year' => 'required|integer',
+    //             'ActivityId' => 'required|string',
+    //             'otherActivity' => 'nullable|string'
+    //         ]);
+
+    //         // Get the ActivityId from the validated data
+    //         $activityId = $validated['ActivityId'];
+
+    //         // Handle the case where the activity is custom
+    //         if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
+    //             $newActivity = Activitieslist::create([
+    //                 'Name' => $validated['otherActivity'],
+    //                 'is_custom' => true,
+    //             ]);
+    //             $activityId = $newActivity->id;
+
+    //             // Create a new item for the custom activity
+    //             $item = ActivityItem::create([
+    //                 'Name' => "ROI",
+    //                 'ActivityId' => $activityId,
+    //             ]);
+    //         }
+
+    //         // Create the activity record
+    //         $activity = ActivityByLabo::create([
+    //             'year' => $validated['year'],
+    //             'laboId' => $laboId,  // Use laboId from token
+    //             'ActivityId' => $activityId,
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => "Activité créée avec succès.",
+    //             'activity' => $activity
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Échec de la création de l\'activité.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+    // public function CreateActivityByLabo(Request $request)
+    // {
+    //     try {
+    //         $laboId = JWTHelper::getLaboId($request);
+    //         if (!$laboId) {
+    //             return response()->json([
+    //                 'message' => 'Information du laboratoire non trouvée dans le token.'
+    //             ], 401);
+    //         }
+    //         $validated = $request->validate([
+    //             'year' => 'required|integer',
+    //             'ActivityId' => 'required|string',
+    //             'otherActivity' => 'nullable|string'
+    //         ]);
+
+    //         $activityId = $validated['ActivityId'];
+    //         $year = $validated['year'];
+
+    //         if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
+    //             $customName = trim($validated['otherActivity']);
+    //             $existingCustom = Activitieslist::where('Name', $customName)
+    //                 ->where('is_custom', true)
+    //                 ->first();
+    //             if ($existingCustom) {
+    //                 $existingActivityId = $existingCustom->id;
+    //                 $alreadyInserted = ActivityByLabo::where([
+    //                     ['ActivityId', $existingActivityId],
+    //                     ['laboId', $laboId],
+    //                     ['year', $year]
+    //                 ])->exists();
+    //                 if ($alreadyInserted) {
+    //                     return response()->json([
+    //                         'message' => 'Cette activité personnalisée existe déjà pour cette année.'
+    //                     ], 409);
+    //                 }
+    //                 $activity = ActivityByLabo::create([
+    //                     'year' => $year,
+    //                     'laboId' => $laboId,
+    //                     'ActivityId' => $existingActivityId,
+    //                 ]);
+
+    //                 return response()->json([
+    //                     'message' => 'Activité existante ajoutée pour une nouvelle année.',
+    //                     'activity' => $activity
+    //                 ], 201);
+    //             }
+
+    //             $newActivity = Activitieslist::create([
+    //                 'Name' => $customName,
+    //                 'is_custom' => true,
+    //             ]);
+
+    //             ActivityItem::create([
+    //                 'Name' => "ROI",
+    //                 'ActivityId' => $newActivity->id,
+    //             ]);
+
+    //             $activity = ActivityByLabo::create([
+    //                 'year' => $year,
+    //                 'laboId' => $laboId,
+    //                 'ActivityId' => $newActivity->id,
+    //             ]);
+
+    //             return response()->json([
+    //                 'message' => "Vous avez créé une nouvelle activité personnalisée.",
+    //                 'activity' => $activity
+    //             ], 201);
+    //         }
+
+    //         if (ActivityByLabo::where([['ActivityId', $activityId], ['laboId', $laboId], ['year', $year]])->exists()) {
+    //             return response()->json([
+    //                 'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
+    //             ], 409);
+    //         }
+
+    //         $activity = ActivityByLabo::create([
+    //             'year' => $year,
+    //             'laboId' => $laboId,
+    //             'ActivityId' => $activityId,
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => "Activité créée avec succès.",
+    //             'activity' => $activity
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Échec de la création de l\'activité.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+  
     public function CreateActivityByLabo(Request $request)
     {
         try {
@@ -28,52 +186,104 @@ class ActivitiesController extends Controller
                     'message' => 'Information du laboratoire non trouvée dans le token.'
                 ], 401);
             }
+    
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'ActivityId' => 'required|string', // maintenant c’est le nom
+                'otherActivity' => 'nullable|string'
+            ]);
+    
+            $activityName = trim($validated['ActivityId']);
+            $year = $validated['year'];
+    
+            // Cas où l'utilisateur sélectionne "Autre activité"
+            if ($activityName === "Autre activité" && !empty($validated['otherActivity'])) {
+                $customName = trim($validated['otherActivity']);
+    
+                // Vérifier si une activité personnalisée de ce nom existe déjà
+                $existingCustom = Activitieslist::where('Name', $customName)
+                    ->where('is_custom', true)
+                    ->first();
+    
+                if ($existingCustom) {
+                    $alreadyInserted = ActivityByLabo::where([
+                        ['ActivityId', $existingCustom->id],
+                        ['laboId', $laboId],
+                        ['year', $year]
+                    ])->exists();
+    
+                    if ($alreadyInserted) {
+                        return response()->json([
+                            'message' => 'Cette activité personnalisée existe déjà pour cette année.'
+                        ], 409);
+                    }
+    
+                    $activity = ActivityByLabo::create([
+                        'year' => $year,
+                        'laboId' => $laboId,
+                        'ActivityId' => $existingCustom->id,
+                    ]);
+    
+                    return response()->json([
+                        'message' => 'Activité existante ajoutée pour une nouvelle année.',
+                        'activity' => $activity
+                    ], 201);
+                }
+    
+                // Création d'une nouvelle activité personnalisée
+                $newActivity = Activitieslist::create([
+                    'Name' => $customName,
+                    'is_custom' => true,
+                ]);
+    
+                ActivityItem::create([
+                    'Name' => "ROI",
+                    'ActivityId' => $newActivity->id,
+                ]);
+    
+                $activity = ActivityByLabo::create([
+                    'year' => $year,
+                    'laboId' => $laboId,
+                    'ActivityId' => $newActivity->id,
+                ]);
+    
+                return response()->json([
+                    'message' => "Vous avez créé une nouvelle activité personnalisée.",
+                    'activity' => $activity
+                ], 201);
+            }
+    
+            // Cas standard : activité sélectionnée par son nom
+            $existing = Activitieslist::where('Name', $activityName)->first();
+            if (!$existing) {
+                return response()->json([
+                    'message' => "Activité non trouvée."
+                ], 404);
+            }
+    
+            $existingActivityId = $existing->id;
+    
             if (ActivityByLabo::where([
-                ['ActivityId', $request->ActivityId],
+                ['ActivityId', $existingActivityId],
                 ['laboId', $laboId],
-                ['year', $request->year]
+                ['year', $year]
             ])->exists()) {
                 return response()->json([
                     'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
                 ], 409);
             }
-
-            // Validate the request data
-            $validated = $request->validate([
-                'year' => 'required|integer',
-                'ActivityId' => 'required|string',
-                'otherActivity' => 'nullable|string'
-            ]);
-
-            // Get the ActivityId from the validated data
-            $activityId = $validated['ActivityId'];
-
-            // Handle the case where the activity is custom
-            if ($activityId === "Autre activité" && !empty($validated['otherActivity'])) {
-                $newActivity = Activitieslist::create([
-                    'Name' => $validated['otherActivity'],
-                    'is_custom' => true,
-                ]);
-                $activityId = $newActivity->id;
-
-                // Create a new item for the custom activity
-                $item = ActivityItem::create([
-                    'Name' => "ROI",
-                    'ActivityId' => $activityId,
-                ]);
-            }
-
-            // Create the activity record
+    
             $activity = ActivityByLabo::create([
-                'year' => $validated['year'],
-                'laboId' => $laboId,  // Use laboId from token
-                'ActivityId' => $activityId,
+                'year' => $year,
+                'laboId' => $laboId,
+                'ActivityId' => $existingActivityId,
             ]);
-
+    
             return response()->json([
                 'message' => "Activité créée avec succès.",
                 'activity' => $activity
             ], 201);
+    
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Échec de la création de l\'activité.',
@@ -81,6 +291,7 @@ class ActivitiesController extends Controller
             ], 500);
         }
     }
+    
 
     public function createActivity(Request $request)
     {
@@ -530,7 +741,7 @@ class ActivitiesController extends Controller
     {
         // $activityByLaboId = $request->input('activityId');
         $activityByLaboId = $request->cookie('activityId');
-        $activityByLaboId=2;
+
         if (empty($activityByLaboId)) {
             return response()->json([
                 'message' => 'Activity ID is required and must be valid.',

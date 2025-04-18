@@ -107,8 +107,6 @@ const DisplayCalculatedData = () => {
 
   const deleteActivityValues = async (e) => {
     e.preventDefault();
-
-    // Affichage de la boîte de confirmation
     const confirmDelete = window.confirm(
       "Êtes-vous sûr de vouloir supprimer les données ?"
     );

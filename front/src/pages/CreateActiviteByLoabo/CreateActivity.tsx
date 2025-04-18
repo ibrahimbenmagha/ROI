@@ -22,10 +22,10 @@ import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { message, Layout, Typography } from "antd";
-import { HomeOutlined } from "@ant-design/icons";
 
 import axiosInstance from "../../axiosConfig";
 import Head from "../Header/Header";
+
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
@@ -64,32 +64,34 @@ const CreateActivity = () => {
       message.error("Veuillez sélectionner une année.");
       return;
     }
-
-    if (selectedActivity === "Autre activité" && !otherActivity) {
+    if (selectedActivity === "Autre activité" && !otherActivity.trim()) {
       message.error("Veuillez spécifier l'autre activité.");
       return;
     }
-
     setLoading(true);
-
     try {
-      await axiosInstance.post("/CreateActivityByLabo", {
+      const response = await axiosInstance.post("/CreateActivityByLabo", {
         year: parseInt(format(selectedYear, "yyyy")),
-        // laboId: 1,
         ActivityId: selectedActivity,
         otherActivity:
-          selectedActivity === "Autre activité" ? otherActivity : null,
+          selectedActivity === "Autre activité" ? otherActivity.trim() : null,
       });
-
-      message.success("Activité créée avec succès !");
+      const successMsg =
+        response.data?.message || "Activité créée avec succès !";
+      message.success(successMsg);
       setSelectedActivity("");
       setOtherActivity("");
       setSelectedYear(undefined);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la création de l'activité:", error);
-      message.error(
-        error.response?.data?.message || "Erreur lors de la création."
-      );
+      const errMsg =
+        error.response?.data?.message || "Erreur lors de la création.";
+      message.error(errMsg);
+      if (error.response?.status === 409) {
+        setSelectedActivity("");
+        setOtherActivity("");
+        setSelectedYear(undefined);
+      }
     } finally {
       setLoading(false);
     }
@@ -97,9 +99,7 @@ const CreateActivity = () => {
 
   return (
     <Layout className="min-h-screen">
-      
       <Head />
-
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div className="container mx-auto py-10">
           <Card>
@@ -121,7 +121,7 @@ const CreateActivity = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {acts.map((activity) => (
-                        <SelectItem key={activity.id} value={activity.id}>
+                        <SelectItem key={activity.id} value={activity.Name}>
                           {activity.Name}
                         </SelectItem>
                       ))}
@@ -131,7 +131,6 @@ const CreateActivity = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {selectedActivity === "Autre activité" && (
                   <div className="space-y-2">
                     <Label htmlFor="otherActivity">Précisez l'activité</Label>
@@ -143,7 +142,6 @@ const CreateActivity = () => {
                     />
                   </div>
                 )}
-
                 <div className="space-y-2">
                   <Label htmlFor="year">Année</Label>
                   <Popover>
@@ -180,8 +178,12 @@ const CreateActivity = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-
-                <Button type="submit" className="w-full" loading={loading} style={{ backgroundColor: "#1890ff" }}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  loading={loading}
+                  style={{ backgroundColor: "#1890ff" }}
+                >
                   {loading ? "En cours..." : "Créer l'activité"}
                 </Button>
               </form>
@@ -192,5 +194,4 @@ const CreateActivity = () => {
     </Layout>
   );
 };
-
 export default CreateActivity;

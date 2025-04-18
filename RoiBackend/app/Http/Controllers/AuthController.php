@@ -21,11 +21,45 @@ class AuthController extends Controller
         // $this->middleware('auth:api', ['except' => ['login']]);
     }
 
+    public function login()
+    {
+        $credentials = request(['email', 'password']);
 
-    public function checkCalculated(Request $request) {
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        } else {
+            $user = Auth::user();
+            if ($user->Role == 'Laboratoire') {
+                $laboratoire = DB::table('labo')->where('userId', $user->id)->first();
+                $customToken = auth()->claims([
+                    'labo_id' => $laboratoire ? $laboratoire->id : null,
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->FirstName,
+                    'user.last_name' => $user->LastName,
+                    'user.Role' => $user->Role,
+                    'labo.status' => $laboratoire->status,
+                ])->refresh();
+            } else if ($user->Role == 'Admin') {
+                $customToken = auth()->claims([
+                    'user.email' => $user->email,
+                    'user.first_name' => $user->FirstName,
+                    'user.last_name' => $user->LastName,
+                    'user.Role' => $user->Role,
+                ])->refresh();
+            }
+            return response()->json([
+                // 'access_token' => $customToken,
+                'role' => $user->Role,
+            ], 200)
+                ->cookie('access_token', $customToken, 60, '/', null, true, true);
+        }
+    }
+
+    public function checkCalculated(Request $request)
+    {
         // Retrieve laboId from JWT token
         $laboId = JWTHelper::getLaboId($request);
-        
+
         // Retrieve activityId from cookies, with a check to ensure it exists
         $actByLabo = $request->cookie('activityId');
         if (!$actByLabo) {
@@ -37,7 +71,7 @@ class AuthController extends Controller
         try {
             // Retrieve the activity record by activityId
             $check = ActivityByLabo::where("id", $actByLabo)->select("is_calculated")->first();
-            
+
             // Check if the record exists and handle accordingly
             if ($check) {
                 return response()->json([
@@ -58,16 +92,15 @@ class AuthController extends Controller
             ]);
         }
     }
-    
 
     // public function checkCalculated(Request $request) {
     //     $laboId = JWTHelper::getLaboId($request);
-    
+
     //     $actByLabo = $request->cookie('activityId');
-    
+
     //     // Retrieve the activity record
     //     $check = ActivityByLabo::where("id", $actByLabo)->select("is_calculated")->first();
-    
+
     //     // Check if the record exists and handle accordingly
     //     if ($check) {
     //         if ($check->is_calculated) {
@@ -89,7 +122,7 @@ class AuthController extends Controller
     //         ]);
     //     }
     // }
-    
+
 
     public function checkActivity(Request $request)
     {
@@ -175,71 +208,6 @@ class AuthController extends Controller
             ]);
         }
     }
-    public function login2()
-    {
-        $credentials = request(['email', 'moDepasse']);
-
-        if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        } else {
-            $user = Auth::user();
-            if ($user->Role == 'syndica') {
-                $syndic = DB::table('syndics')->where('utilisateur_id', $user->id)->first();
-                $customToken = auth()->claims([
-                    'labo_id' => $syndic ? $syndic->id : null,
-                    'user.email' => $user->email,
-                    'user.first_name' => $user->prenom,
-                    'user.last_name' => $user->nom,
-                    'user.Role' => $user->role,
-                ])->refresh();
-            } else if ($user->Role == 'Admin') {
-                $customToken = auth()->claims([
-                    'user.email' => $user->email,
-                    'user.first_name' => $user->FirstName,
-                    'user.last_name' => $user->LastName,
-                    'user.Role' => $user->role,
-                ])->refresh();
-            }
-            return response()->json([
-                // 'access_token' => $customToken,
-                'role' => $user->Role,
-            ], 200)
-                ->cookie('access_token', $customToken, 60, '/', null, true, true);
-        }
-    }
-    public function login()
-    {
-        $credentials = request(['email', 'password']);
-
-        if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        } else {
-            $user = Auth::user();
-            if ($user->Role == 'Laboratoire') {
-                $laboratoire = DB::table('labo')->where('userId', $user->id)->first();
-                $customToken = auth()->claims([
-                    'labo_id' => $laboratoire ? $laboratoire->id : null,
-                    'user.email' => $user->email,
-                    'user.first_name' => $user->FirstName,
-                    'user.last_name' => $user->LastName,
-                    'user.Role' => $user->Role,
-                    'labo.status' => $laboratoire->status,
-                ])->refresh();
-            } else if ($user->Role == 'Admin') {
-                $customToken = auth()->claims([
-                    'user.email' => $user->email,
-                    'user.first_name' => $user->FirstName,
-                    'user.last_name' => $user->LastName,
-                    'user.Role' => $user->Role,
-                ])->refresh();
-            }
-            return response()->json([
-                // 'access_token' => $customToken,
-                'role' => $user->Role,
-            ], 200)
-                ->cookie('access_token', $customToken, 60, '/', null, true, true);
-        }
-    }
 
 
     public function loginadmin()
@@ -268,20 +236,39 @@ class AuthController extends Controller
         return response()->json(auth()->user());
     }
 
+    // public function logout(Request $request)
+    // {
+    //     try {
+    //         // Invalide le token actuel
+    //         // auth()->logout();
+    //         $token = $request->cookie('access_token');
+    //         JwtHelper::expireToken($request);
+    //         return response()->json(['message' => 'Successfully logged out'], 200);
+    //         //    ->cookie('access_token', '', -1, '/', null, true, true); // Supprime le cookie
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Failed to logout, please try again. Error: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
+
     public function logout(Request $request)
     {
         try {
-            // Invalide le token actuel
-            auth()->logout();
-            $token = $request->cookie('access_token');
-            JwtHelper::removeToken($request);
-            return response()->json(['message' => 'Successfully logged out'], 200);
-            //    ->cookie('access_token', '', -1, '/', null, true, true); // Supprime le cookie
+            // Récupérer et invalider le token
+            $response = JwtHelper::expireToken($request);
+            
+            // Si expireToken renvoie une réponse (en cas d'erreur), la retourner
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                return $response;
+            }
+            
+            // Sinon, retourner une réponse de succès et supprimer le cookie
+            return response()->json(['message' => 'Successfully logged out'], 200)
+                ->cookie('access_token', '', -1, '/', null, true, true);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to logout, please try again. Error: ' . $e->getMessage()], 500);
         }
     }
-
 
     public function refresh()
     {

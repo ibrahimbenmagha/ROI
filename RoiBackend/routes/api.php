@@ -63,7 +63,7 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
 
-    // Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+    Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
 
 
     Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
@@ -118,7 +118,7 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);   
     // Route::delete('deleteLaboNotCalculatedById', [ActivitiesController::class, 'deleteLaboNotCalculatedById']);
-});
+});               
 
 
 

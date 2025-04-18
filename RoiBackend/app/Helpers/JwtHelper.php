@@ -141,24 +141,20 @@ class JWTHelper
     //             $request = request();
     //         }
 
-    //         // Récupérer le token existant
     //         $token = $request->cookie('access_token') ?? $request->bearerToken();
 
     //         if (!$token) {
     //             return response()->json(['error' => 'Token not found'], 400);
     //         }
 
-    //         // Utiliser la fonction parseToken pour décoder le token
     //         $payloadData = self::parseToken($token);
 
     //         if ($payloadData === null) {
     //             return response()->json(['error' => 'Invalid token format'], 400);
     //         }
 
-    //         // Modifier la date d'expiration
     //         $payloadData['exp'] = time() - 3600; // Expiration fixée à 1 heure dans le passé
 
-    //         // Utiliser l'API JWT de Laravel pour créer un nouveau token avec le payload modifié
     //         $newToken = auth()->claims($payloadData)->refresh();
 
     //         // Retourner une réponse avec le token expiré
@@ -172,7 +168,39 @@ class JWTHelper
     //     }
     // }
 
-
+    public static function expireToken(Request $request)
+    {
+        try {
+            if ($request === null) {
+                $request = request();
+            }
+    
+            $token = $request->cookie('access_token') ?? $request->bearerToken();
+    
+            if (!$token) {
+                return response()->json(['error' => 'Token not found'], 400);
+            }
+    
+            $payloadData = self::parseToken($token);
+    
+            if ($payloadData === null) {
+                return response()->json(['error' => 'Invalid token format'], 400);
+            }
+    
+            // Modification importante: invalider le token au lieu de le rafraîchir
+            try {
+                auth()->setToken($token)->invalidate(true);
+            } catch (\Exception $e) {
+                // Si l'invalidation échoue, on continue quand même
+                // car nous allons supprimer le cookie client de toute façon
+            }
+    
+            // Ne pas renvoyer de réponse ici, mais laisser logout() s'en charger
+            return true;
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to expire token: ' . $e->getMessage()], 500);
+        }
+    }
 
 }
  

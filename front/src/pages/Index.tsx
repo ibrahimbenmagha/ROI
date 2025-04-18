@@ -110,7 +110,7 @@ const Index = () => {
               </Title>
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
                 <FeatureCard title="Informations de Base" description="Configuration initiale pour la planification" icon="📋" link="/CreateActivity" />
-                <FeatureCard title="Listes des activites a calculer" description="Les activites non calcules" icon="👤" link="/DisplayActivity" />
+                <FeatureCard title="Liste des activités a calculer" description="Les activités non calculés" icon="👤" link="/DisplayActivity" />
                 <FeatureCard title="Évaluation Plan Tactique" description="Mesurer l'efficacité des stratégies marketing" icon="📊" link="/tactical-plan" />
               </Space>
             </Col>
@@ -119,8 +119,8 @@ const Index = () => {
                 Résultats
               </Title>
               <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <FeatureCard title="Liste des activités calculées" description="Liste des activités deja calculées" icon="💰" link="/DisplayCalculatedActivity" />
                 <FeatureCard title="Analyse Seuil de Rentabilité" description="Analyser les seuils de rentabilité pour les investissements" icon="📈" link="/threshold-analysis" />
-                <FeatureCard title="Aperçu ROI" description="Vue complète du retour sur investissement sur les activites calules" icon="💰" link="/DisplayCalculatedActivity" />
                 <FeatureCard title="Résumé Année de Planification" description="Résumé des activités de l'année planifiée" icon="📅" link="/year-summary" />
                 <FeatureCard title="Optimisation Mix Marketing" description="Optimisez votre mix marketing pour de meilleurs résultats" icon="🎯" link="/marketing-mix" />
                 <FeatureCard title="Comparaison Stratégies Marketing" description="Comparez différentes approches marketing" icon="⚖️" link="/strategies-comparison" />

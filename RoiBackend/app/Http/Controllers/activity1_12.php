@@ -1147,7 +1147,6 @@ class Activity1_12 extends Controller
                 'O' => 'required|numeric|min:0', // Coût fixe total du programme
             ]);
 
-
             $A = $validated['A']; // Nombre de médecins
             $B = $validated['B']; // Nombre moyen de tables rondes par médecin
             $D = $validated['D']; // Nombre moyen de médecins par table ronde
@@ -1168,7 +1167,9 @@ class Activity1_12 extends Controller
             $Q = $P / $C; //Coût par contact médecin (Q)
 
             $ROI = ($P > 0) ? round($M / $P, 4) : 0;
+
             $activityByLaboId = $request->cookie('activityId');
+
             $values = [
                 ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
                 ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
@@ -1189,7 +1190,6 @@ class Activity1_12 extends Controller
                     'id' => $verify
                 ], 409);
             }
-            $activityByLaboId = $request['ActivityByLaboId'];
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
                 return response()->json([
                     'message' => 'Duplicated values for 1 Activity are denied'
@@ -1447,7 +1447,6 @@ class Activity1_12 extends Controller
                     'id' => $verify
                 ], 409);
             }
-            $activityByLaboId = $request['ActivityByLaboId'];
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
                 return response()->json([
                     'message' => 'Duplicated values for 1 Activity are denied'
@@ -1697,7 +1696,6 @@ class Activity1_12 extends Controller
                     'id' => $verify
                 ], 409);
             }
-            $activityByLaboId = $request['ActivityByLaboId'];
             if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
                 return response()->json([
                     'message' => 'Duplicated values for 1 Activity are denied'
@@ -3001,4 +2999,7 @@ class Activity1_12 extends Controller
             'ROI' => $ROI,
         ], 200);
     }
+
+    
 }
+
