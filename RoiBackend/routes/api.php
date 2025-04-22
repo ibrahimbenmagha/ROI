@@ -20,8 +20,7 @@ use App\Http\Controllers\Activity11;
 use App\Http\Controllers\Activity12;
 
 
-
-Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
 
 
 // Routes publiques (pas besoin d'authentification)
@@ -37,7 +36,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(['check.role:Admin'])->group(function () {
-    Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
+    // Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
     Route::get('GetAllLabos', [LaboController::class, 'GetAllLabos']);
     Route::get('GetAllLabosInfos', [LaboController::class, 'GetAllLabosInfos']);
     Route::get('GetAllLaboNames', [LaboController::class, 'GetAllLaboNames']);
@@ -53,7 +52,6 @@ Route::middleware(['check.role:Admin'])->group(function () {
 });
 
 
-
 Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
 
@@ -65,6 +63,7 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
 
+    // Route::post("handleFullActivityCreationAndCalculation", [Activity1_12::class, "handleFullActivityCreationAndCalculation"]);
 
     Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
     Route::post("insetrIntoTable1", [Activity1_12::class, "insetrIntoTable1"]);

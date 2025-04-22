@@ -11,7 +11,7 @@ const NotFound = () => {
         title="404"
         subTitle="Désolé, la page que vous avez visitée n'existe pas."
         extra={
-          <Link to="/Home">
+          <Link to="/CreateActivity">
             <Button type="primary">
               Retour à l'Accueil
             </Button>

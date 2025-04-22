@@ -5,14 +5,122 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityByLabo;
-use App\Models\Labo;
+use App\Models\ActivitiesList;
+use App\Helpers\JwtHelper; // Adjust the namespace as needed
+
 use App\Models\ActivityItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Models\Labo;
 
 class Activity1_12 extends Controller
 {
     //Activite 1
+    public function insetrIntoTable1(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            // $laboId = 2;
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',
+                'B' => 'required|numeric|min:0',
+                'D' => 'required|numeric|min:0|max:100',
+                'E' => 'required|numeric|min:0.1',
+                'G' => 'required|numeric|min:0|max:100',
+                'I' => 'required|numeric|min:0|max:100',
+                'K' => 'required|numeric|min:0',
+                'M' => 'required|numeric|min:0',
+                'N' => 'required|numeric|min:0',
+
+                // IDs des activity items
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_E' => 'required|integer',
+                'id_G' => 'required|integer',
+                'id_I' => 'required|integer',
+                'id_K' => 'required|integer',
+                'id_M' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+            $activityNumber = 1;
+
+            if (!$activityNumber) {
+                return response()->json(['message' => 'Numéro d’activité manquant.'], 400);
+            }
+
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $D = $validated['D'] / 100;
+            $G = $validated['G'] / 100;
+            $I = $validated['I'] / 100;
+
+            // Calcul
+            $A = $validated['A'];
+            $B = $validated['B'];
+            $E = $validated['E'];
+            $K = $validated['K'];
+            $M = $validated['M'];
+            $N = $validated['N'];
+
+            $C = $A * $B;
+            $F = ($C * $D) / $E;
+            $H = $F * $G;
+            $J = $H * (1 - $I);
+            $L = $J * $K;
+            $O = ($M * $C) + $N;
+            $ROI = ($O > 0) ? round($L / $O, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_E'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $E],
+                ['activityItemId' => $validated['id_G'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $G],
+                ['activityItemId' => $validated['id_I'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $I],
+                ['activityItemId' => $validated['id_K'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $K],
+                ['activityItemId' => $validated['id_M'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $M],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité créée et calculée avec succès.',
+                'ROI' => $ROI,
+                'L' => $L,
+                'O' => $O,
+                'J' => $J,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur côté serveur.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function calculateROIAct1(Request $request)
     {
         // Validation des données entrantes
@@ -42,7 +150,7 @@ class Activity1_12 extends Controller
 
         // Calculs  
         $C = $A * $B; // Nombre total d’échantillons distribués
-        $F = ($C * $D) / $E; // Nombre total de patients ayant reçu un échantillon
+        $F = $C * $D / $E; // Nombre total de patients ayant reçu un échantillon
         $H = $F * $G; // Nombre total de patients obtenant une prescription
         $J = $H * (1 - $I); // Nombre total de patients incrémentaux gagnés grâce aux échantillons
         $L = $J * $K; // Revenus supplémentaires générés
@@ -73,94 +181,6 @@ class Activity1_12 extends Controller
             'ROI' => $ROI,
 
         ], 200);
-    }
-
-    public function insetrIntoTable1(Request $request)
-    {
-        $validated = $request->validate([
-            'A' => 'required|numeric|min:0', // input de Nombre de médecins recevant des échantillons
-            'B' => 'required|numeric|min:0', // input de Nombre d’échantillons donnés à chaque médecin
-            'D' => 'required|numeric|min:0|max:100', // input de Pourcentage des échantillons réellement donnés aux patients
-            'E' => 'required|numeric|min:0.1', // input de Nombre moyen d’échantillons donnés par patient (éviter division par zéro)
-            'G' => 'required|numeric|min:0|max:100', // input de Pourcentage des patients ayant reçu une prescription après usage
-            'I' => 'required|numeric|min:0|max:100', // input de Pourcentage des patients prescrits sans échantillon
-            'K' => 'required|numeric|min:0', // input de Valeur moyenne d’un patient incrémental
-            'M' => 'required|numeric|min:0', // input de Coût unitaire d’un échantillon
-            'N' => 'required|numeric|min:0', // input de Coûts fixes du programme
-
-        ]);
-        $id_A = $request['id_A']; //id de de Nombre de médecins recevant des échantillons dans la table activityItems
-        $id_B = $request['id_B'];
-        $id_D = $request['id_D'];
-        $id_E = $request['id_E'];
-        $id_G = $request['id_G'];
-        $id_I = $request['id_I'];
-        $id_K = $request['id_K'];
-        $id_M = $request['id_M'];
-        $id_N = $request['id_N'];
-        $id_ROI = $request['id_ROI'];
-
-        // Conversion des pourcentages
-        $D = $validated['D'] / 100;
-        $G = $validated['G'] / 100;
-        $I = $validated['I'] / 100;
-
-        $A = $validated['A'];
-        $B = $validated['B'];
-        $E = $validated['E'];
-        $K = $validated['K'];
-        $M = $validated['M'];
-        $N = $validated['N'];
-
-
-        $C = $A * $B;
-        $F = ($C * $D) / $E;
-        $H = $F * $G;
-        $J = $H * (1 - $I);
-        $L = $J * $K;
-        $O = ($M * $C) + $N;
-        $ROI = ($O > 0) ? round($L / $O, 4) : 0;
-
-        $ActByLabo = $request->cookie('activityId');
-        $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
-
-
-        if (!($verify === 1)) {
-            return response()->json([
-                'message' => 'value/activity not match',
-                'id' => $verify
-            ], 409);
-        }
-
-        if (ActivityItemValue::where('ActivityByLaboId', $request['ActByLabo'])->exists()) {
-            return response()->json([
-                'message' => 'Duplicated values for 1 Activity are dineided',
-
-            ], 409);
-        }
-
-        $values = ActivityItemValue::insert(
-            values: [
-                ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
-                ['activityItemId' => $id_B, 'ActivityByLaboId' => $ActByLabo, 'value' => $B],
-                ['activityItemId' => $id_D, 'ActivityByLaboId' => $ActByLabo, 'value' => $D],
-                ['activityItemId' => $id_E, 'ActivityByLaboId' => $ActByLabo, 'value' => $E],
-                ['activityItemId' => $id_G, 'ActivityByLaboId' => $ActByLabo, 'value' => $G],
-                ['activityItemId' => $id_I, 'ActivityByLaboId' => $ActByLabo, 'value' => $I],
-                ['activityItemId' => $id_K, 'ActivityByLaboId' => $ActByLabo, 'value' => $K],
-                ['activityItemId' => $id_M, 'ActivityByLaboId' => $ActByLabo, 'value' => $M],
-                ['activityItemId' => $id_N, 'ActivityByLaboId' => $ActByLabo, 'value' => $N],
-                ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
-            ]
-        );
-        $UPDATE = ActivityByLabo::where('id', $ActByLabo)
-            ->update(['is_calculated' => true]);
-
-
-        return response()->json([
-            'message' => 'Good request',
-            // 'data' => $values
-        ], 201);
     }
 
     public function updateActivity1Values(Request $request)
@@ -305,6 +325,95 @@ class Activity1_12 extends Controller
 
 
     //Activite 2 
+    public function insertIntoTable2(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'activityId' => 'required|integer',
+
+                'A' => 'required|numeric|min:0',
+                'B' => 'required|numeric|min:0',
+                'D' => 'required|numeric|min:0|max:100',
+                'F' => 'required|numeric|min:0',
+                'H' => 'required|numeric|min:0',
+                'J' => 'required|numeric|min:0',
+                'K' => 'required|numeric|min:0',
+
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_K' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            // 🔁 Récupérer ou créer ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $validated['activityId'],
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Calculs
+            $D = $validated['D'] / 100;
+            $A = $validated['A'];
+            $B = $validated['B'];
+            $F = $validated['F'];
+            $H = $validated['H'];
+            $J = $validated['J'];
+            $K = $validated['K'];
+
+            $C = $A * $B;
+            $E = $C * $D;
+            $G = $A * ($E + $F);
+            $I = $G * $H;
+            $L = ($J * $A) + $K;
+            $ROI = ($L > 0) ? round($I / $L, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_K'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $K],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 2 calculée et enregistrée avec succès.',
+                'ROI' => $ROI,
+                'I' => $I,
+                'L' => $L,
+                'G' => $G,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de l\'insertion.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
     public function calculateROIAct2(Request $request)
     {
         // Validation des données entrantes
@@ -355,86 +464,6 @@ class Activity1_12 extends Controller
             'cout_total_programme' => $L,
             'ROI' => $ROI,
         ], 200);
-    }
-
-    public function insertIntoTable2(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0', // Nombre de médecins participant à l'étude
-                'B' => 'required|numeric|min:0', // Nombre moyen de patients inscrits par médecin
-                'D' => 'required|numeric|min:0|max:100', // Pourcentage moyen de patients qui continuent le traitement
-                'F' => 'required|numeric|min:0', // Nombre de nouveaux patients traités par médecin grâce à l'étude
-                'H' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
-                'J' => 'required|numeric|min:0', // Coût variable par médecin
-                'K' => 'required|numeric|min:0', // Coût fixe total de l’étude
-            ]);
-
-            $id_A = $request['id_A']; // ID de Nombre de médecins participant à l'étude
-            $id_B = $request['id_B'];
-            $id_D = $request['id_D'];
-            $id_F = $request['id_F'];
-            $id_H = $request['id_H'];
-            $id_J = $request['id_J'];
-            $id_K = $request['id_K'];
-            $id_ROI = $request['id_ROI'];
-
-            $D = $validated['D'] / 100;
-
-            $A = $validated['A'];
-            $B = $validated['B'];
-            $F = $validated['F'];
-            $H = $validated['H'];
-            $J = $validated['J'];
-            $K = $validated['K'];
-
-
-            // Calculs
-            $C = $A * $B;       // Nombre total de patients inscrits
-            $E = $C * $D;       // Nombre de patients poursuivant le traitement après l'étude
-            $G = $A * ($E + $F); // Patients incrémentaux obtenus grâce à l’étude
-            $I = $G * $H;       // Ventes incrémentales
-            $L = ($J * $A) + $K; // Coût total du programme
-            $ROI = ($L > 0) ? round($I / $L, 4) : 0;
-
-
-            $ActByLabo = $request->cookie('activityId');
-            $verify = ActivityByLabo::where('id', $ActByLabo)->value('ActivityId');
-            if (!($verify === 2)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            if (ActivityItemValue::where('ActivityByLaboId', $ActByLabo)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            // Insertion des valeurs dans la table ActivityItemValue
-            $values = [
-                ['activityItemId' => $id_A, 'ActivityByLaboId' => $ActByLabo, 'value' => $A],
-                ['activityItemId' => $id_B, 'ActivityByLaboId' => $ActByLabo, 'value' => $B],
-                ['activityItemId' => $id_D, 'ActivityByLaboId' => $ActByLabo, 'value' => $D],
-                ['activityItemId' => $id_F, 'ActivityByLaboId' => $ActByLabo, 'value' => $F],
-                ['activityItemId' => $id_H, 'ActivityByLaboId' => $ActByLabo, 'value' => $H],
-                ['activityItemId' => $id_J, 'ActivityByLaboId' => $ActByLabo, 'value' => $J],
-                ['activityItemId' => $id_K, 'ActivityByLaboId' => $ActByLabo, 'value' => $K],
-                ['activityItemId' => $id_ROI, 'ActivityByLaboId' => $ActByLabo, 'value' => $ROI],
-            ];
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $ActByLabo)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function updateActivity2Values(Request $request)
@@ -549,6 +578,105 @@ class Activity1_12 extends Controller
 
 
     //Activite 3 
+    public function insertIntoTable3(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'activityId' => 'required|integer',
+
+                'A' => 'required|numeric|min:0',
+                'B' => 'required|numeric|min:0',
+                'C' => 'required|numeric|min:0|max:100',
+                'E' => 'required|numeric|min:0|max:100',
+                'G' => 'required|numeric|min:0|max:100',
+                'I' => 'required|numeric|min:0',
+                'K' => 'required|numeric|min:0',
+                'M' => 'required|numeric|min:0',
+                'N' => 'required|numeric|min:0',
+
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_C' => 'required|integer',
+                'id_E' => 'required|integer',
+                'id_G' => 'required|integer',
+                'id_I' => 'required|integer',
+                'id_K' => 'required|integer',
+                'id_M' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            // Création ou récupération d’ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $validated['activityId'],
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $C = $validated['C'] / 100;
+            $E = $validated['E'] / 100;
+            $G = $validated['G'] / 100;
+
+            $A = $validated['A'];
+            $B = $validated['B'];
+            $I = $validated['I'];
+            $K = $validated['K'];
+            $M = $validated['M'];
+            $N = $validated['N'];
+
+            // Calculs
+            $D = $A * $C;
+            $F = $D * $E;
+            $H = $F * $G;
+            $J = $H * $I;
+            $L = $J * $K;
+            $O = ($M * $A * $B) + $N;
+            $ROI = ($O > 0) ? round($L / $O, 4) : 0;
+
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_C'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $C],
+                ['activityItemId' => $validated['id_E'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $E],
+                ['activityItemId' => $validated['id_G'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $G],
+                ['activityItemId' => $validated['id_I'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $I],
+                ['activityItemId' => $validated['id_K'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $K],
+                ['activityItemId' => $validated['id_M'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $M],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité créée et calculée avec succès.',
+                'ROI' => $ROI,
+                'L' => $L,
+                'O' => $O,
+                'J' => $J,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => 'Erreur côté serveur.',
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct3(Request $request)
     {
         // Validation des données entrantes
@@ -605,87 +733,6 @@ class Activity1_12 extends Controller
             'cout_total_du_programme' => $O,
             'ROI' => $ROI,
         ], 201);
-    }
-
-    public function insertIntoTable3(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par l’email
-                'C' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se rappelant avoir reçu l’email
-                'E' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se rappelant de la marque et du message
-                'G' => 'required|numeric|min:0|max:100', // Pourcentage de médecins prescrivant Prexige à de nouveaux patients après réception du message
-                'I' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous Prexige par médecin
-                'K' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
-                'M' => 'required|numeric|min:0', // Coût variable par email envoyé
-                'B' => 'required|numeric|min:0', // Nombre moyen d’emails envoyés par médecin
-                'N' => 'required|numeric|min:0', // Coût fixe total du programme
-            ]);
-
-            // Conversion des pourcentages
-            $C = $validated['C'] / 100;
-            $E = $validated['E'] / 100;
-            $G = $validated['G'] / 100;
-
-            $A = $validated['A'];
-            $I = $validated['I'];
-            $K = $validated['K'];
-            $M = $validated['M'];
-            $B = $validated['B'];
-            $N = $validated['N'];
-
-            // Calculs
-            $D = $A * $C; // Nombre de médecins ayant reçu et rappelé l’email
-            $F = $D * $E; // Nombre de médecins se rappelant du produit et du message
-            $H = $F * $G; // Nombre de médecins prescrivant Prexige à la suite de l’email
-            $J = $H * $I; // Nombre de patients incrémentaux générés par l’email
-            $L = $J * $K; // Ventes incrémentales générées
-            $O = ($M * $A * $B) + $N; // Coût total du programme
-            $ROI = ($O > 0) ? round($L / $O, 4) : 0; // Retour sur investissement (ROI)
-
-
-            $activityByLaboId = $request->cookie('activityId');
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify == 3)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-            // Insertion des valeurs dans la table
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_C'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $C],
-                ['activityItemId' => $request['id_E'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $E],
-                ['activityItemId' => $request['id_G'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $G],
-                ['activityItemId' => $request['id_I'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $I],
-                ['activityItemId' => $request['id_K'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $K],
-                ['activityItemId' => $request['id_M'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $M],
-                ['activityItemId' => $request['id_N'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $N],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-
-
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function updateActivity3Values(Request $request)
@@ -763,7 +810,6 @@ class Activity1_12 extends Controller
         }
     }
 
-
     public function calculateROIAct_3(Request $request)
     {
         $activityByLaboId = $request->cookie('activityId');
@@ -812,6 +858,107 @@ class Activity1_12 extends Controller
 
 
     //Activite 4
+    public function insertIntoTable4(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:1',
+                'B' => 'required|numeric|min:1|max:100',
+                'D' => 'required|numeric|min:1|max:100',
+                'F' => 'required|numeric|min:0|max:100',
+                'H' => 'required|numeric|min:1',
+                'KOL' => 'required|numeric|min:1',
+                'J' => 'required|numeric|min:1',
+                'L' => 'required|numeric|min:1',
+                'M' => 'required|numeric|min:1',
+
+                // IDs des activity items
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_KOL' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_M' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 4;
+
+            // Création ou récupération d’ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $B = $validated['B'] / 100;
+            $D = $validated['D'] / 100;
+            $F = $validated['F'] / 100;
+
+            // Calculs
+            $A = $validated['A'];
+            $H = $validated['H'];
+            $KOL = $validated['KOL'];
+            $J = $validated['J'];
+            $L = $validated['L'];
+            $M = $validated['M'];
+
+            $C = $A * $B;
+            $E = $C * $D;
+            $G = $E * $F;
+            $I = ($G * $H) + $KOL;
+            $K = $I * $J;
+            $N = ($L * $A) + $M;
+            $ROI = ($N > 0) ? round($K / $N, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_KOL'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $KOL],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_M'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $M],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 4 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'K' => $K,
+                'N' => $N,
+                'I' => $I,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function calculateROIAct4(Request $request)
     {
         $validated = $request->validate([
@@ -865,88 +1012,6 @@ class Activity1_12 extends Controller
             'cout_total_programme' => $N,
             'ROI' => $ROI,
         ], 200);
-    }
-
-    public function insertIntoTable4(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:1', // Nombre de médecins participants à la conférence
-                'B' => 'required|numeric|min:1|max:100', // Pourcentage de médecins ayant retenu le message
-                'D' => 'required|numeric|min:1|max:100', // Pourcentage de médecins ayant une perception positive
-                'F' => 'required|numeric|min:0|max:100', // Pourcentage de médecins qui prescrivent à de nouveaux patients
-                'H' => 'required|numeric|min:1', // Nombre moyen de nouveaux patients prescrits par médecin
-                'KOL' => 'required|numeric|min:1', // Ajustement lié à l’influence des leaders d’opinion
-                'J' => 'required|numeric|min:1', // Valeur de revenu générée par patient incrémental
-                'L' => 'required|numeric|min:1', // Coût variable par médecin
-                'M' => 'required|numeric|min:1', // Coût fixe total du programme
-            ]);
-
-            $B = $validated['B'] / 100;
-            $D = $validated['D'] / 100;
-            $F = $validated['F'] / 100;
-
-            $A = $validated['A'];
-            $H = $validated['H'];
-            $KOL = $validated['KOL'];
-            $J = $validated['J'];
-            $L = $validated['L'];
-            $M = $validated['M'];
-
-            $C = $A * $B; // Nombre de médecins exposés au message
-            $E = $C * $D; // Nombre de médecins ayant une perception positive
-            $G = $E * $F; // Nombre de médecins prescrivant à de nouveaux patients
-            $I = ($G * $H) + $KOL; // Nombre de patients incrémentaux gagnés
-            $K = $I * $J; // Ventes incrémentales générées
-            $N = ($L * $A) + $M; // Coût total du programme
-
-            $ROI = ($N > 0) ? round($K / $N, 4) : 0;
-
-            $activityByLaboId = $request->cookie('activityId');
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-
-            if (!($verify === 4)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-            if (ActivityByLabo::where('id', $activityByLaboId)->doesntExist()) {
-                return response()->json([
-                    'message' => 'You should add this activity to your profile first'
-                ], 409);
-            };
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_KOL'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $KOL],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_M'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $M],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function updateActivity4Values(Request $request)
@@ -1072,7 +1137,115 @@ class Activity1_12 extends Controller
     }
 
 
+
+
     //Activite 5
+    public function insertIntoTable5(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',  // Nombre de médecins
+                'B' => 'required|numeric|min:0|max:100',  // Tables rondes par médecin
+                'D' => 'required|numeric|min:0',  // Médecins par table ronde
+                'F' => 'required|numeric|min:0|max:100',  // % perception changée
+                'H' => 'required|numeric|min:0|max:100',  // % prescrivant
+                'J' => 'required|numeric|min:0',  // Patients par médecin
+                'L' => 'required|numeric|min:0',  // Valeur par patient
+                'N' => 'required|numeric|min:0',  // Coût variable
+                'O' => 'required|numeric|min:0',  // Coût fixe
+
+                // IDs des champs
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_O' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 5;
+
+            // Création ou récupération de l'activité pour ce labo et cette année
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des %
+            $B = $validated['B'];
+            $F = $validated['F'] / 100;
+            $H = $validated['H'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $D = $validated['D'];
+            $J = $validated['J'];
+            $L = $validated['L'];
+            $N = $validated['N'];
+            $O = $validated['O'];
+
+            // Calculs
+            $C = $A * $B;
+            $E = $C / $D;
+            $G = $A * $F;
+            $I = $G * $H;
+            $K = $I * $J;
+            $M = $K * $L;
+            $P = ($N * $E) + $O;
+            $Q = ($C > 0) ? $P / $C : 0;
+            $ROI = ($P > 0) ? round($M / $P, 4) : 0;
+
+            // Insertion dans la table ActivityItemValue
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_O'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $O],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 5 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'M' => $M,
+                'P' => $P,
+                'K' => $K,
+                'Q' => $Q,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Échec de l'insertion",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function calculateROIAct5(Request $request)
     {
         $validated = $request->validate([
@@ -1130,84 +1303,6 @@ class Activity1_12 extends Controller
             'cout_par_contact_medecin' => $Q,
             'ROI' => $ROI,
         ], 200);
-    }
-
-    public function insertIntoTable5(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0', // Nombre de médecins participant aux tables rondes
-                'B' => 'required|numeric|min:0|max:100', // Nombre moyen de tables rondes assistées par médecin par an
-                'D' => 'required|numeric|min:0', // Nombre moyen de médecins par table ronde
-                'F' => 'required|numeric|min:0|max:100', // Pourcentage de médecins ayant changé positivement leur perception
-                'H' => 'required|numeric|min:0|max:100', // Pourcentage de médecins influencés qui vont prescrire
-                'J' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous traitement par médecin
-                'L' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
-                'N' => 'required|numeric|min:0', // Coût variable par table ronde
-                'O' => 'required|numeric|min:0', // Coût fixe total du programme
-            ]);
-
-            $A = $validated['A']; // Nombre de médecins
-            $B = $validated['B']; // Nombre moyen de tables rondes par médecin
-            $D = $validated['D']; // Nombre moyen de médecins par table ronde
-            $F = $validated['F'] / 100;
-            $H = $validated['H'] / 100;
-            $J = $validated['J']; // Nombre moyen de nouveaux patients par médecin
-            $L = $validated['L']; // Valeur du revenu par patient
-            $N = $validated['N']; // Coût variable par table ronde
-            $O = $validated['O']; // Coût fixe total du programme
-
-            $C = $A * $B; //Nombre total de contacts médecins (C)
-            $E = $C / $D; //Nombre total de tables rondes requises (E)
-            $G = $A * $F; //Nombre de médecins ayant changé positivement leur perception (G)
-            $I = $G * $H; //Nombre de médecins prescrivant (I)
-            $K = $I * $J; //Nombre de patients incrémentaux gagnés (K) 
-            $M = $K * $L; //Ventes incrémentales (M)
-            $P = ($N * $E) + $O; //Coût total du programme (P)
-            $Q = $P / $C; //Coût par contact médecin (Q)
-
-            $ROI = ($P > 0) ? round($M / $P, 4) : 0;
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_N'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $N],
-                ['activityItemId' => $request['id_O'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $O],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-
-            ];
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify === 5)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function updateActivity5Values(Request $request)
@@ -1333,7 +1428,108 @@ class Activity1_12 extends Controller
     }
 
 
+
+
     //Activite 6 
+    public function insertIntoTable6(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',     // Nombre de médecins ciblés
+                'B' => 'required|numeric|min:0',     // Visites par médecin
+                'E' => 'required|numeric|min:0|max:100', // % de médecins se rappelant du message
+                'G' => 'required|numeric|min:0|max:100', // % de médecins prescrivant après visite
+                'I' => 'required|numeric|min:0',     // Nouveaux patients par médecin
+                'K' => 'required|numeric|min:0',     // Revenu par patient
+                'M1' => 'required|numeric|min:0',    // Coût variable par représentant
+                'M2' => 'required|numeric|min:0',    // Nombre total de représentants
+
+                // IDs des activity items
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_E' => 'required|integer',
+                'id_G' => 'required|integer',
+                'id_I' => 'required|integer',
+                'id_K' => 'required|integer',
+                'id_M1' => 'required|integer',
+                'id_M2' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 6;
+
+            // Création ou récupération d’ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $E = $validated['E'] / 100;
+            $G = $validated['G'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $B = $validated['B'];
+            $I = $validated['I'];
+            $K = $validated['K'];
+            $M1 = $validated['M1'];
+            $M2 = $validated['M2'];
+
+            // Calculs
+            $C = $A * $B;      // Total des visites
+            $F = $A * $E;      // Médecins se rappelant du message
+            $H = $F * $G;      // Médecins qui prescrivent
+            $J = $H * $I;      // Patients incrémentaux
+            $L = $J * $K;      // Ventes incrémentales
+            $M = $M1 * $M2;    // Coût total
+            $ROI = ($M > 0) ? round($L / $M, 4) : 0;
+
+            // Insertion dans ActivityItemValue
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_E'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $E],
+                ['activityItemId' => $validated['id_G'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $G],
+                ['activityItemId' => $validated['id_I'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $I],
+                ['activityItemId' => $validated['id_K'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $K],
+                ['activityItemId' => $validated['id_M1'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $M1],
+                ['activityItemId' => $validated['id_M2'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $M2],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 6 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'L' => $L,
+                'M' => $M,
+                'J' => $J,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Erreur lors de l'enregistrement",
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct6(Request $request)
     {
         // Validation des entrées
@@ -1389,82 +1585,6 @@ class Activity1_12 extends Controller
             'cout_total_programme' => $M,
             'ROI' => $ROI,
         ], 200);
-    }
-
-    public function insertIntoTable6(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par le représentant
-                'B' => 'required|numeric|min:0', // Nombre moyen de visites par médecin
-                'E' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se rappelant du message
-                'G' => 'required|numeric|min:0|max:100', // Pourcentage de médecins prescrivant Prexige après visite
-                'I' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous Prexige par médecin
-                'K' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
-                'M1' => 'required|numeric|min:0', // Coût variable par représentant
-                'M2' => 'required|numeric|min:0', // Nombre total de représentants
-            ]);
-
-            $E = $validated['E'] / 100;
-            $G = $validated['G'] / 100;
-
-            // Récupération des variables de la requête
-            $A = $validated['A']; // Nombre total de médecins ciblés
-            $B = $validated['B']; // Nombre moyen de visites par médecin
-            $I = $validated['I']; // Nombre moyen de nouveaux patients par médecin
-            $K = $validated['K']; // Valeur du revenu par patient
-            $M1 = $validated['M1']; // Coût variable par représentant
-            $M2 = $validated['M2']; // Nombre total de représentants
-
-
-            $C = $A * $B; // Nombre total de visites (détails)
-            $F = $A * $E; // Nombre de médecins se rappelant du message
-            $H = $F * $G; // Nombre de médecins prescrivant Prexige
-            $J = $H * $I; // Nombre de patients incrémentaux
-            $L = $J * $K; // Ventes incrémentales
-            $M = $M1 * $M2; // Coût total du programme
-
-            // Calcul du ROI
-            $ROI = ($M > 0) ? round($L / $M, 4) : 0; // ROI, évite la division par zéro
-            $activityByLaboId = $request->cookie('activityId');
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_E'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $E],
-                ['activityItemId' => $request['id_G'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $G],
-                ['activityItemId' => $request['id_I'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $I],
-                ['activityItemId' => $request['id_K'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $K],
-                ['activityItemId' => $request['id_M1'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $M1],
-                ['activityItemId' => $request['id_M2'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $M2],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-
-            ];
-
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify === 6)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function updateActivity6Values(Request $request)
@@ -1584,7 +1704,108 @@ class Activity1_12 extends Controller
         ], 200);
     }
 
+
+
     //Activity 7
+    public function insertIntoTable7(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'G' => 'required|numeric|min:0',         // Consommateurs cibles
+                'H' => 'required|numeric|min:0|max:100', // % audience atteinte
+                'J' => 'required|numeric|min:0|max:100', // % se rappelant la campagne
+                'L' => 'required|numeric|min:0|max:100', // % ayant consulté un médecin
+                'N' => 'required|numeric|min:0|max:100', // % recevant une prescription
+                'P' => 'required|numeric|min:0',         // Revenu/patient
+                'R1' => 'required|numeric|min:0',        // Dépenses médias
+                'S' => 'required|numeric|min:0',         // Frais agence/production
+
+                // IDs des champs
+                'id_G' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_P' => 'required|integer',
+                'id_R1' => 'required|integer',
+                'id_S' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 7;
+
+            // Création ou récupération d’ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $H = $validated['H'] / 100;
+            $J = $validated['J'] / 100;
+            $L = $validated['L'] / 100;
+            $N = $validated['N'] / 100;
+
+            // Variables
+            $G = $validated['G'];
+            $P = $validated['P'];
+            $R1 = $validated['R1'];
+            $S = $validated['S'];
+
+            // Calculs
+            $I = $G * $H;     // Consommateurs atteints
+            $K = $I * $J;     // Consommateurs se rappelant
+            $M = $K * $L;     // Consultations
+            $O = $M * $N;     // Patients incrémentaux
+            $Q = $O * $P;     // Revenus générés
+            $T = $R1 + $S;    // Coûts totaux
+            $ROI = ($T > 0) ? round($Q / $T, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_G'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $G],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_P'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $P],
+                ['activityItemId' => $validated['id_R1'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $R1],
+                ['activityItemId' => $validated['id_S'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $S],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 7 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'Q' => $Q,
+                'T' => $T,
+                'O' => $O,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Erreur serveur lors de l'enregistrement",
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct7(Request $request)
     {
         try {
@@ -1634,83 +1855,6 @@ class Activity1_12 extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 "message" => 'Failed to calculate ROI',
-                "error" => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function insertIntoTable7(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'G' => 'required|numeric|min:0', // Nombre de consommateurs cibles pour la campagne
-                'H' => 'required|numeric|min:0|max:100', // Pourcentage d’audience cible atteinte par le plan média
-                'J' => 'required|numeric|min:0|max:100', // Pourcentage de consommateurs se rappelant de la campagne
-                'L' => 'required|numeric|min:0|max:100', // Pourcentage de consommateurs ayant consulté un médecin suite à l’exposition
-                'N' => 'required|numeric|min:0|max:100', // Pourcentage de patients ayant consulté et recevant une prescription Prexige
-                'P' => 'required|numeric|min:0', // Valeur du revenu par patient incrémental
-                'R1' => 'required|numeric|min:0', // Dépenses médias (en MAD k)
-                'S' => 'required|numeric|min:0', // Coûts de production, frais d’agence et autres (en MAD k)
-            ]);
-
-            // Conversion des pourcentages en valeurs décimales
-            $H = $validated['H'] / 100;
-            $J = $validated['J'] / 100;
-            $L = $validated['L'] / 100;
-            $N = $validated['N'] / 100;
-
-            // Récupération des variables de la requête
-            $G = $validated['G']; // Nombre de consommateurs cibles
-            $P = $validated['P']; // Valeur du revenu par patient
-            $R1 = $validated['R1']; // Dépenses médias
-            $S = $validated['S']; // Coûts de production, frais d’agence
-
-            // Calculs
-            $I = $G * $H; // Nombre de consommateurs atteints par la campagne
-            $K = $I * $J; // Nombre de consommateurs se rappelant de la campagne
-            $M = $K * $L; // Nombre de consommateurs consultant un médecin
-            $O = $M * $N; // Nombre de patients incrémentaux obtenus
-            $Q = $O * $P; // Ventes incrémentales générées
-            $T = $R1 + $S; // Coûts totaux du programme
-
-            // Calcul du ROI
-            $ROI = ($T > 0) ? round($Q / $T, 4) : 0; // ROI, évite la division par zéro
-
-            $activityByLaboId = $request->cookie('activityId');
-            $values = [
-                ['activityItemId' => $request['id_G'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $G],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_N'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $N],
-                ['activityItemId' => $request['id_P'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $P],
-                ['activityItemId' => $request['id_R1'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $R1],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-                ['activityItemId' => $request['id_S'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $S],
-
-            ];
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify === 7)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
                 "error" => $e->getMessage()
             ], 500);
         }
@@ -1835,6 +1979,115 @@ class Activity1_12 extends Controller
 
 
     //Activite 8
+    public function insertIntoTable8(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',  // Population totale
+                'B' => 'required|numeric|min:0|max:100', // Taux d’incidence
+                'D' => 'required|numeric|min:0|max:100', // % déjà traités
+                'F' => 'required|numeric|min:0|max:100', // % visés par campagne
+                'H' => 'required|numeric|min:0', // Visites uniques
+                'J' => 'required|numeric|min:0|max:100', // % intéressés
+                'L' => 'required|numeric|min:0|max:100', // % consulté médecin
+                'N' => 'required|numeric|min:0|max:100', // % avec prescription
+                'P' => 'required|numeric|min:0', // Revenu par patient
+                'R' => 'required|numeric|min:0', // Coût total de la campagne
+
+                // IDs des champs
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_P' => 'required|integer',
+                'id_R' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 8;
+
+            // Création ou récupération d'ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $B = $validated['B'] / 100;
+            $D = $validated['D'] / 100;
+            $F = $validated['F'] / 100;
+            $J = $validated['J'] / 100;
+            $L = $validated['L'] / 100;
+            $N = $validated['N'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $H = $validated['H'];
+            $P = $validated['P'];
+            $R = $validated['R'];
+
+            // Calculs
+            $C = $A * $B;
+            $E = $C * (1 - $D);
+            $G = $E * $F;
+            $I = ($G > 0) ? $H / $G : 0;  // Taux d’efficacité (non utilisé en base, mais utile pour analyse)
+            $K = $H * $J;
+            $M = $K * $L;
+            $O = $M * $N;
+            $Q = $O * $P;
+            $ROI = ($R > 0) ? round($Q / $R, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_P'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $P],
+                ['activityItemId' => $validated['id_R'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $R],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 8 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'Q' => $Q,
+                'O' => $O,
+                'R' => $R,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Échec de l’insertion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct8(Request $request)
     {
         try {
@@ -1895,89 +2148,6 @@ class Activity1_12 extends Controller
             return response()->json([
                 'message' => 'Failed to calculate ROI',
                 'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function insertIntoTable8(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0',  // Population totale
-                'B' => 'required|numeric|min:0|max:100', // Taux d’incidence de la maladie
-                'D' => 'required|numeric|min:0|max:100', // Pourcentage des patients déjà traités et satisfaits
-                'F' => 'required|numeric|min:0|max:100', // Pourcentage des patients visés par la campagne en ligne
-                'H' => 'required|numeric|min:0', // Nombre total de visites uniques sur le site
-                'J' => 'required|numeric|min:0|max:100', // Pourcentage des visiteurs intéressés
-                'L' => 'required|numeric|min:0|max:100', // Pourcentage des visiteurs ayant consulté un médecin
-                'N' => 'required|numeric|min:0|max:100', // Pourcentage des patients ayant reçu une prescription Prexige
-                'P' => 'required|numeric|min:0', // Valeur du revenu généré par patient incrémental
-                'R' => 'required|numeric|min:0', // Coût total de la campagne digitale
-            ]);
-
-            $B = $validated['B'] / 100;  // Taux d’incidence de la maladie
-            $D = $validated['D'] / 100;  // Pourcentage des patients déjà traités et satisfaits
-            $F = $validated['F'] / 100;  // Pourcentage des patients visés par la campagne en ligne
-            $J = $validated['J'] / 100;  // Pourcentage des visiteurs intéressés
-            $L = $validated['L'] / 100;  // Pourcentage des visiteurs ayant consulté un médecin
-            $N = $validated['N'] / 100;  // Pourcentage des patients ayant reçu une prescription Prexige
-
-            $A = $validated['A']; // Population totale
-            $P = $validated['P']; // Valeur du revenu par patient incrémental
-            $R = $validated['R']; // Coût total de la campagne
-            $H = $validated['H']; // Population totale
-
-            $C = $A * $B;  // Nombre total de patients souffrant de la maladie
-            $E = $C * (1 - $D);  // Nombre de patients non traités ou insatisfaits
-            $G = $E * $F;  // Nombre de patients ciblés par la campagne digitale
-            $I = $H / $G;  // Taux d’efficacité d’atteinte des patients ciblés
-            $K = $H * $J;  // Nombre de visiteurs uniques intéressés et sensibilisés
-            $M = $K * $L;  // Nombre de visiteurs uniques ayant consulté un médecin
-            $O = $M * $N;  // Nombre de patients ayant obtenu une prescription Prexige
-            $Q = $O * $P;  // Ventes incrémentales générées
-
-            $ROI = ($R > 0) ? round($Q / $R, 4) : 0;  // ROI
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_N'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $N],
-                ['activityItemId' => $request['id_P'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $P],
-                ['activityItemId' => $request['id_R'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $R],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify === 8)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
             ], 500);
         }
     }
@@ -2122,6 +2292,104 @@ class Activity1_12 extends Controller
 
 
     //Activite 9
+    public function insertIntoTable9(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',  // Médecins lecteurs
+                'B' => 'required|numeric|min:0',  // Nombre d’insertions
+                'C' => 'required|numeric|min:0|max:100', // % se souvenant du message
+                'E' => 'required|numeric|min:0|max:100', // % qui commencent à prescrire
+                'G' => 'required|numeric|min:0',  // Nouveaux patients par médecin
+                'I' => 'required|numeric|min:0',  // Revenu/patient
+                'K' => 'required|numeric|min:0',  // Coût média
+                'L' => 'required|numeric|min:0',  // Coût production
+
+                // IDs
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_C' => 'required|integer',
+                'id_E' => 'required|integer',
+                'id_G' => 'required|integer',
+                'id_I' => 'required|integer',
+                'id_K' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 9;
+
+            // Création ou récupération de l'activité
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $C = $validated['C'] / 100;
+            $E = $validated['E'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $B = $validated['B'];
+            $G = $validated['G'];
+            $I = $validated['I'];
+            $K = $validated['K'];
+            $L = $validated['L'];
+
+            // Calculs
+            $D = $A * $C;
+            $F = $D * $E;
+            $H = $F * $G;
+            $J = $H * $I;
+            $M = $K + $L;
+            $ROI = ($M > 0) ? round($J / $M, 4) : 0;
+
+            // Insertion des valeurs
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_C'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $C],
+                ['activityItemId' => $validated['id_E'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $E],
+                ['activityItemId' => $validated['id_G'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $G],
+                ['activityItemId' => $validated['id_I'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $I],
+                ['activityItemId' => $validated['id_K'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $K],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 9 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'J' => $J,
+                'M' => $M,
+                'H' => $H,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur lors de l’insertion',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function calculateROIAct9(Request $request)
     {
         try {
@@ -2175,82 +2443,6 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function insertIntoTable9(Request $request)
-    {
-        try {
-
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0',  //Nombre de médecins ayant lu au moins une des publications contenant une annonce produit
-                'B' => 'required|numeric|min:0|', //Nombre d’insertions publicitaires prévues dans l’ensemble des publications ciblées
-                'C' => 'required|numeric|min:0|max:100', // Pourcentage des médecins lecteurs capables de se souvenir de la marque et du message après exposition aux annonces
-                'E' => 'required|numeric|min:0|max:100', // Pourcentage des médecins ayant mémorisé la publicité qui commencent à prescrire le produit à de nouveaux patients
-                'G' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients mis sous traitement par chaque médecin prescripteur
-                'I' => 'required|numeric|min:0', // Revenu moyen généré par chaque nouveau patient traité
-                'K' => 'required|numeric|min:0', // Coûts d’achat média pour la campagne presse (MAD)
-                'L' => 'required|numeric|min:0', // Coûts de production et frais d’agence associés à la campagne (MAD)
-            ]);
-
-            $C = $validated['C'] / 100;  // Percentage of doctors who remember the brand
-            $E = $validated['E'] / 100;  // Percentage of doctors prescribing after exposure
-
-            // Retrieve the request variables
-            $A = $validated['A'];
-            $B = $validated['B'];
-            $G = $validated['G'];
-            $I = $validated['I'];
-            $K = $validated['K'];
-            $L = $validated['L'];
-
-            $D = $A * $C;  // Nombre de médecins ayant correctement identifié le produit et son message via la campagne presse
-            $F = $D * $E;  // Nombre de médecins ayant commencé à prescrire le produit après avoir vu la campagne.
-            $H = $F * $G;  //Nombre de nouveaux patients obtenus directement grâce aux prescriptions issues de la campagne.
-            $J = $H * $I;  // Montant des ventes additionnelles en MAD généré par la campagne
-            $M = $K + $L;  // Coût global de la campagne presse en MAD.
-
-            // ROI calculation
-            $ROI = ($M > 0) ? round($J / $M, 4) : 0;  // Return on investment (ROI)
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_C'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $C],
-                ['activityItemId' => $request['id_E'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $E],
-                ['activityItemId' => $request['id_G'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $G],
-                ['activityItemId' => $request['id_I'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $I],
-                ['activityItemId' => $request['id_K'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $K],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if (!($verify === 9)) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function calculateROIAct_9(Request $request)
 
     {
@@ -2298,6 +2490,99 @@ class Activity1_12 extends Controller
 
 
     //Activite 10
+    public function insertIntoTable10(Request $request){
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',  // Nombre de médecins exposés
+                'B' => 'required|numeric|min:0|max:100', // % se souvenant du message
+                'D' => 'required|numeric|min:0|max:100', // % ayant amélioré leur perception
+                'F' => 'required|numeric|min:0|max:100', // % devenus prescripteurs
+                'H' => 'required|numeric|min:0',  // Nouveaux patients par prescripteur
+                'J' => 'required|numeric|min:0',  // Revenu par patient
+                'L' => 'required|numeric|min:0',  // Coût total de l’activité
+
+                // IDs des champs
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 10;
+
+            // Création ou récupération d’ActivityByLabo
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion pourcentages
+            $B = $validated['B'] / 100;
+            $D = $validated['D'] / 100;
+            $F = $validated['F'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $H = $validated['H'];
+            $J = $validated['J'];
+            $L = $validated['L'];
+
+            // Calculs
+            $C = $A * $B;
+            $E = $C * $D;
+            $G = $E * $F;
+            $I = $G * $H;
+            $K = $I * $J;
+            $ROI = ($L > 0) ? round($K / $L, 4) : 0;
+
+            // Insertion des données
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 10 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'K' => $K,
+                'L' => $L,
+                'I' => $I,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur lors de l’insertion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct10(Request $request)
     {
         try {
@@ -2345,82 +2630,6 @@ class Activity1_12 extends Controller
             return response()->json([
                 'message' => 'Failed to calculate ROI',
                 'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function insertIntoTable10(Request $request)
-    {
-        try {
-            // Validation des données
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0',  // Nombre de médecins exposés à l’activité
-                'B' => 'required|numeric|min:0|max:100', // Pourcentage de médecins se souvenant du message
-                'D' => 'required|numeric|min:0|max:100', // Pourcentage ayant amélioré leur perception
-                'F' => 'required|numeric|min:0|max:100', // Pourcentage des prescripteurs ayant changé leur perception
-                'H' => 'required|numeric|min:0', // Nombre moyen de nouveaux patients par prescripteur
-                'J' => 'required|numeric|min:0', // Valeur moyenne du revenu par patient
-                'L' => 'required|numeric|min:0', // Coût fixe total de l'activité
-            ]);
-
-            // Conversion des pourcentages
-            $B = $validated['B'] / 100;  // Pourcentage de médecins se souvenant du message
-            $D = $validated['D'] / 100;  // Pourcentage ayant amélioré leur perception
-            $F = $validated['F'] / 100;  // Pourcentage des prescripteurs ayant changé leur perception
-
-            // Variables issues de la requête
-            $A = $validated['A']; // Nombre de médecins exposés
-            $H = $validated['H']; // Nombre moyen de nouveaux patients par prescripteur
-            $J = $validated['J']; // Valeur moyenne du revenu par patient
-            $L = $validated['L']; // Coût fixe total de l'activité
-
-            // Calculs des métriques
-            $C = $A * $B;       // Nombre de médecins ayant retenu le message
-            $E = $C * $D;       // Nombre de médecins ayant amélioré leur perception
-            $G = $E * $F;       // Nombre de prescripteurs supplémentaires
-            $I = $G * $H;       // Nombre de patients incrémentaux
-            $K = $I * $J;       // Ventes incrémentales générées
-            $ROI = ($L > 0) ? round($K / $L, 4) : 0; // Calcul du retour sur investissement
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if ($verify !== 10) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-
-            // Vérification de la duplication des données
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-                return response()->json([
-                    'message' => 'Duplicated values for 1 Activity are denied'
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            // Gestion des erreurs
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
             ], 500);
         }
     }
@@ -2541,6 +2750,92 @@ class Activity1_12 extends Controller
 
 
     //Activite 11
+    public function insertIntoTable11(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',  // Nombre de consommateurs exposés
+                'B' => 'required|numeric|min:0|max:100', // % mémorisant le message
+                'D' => 'required|numeric|min:0|max:100', // % ayant consulté un médecin
+                'F' => 'required|numeric|min:0|max:100', // % avec prescription
+                'H' => 'required|numeric|min:0',         // Revenu moyen par patient
+                'J' => 'required|numeric|min:0',         // Coût total de l’activité
+
+                // IDs des champs
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 11;
+
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion pourcentages
+            $B = $validated['B'] / 100;
+            $D = $validated['D'] / 100;
+            $F = $validated['F'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $H = $validated['H'];
+            $J = $validated['J'];
+
+            // Calculs
+            $C = $A * $B;
+            $E = $C * $D;
+            $G = $E * $F;
+            $I = $G * $H;
+            $ROI = ($J > 0) ? round($I / $J, 4) : 0;
+
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 11 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'I' => $I,
+                'J' => $J,
+                'G' => $G,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur lors de l’insertion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function calculateROIAct11(Request $request)
     {
         try {
@@ -2584,72 +2879,6 @@ class Activity1_12 extends Controller
             return response()->json([
                 'message' => 'Failed to calculate ROI',
                 'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function insertIntoTable11(Request $request)
-    {
-        try {
-            // Validation des données
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0',  // Nombre de consommateurs exposés à l’activité
-                'B' => 'required|numeric|min:0|max:100', // % de consommateurs mémorisant le message
-                'D' => 'required|numeric|min:0|max:100', // % de consommateurs ayant consulté après l'exposition
-                'F' => 'required|numeric|min:0|max:100', // % des consultations aboutissant à une prescription
-                'H' => 'required|numeric|min:0', // Revenu moyen par patient
-                'J' => 'required|numeric|min:0', // Coût fixe total de l’activité
-            ]);
-
-            // Conversion des pourcentages
-            $B = $validated['B'] / 100;
-            $D = $validated['D'] / 100;
-            $F = $validated['F'] / 100;
-
-            // Variables issues de la requête
-            $A = $validated['A']; // Nombre de consommateurs exposés
-            $H = $validated['H']; // Revenu moyen par patient
-            $J = $validated['J']; // Coût total de l’activité
-
-            // Calculs des métriques
-            $C = $A * $B;       // Nombre de consommateurs ayant mémorisé le message
-            $E = $C * $D;       // Nombre de consultations générées
-            $G = $E * $F;       // Nombre total de patients incrémentaux
-            $I = $G * $H;       // Ventes incrémentales générées
-            $ROI = ($J > 0) ? round($I / $J, 4) : 0; // Calcul du ROI
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if ($verify !== 11) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-
-            ActivityItemValue::insert($values);
-
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            // Gestion des erreurs
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
             ], 500);
         }
     }
@@ -2727,7 +2956,6 @@ class Activity1_12 extends Controller
     }
 
     public function calculateROIAct_11(Request $request)
-
     {
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
@@ -2765,8 +2993,109 @@ class Activity1_12 extends Controller
     }
 
     //Activite 12
-    public function calculateROIAct12(Request $request)
-    {
+    public function insertIntoTable12(Request $request){
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            // Validation des données
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'A' => 'required|numeric|min:0',
+                'B' => 'required|numeric|min:0|max:100',
+                'D' => 'required|numeric|min:0',
+                'F' => 'required|numeric|min:0|max:100',
+                'H' => 'required|numeric|min:0|max:100',
+                'J' => 'required|numeric|min:0|max:100',
+                'L' => 'required|numeric|min:0',
+                'N' => 'required|numeric|min:0',
+                'P' => 'required|numeric|min:0',
+
+                'id_A' => 'required|integer',
+                'id_B' => 'required|integer',
+                'id_D' => 'required|integer',
+                'id_F' => 'required|integer',
+                'id_H' => 'required|integer',
+                'id_J' => 'required|integer',
+                'id_L' => 'required|integer',
+                'id_N' => 'required|integer',
+                'id_P' => 'required|integer',
+                'id_ROI' => 'required|integer',
+            ]);
+
+            $activityNumber = 12;
+
+            $activityByLabo = ActivityByLabo::firstOrCreate([
+                'ActivityId' => $activityNumber,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
+                return response()->json([
+                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
+                ], 409);
+            }
+
+            // Conversion des pourcentages
+            $B = $validated['B'] / 100;
+            $F = $validated['F'] / 100;
+            $H = $validated['H'] / 100;
+            $J = $validated['J'] / 100;
+
+            // Variables
+            $A = $validated['A'];
+            $D = $validated['D'];
+            $L = $validated['L'];
+            $N = $validated['N'];
+            $P = $validated['P'];
+
+            // Calculs
+            $C = $A * $B;
+            $E = $C > 0 ? $D / $C : 0;
+            $G = $E * $F;
+            $I = $G * $H;
+            $K = $I * $J;
+            $M = $K * $L;
+            $O = $M * $N;
+
+            $ROI = ($P > 0) ? round($O / $P, 4) : 0;
+
+            // Insertion
+            $values = [
+                ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
+                ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
+                ['activityItemId' => $validated['id_D'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $D],
+                ['activityItemId' => $validated['id_F'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $F],
+                ['activityItemId' => $validated['id_H'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $H],
+                ['activityItemId' => $validated['id_J'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $J],
+                ['activityItemId' => $validated['id_L'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $L],
+                ['activityItemId' => $validated['id_N'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $N],
+                ['activityItemId' => $validated['id_P'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $P],
+                ['activityItemId' => $validated['id_ROI'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $ROI],
+            ];
+
+            ActivityItemValue::insert($values);
+            $activityByLabo->update(['is_calculated' => true]);
+
+            return response()->json([
+                'message' => 'Activité 12 enregistrée et calculée avec succès.',
+                'ROI' => $ROI,
+                'O' => $O,
+                'K' => $K,
+                'G' => $G,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => 'Failed to insert values',
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function calculateROIAct12(Request $request){
         try {
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0',  // Nombre de médecins susceptibles de prescrire
@@ -2818,131 +3147,6 @@ class Activity1_12 extends Controller
             return response()->json([
                 'message' => 'Failed to calculate ROI',
                 'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    // public function insertIntoTable12(Request $request)
-    // {
-    //     try {
-    //         $validated = $request->validate([
-    //             'A' => 'required|numeric|min:0',          //Nombre de médecins susceptibles de prescrire le produit
-    //             'B' => 'required|numeric|min:0|max:100',  
-    //             'D' => 'required|numeric|min:0',
-    //             'F' => 'required|numeric|min:0|max:100',
-    //             'H' => 'required|numeric|min:0|max:100',
-    //             'J' => 'required|numeric|min:0|max:100',
-    //             'L' => 'required|numeric|min:0',
-    //             'N' => 'required|numeric|min:0',
-    //             'P' => 'required|numeric|min:0',
-    //         ]);
-
-    //         $activityByLaboId = $request->cookie('activityId');
-
-    //         if (!$activityByLaboId) {
-    //             return response()->json(['message' => 'Activity ID not found'], 400);
-    //         }
-
-    //         $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-    //         if ($verify !== 12) {
-    //             return response()->json(['message' => 'value/activity not match', 'id' => $verify], 409);
-    //         }
-
-    //         if (ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)->exists()) {
-    //             return response()->json(['message' => 'Duplicated values for 1 Activity are denied'], 409);
-    //         }
-
-    //         $values = [];
-    //         foreach ($validated as $key => $value) {
-    //             $values[] = ['activityItemId' => $request['id_' . $key], 'ActivityByLaboId' => $activityByLaboId, 'value' => $value];
-    //         }
-
-    //         ActivityItemValue::insert($values);
-    //         $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-    //             ->update(['is_calculated' => true]);
-
-    //         return response()->json(['message' => 'Values inserted successfully'], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['message' => 'Failed to insert values', 'error' => $e->getMessage()], 500);
-    //     }
-    // }
-
-
-    public function insertIntoTable12(Request $request)
-
-    {
-        try {
-            // Validation des données
-            $validated = $request->validate([
-                'A' => 'required|numeric|min:0',          // Nombre de médecins susceptibles de prescrire le produit
-                'B' => 'required|numeric|min:0|max:100',
-                'D' => 'required|numeric|min:0',
-                'F' => 'required|numeric|min:0|max:100',
-                'H' => 'required|numeric|min:0|max:100',
-                'J' => 'required|numeric|min:0|max:100',
-                'L' => 'required|numeric|min:0',
-                'N' => 'required|numeric|min:0',
-                'P' => 'required|numeric|min:0',
-            ]);
-
-            // Conversion des pourcentages
-            $B = $validated['B'] / 100; // Conversion en pourcentage
-            $F = $validated['F'] / 100; // Conversion en pourcentage
-            $H = $validated['H'] / 100; // Conversion en pourcentage
-            $J = $validated['J'] / 100; // Conversion en pourcentage
-
-            // Variables issues de la requête
-            $A = $validated['A']; // Nombre de médecins susceptibles de prescrire le produit
-            $D = $validated['D']; // Valeur D (utilisée dans le calcul)
-            $L = $validated['L']; // Valeur L
-            $N = $validated['N']; // Valeur N
-            $P = $validated['P']; // Valeur P (utilisée dans le calcul du ROI)
-
-            // Calcul des métriques
-            $C = $A * $B;         // Nombre de médecins ayant mémorisé le message
-            $E = $D / $C;         // Nombre de consultations générées par C
-            $G = $E * $F;         // Nombre total de patients incrémentaux
-            $I = $G * $H;         // Ventes incrémentales générées
-            $K = $I * $J;         // Valeur K calculée
-            $M = $K * $L;         // Valeur M calculée
-            $O = $M * $N;         // Valeur O calculée
-            $ROI = ($P > 0) ? round($O / $P, 4) : 0; // Calcul du ROI
-
-            $activityByLaboId = $request->cookie('activityId');
-
-            $values = [
-                ['activityItemId' => $request['id_A'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $A],
-                ['activityItemId' => $request['id_B'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $B],
-                ['activityItemId' => $request['id_D'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $D],
-                ['activityItemId' => $request['id_F'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $F],
-                ['activityItemId' => $request['id_H'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $H],
-                ['activityItemId' => $request['id_J'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $J],
-                ['activityItemId' => $request['id_L'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $L],
-                ['activityItemId' => $request['id_N'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $N],
-                ['activityItemId' => $request['id_P'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $P],
-                ['activityItemId' => $request['id_ROI'], 'ActivityByLaboId' => $activityByLaboId, 'value' => $ROI],
-            ];
-
-
-            $verify = ActivityByLabo::where('id', $activityByLaboId)->value('ActivityId');
-            if ($verify !== 12) {
-                return response()->json([
-                    'message' => 'value/activity not match',
-                    'id' => $verify
-                ], 409);
-            }
-            ActivityItemValue::insert($values);
-
-            $UPDATE = ActivityByLabo::where('id', $activityByLaboId)
-                ->update(['is_calculated' => true]);
-            return response()->json([
-                'message' => 'Values inserted successfully'
-            ], 201);
-        } catch (\Exception $e) {
-            // Gestion des erreurs
-            return response()->json([
-                "message" => 'Failed to insert values',
-                "error" => $e->getMessage()
             ], 500);
         }
     }
@@ -2999,7 +3203,4 @@ class Activity1_12 extends Controller
             'ROI' => $ROI,
         ], 200);
     }
-
-    
 }
-

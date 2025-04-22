@@ -52,7 +52,7 @@ const Head = () => {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => navigate("../home")}
+        onClick={() => navigate("../CreateActivity")}
         className="text-white hover:text-white/80 transition-colors"
       >
         <HomeOutlined className="h-5 w-5" />

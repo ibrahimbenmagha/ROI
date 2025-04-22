@@ -55,8 +55,7 @@ class AuthController extends Controller
         }
     }
 
-    public function checkCalculated(Request $request)
-    {
+    public function checkCalculated(Request $request){
         // Retrieve laboId from JWT token
         $laboId = JWTHelper::getLaboId($request);
 
@@ -92,37 +91,6 @@ class AuthController extends Controller
             ]);
         }
     }
-
-    // public function checkCalculated(Request $request) {
-    //     $laboId = JWTHelper::getLaboId($request);
-
-    //     $actByLabo = $request->cookie('activityId');
-
-    //     // Retrieve the activity record
-    //     $check = ActivityByLabo::where("id", $actByLabo)->select("is_calculated")->first();
-
-    //     // Check if the record exists and handle accordingly
-    //     if ($check) {
-    //         if ($check->is_calculated) {
-    //             return response()->json([
-    //                 'authorised' => true,
-    //                 "data" => $check
-    //             ]);
-    //         } else {
-    //             return response()->json([
-    //                 'authorised' => false,
-    //                 "data" => $check
-    //             ]);
-    //         }
-    //     } else {
-    //         return response()->json([
-    //             'authorised' => false,
-    //             "data" => null,
-    //             'error' => 'ActivityByLabo not found'
-    //         ]);
-    //     }
-    // }
-
 
     public function checkActivity(Request $request)
     {
@@ -209,34 +177,10 @@ class AuthController extends Controller
         }
     }
 
-
-    public function loginadmin()
-    {
-        $credentials = request(['email', 'password']);
-        if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        } else {
-            $user = Auth::user();
-            if ($user->Role !== 'Admin') {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-            return response()->json([
-                'access_token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'Role' => $user->Role,
-                ]
-            ], 200)
-                ->cookie('access_token', $token, 60, '/', null, true, true);
-        }
-    }
-
     public function me()
     {
         return response()->json(auth()->user());
     }
-
-    // public function logout(Request $request)
     // {
     //     try {
     //         // Invalide le token actuel
@@ -256,12 +200,12 @@ class AuthController extends Controller
         try {
             // Récupérer et invalider le token
             $response = JwtHelper::expireToken($request);
-            
+
             // Si expireToken renvoie une réponse (en cas d'erreur), la retourner
             if ($response instanceof \Illuminate\Http\JsonResponse) {
                 return $response;
             }
-            
+
             // Sinon, retourner une réponse de succès et supprimer le cookie
             return response()->json(['message' => 'Successfully logged out'], 200)
                 ->cookie('access_token', '', -1, '/', null, true, true);

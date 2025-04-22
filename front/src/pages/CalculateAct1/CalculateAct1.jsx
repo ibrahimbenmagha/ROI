@@ -1,495 +1,3 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   Layout,
-//   Typography,
-//   Card,
-//   Divider,
-//   Statistic,
-//   message,
-//   Alert,
-//   Spin,
-// } from "antd";
-// import {
-//   CalculatorOutlined,
-//   ReloadOutlined,
-//   CheckCircleOutlined,
-// } from "@ant-design/icons";
-// import { Link, useNavigate, useLocation } from "react-router-dom";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import TheHeader from "../Header/Header";
-// import axiosInstance from "../../axiosConfig";
-// import {deleteCookie } from "../../axiosConfig";
-
-// import { Axis3DIcon } from "lucide-react";
-
-// const { Header, Content } = Layout;
-// const { Title, Text } = Typography;
-
-// const CalculateAct1 = () => {
-//   const [numDoctors, setNumDoctors] = useState();
-//   const [samplesPerDoctor, setSamplesPerDoctor] = useState();
-//   const [percentGivenToPatients, setPercentGivenToPatients] = useState();
-//   const [samplesPerPatient, setSamplesPerPatient] = useState();
-//   const [percentPrescribed, setPercentPrescribed] = useState();
-//   const [percentWouldBePrescribed, setPercentWouldBePrescribed] = useState();
-//   const [valuePerPatient, setValuePerPatient] = useState();
-//   const [costPerSample, setCostPerSample] = useState();
-//   const [fixedCosts, setFixedCosts] = useState();
-
-//   // État pour stocker les résultats
-//   const [calculationResult, setCalculationResult] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [calculated, setCalculated] = useState(false); // Nouvel état pour suivre l'état du calcul
-//   const [items, setItems] = useState([]);
-
-//   const navigate = useNavigate();
-//   const location = useLocation();
-
-//   useEffect(() => {
-//     const match = location.pathname.match(/CalculateAct(\d+)/);
-//     const activityNumber = match ? parseInt(match[1]) : null;
-//     document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
-//     if (!sessionStorage.getItem("reloaded")) {
-//       sessionStorage.setItem("reloaded", "true");
-//       window.location.reload();
-//     } else {
-//       // Réinitialiser l'indicateur après le rechargement
-//       sessionStorage.removeItem("reloaded");
-//     }
-//     axiosInstance
-//       .get("getActivityItemsByActivityId/1")
-//       .then((response) => {
-//         setItems(response.data);
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching activities:", error);
-//       });
-//   }, []);
-
-//   const handleReset = () => {
-//     setNumDoctors(0);
-//     setSamplesPerDoctor(0);
-//     setPercentGivenToPatients(0);
-//     setSamplesPerPatient(0);
-//     setPercentPrescribed(0);
-//     setPercentWouldBePrescribed(0);
-//     setValuePerPatient(0);
-//     setCostPerSample(0);
-//     setFixedCosts(0);
-//     setCalculationResult(null);
-//     setCalculated(false); // Réinitialiser l'état calculé lorsque la réinitialisation se produit
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault(); // Empêche la soumission par défaut du formulaire
-
-//     if (items.length === 0) {
-//       alert("Les données nécessaires ne sont pas encore disponibles.");
-//       return;
-//     }
-//     const formData = {
-//       A: numDoctors,
-//       B: samplesPerDoctor,
-//       D: percentGivenToPatients,
-//       E: samplesPerPatient,
-//       G: percentPrescribed,
-//       I: percentWouldBePrescribed,
-//       K: valuePerPatient,
-//       M: costPerSample,
-//       N: fixedCosts,
-//       id_A: items[0]?.id, // Utilisation de l'ID dynamique de items
-//       id_B: items[1]?.id, // Utilisation de l'ID dynamique de items
-//       id_D: items[2]?.id, // Utilisation de l'ID dynamique de items
-//       id_E: items[3]?.id, // Utilisation de l'ID dynamique de items
-//       id_G: items[4]?.id, // Utilisation de l'ID dynamique de items
-//       id_I: items[5]?.id, // Utilisation de l'ID dynamique de items
-//       id_K: items[6]?.id, // Utilisation de l'ID dynamique de items
-//       id_M: items[7]?.id, // Utilisation de l'ID dynamique de items
-//       id_N: items[8]?.id, // Utilisation de l'ID dynamique de items
-//       id_ROI: items[9]?.id, // Utilisation de l'ID dynamique de items
-//     };
-
-//     try {
-//       const response = await axiosInstance.post("insetrIntoTable1", formData);
-//           if (response.status === 201) {
-//             message.success("Les données ont été insérées avec succès.");
-//             deleteCookie("activityNumber");
-//             deleteCookie("activityId");
-
-//             navigate("/DisplayActivity");
-//           } else {
-//             alert("Une erreur est survenue lors de l'insertion.");
-//           }
-//         } catch (error) {
-//           console.log(error);
-//           if (error.response) {
-//             alert(
-//               error.response.data.message ||
-//                 "Une erreur est survenue lors de l'insertion."
-//             );
-//           } else if (error.request) {
-//             alert("Aucune réponse reçue du serveur.");
-//           } else {
-//             alert("Une erreur est survenue lors de l'envoi de la requête.");
-//           }
-//         }
-//   };
-
-//   const validateNumeric = (value, min, max = null) => {
-//     const num = Number(value);
-//     if (isNaN(num)) return false;
-//     if (num < min) return false;
-//     if (max !== null && num > max) return false;
-//     return true;
-//   };
-
-//   const calculateRoi = async () => {
-//     if (!validateNumeric(numDoctors, 0))
-//       return alert("Nombre de médecins invalide");
-//     if (!validateNumeric(samplesPerDoctor, 0))
-//       return alert("Nombre d'échantillons par médecin invalide");
-//     if (!validateNumeric(percentGivenToPatients, 0, 100))
-//       return alert("Pourcentage donné aux patients invalide");
-//     if (!validateNumeric(samplesPerPatient, 0.1))
-//       return alert("Nombre d'échantillons par patient invalide");
-//     if (!validateNumeric(percentPrescribed, 0, 100))
-//       return alert("Pourcentage prescrit invalide");
-//     if (!validateNumeric(percentWouldBePrescribed, 0, 100))
-//       return alert("Pourcentage qui serait prescrit invalide");
-//     if (!validateNumeric(valuePerPatient, 0))
-//       return alert("Valeur par patient invalide");
-//     if (!validateNumeric(costPerSample, 0))
-//       return alert("Coût par échantillon invalide");
-//     if (!validateNumeric(fixedCosts, 0)) return alert("Coûts fixes invalides");
-
-//     setLoading(true);
-
-//     try {
-//       const response = await axiosInstance.post("calculateROIAct1", {
-//         A: numDoctors,
-//         B: samplesPerDoctor,
-//         D: percentGivenToPatients,
-//         E: samplesPerPatient,
-//         G: percentPrescribed,
-//         I: percentWouldBePrescribed,
-//         K: valuePerPatient,
-//         M: costPerSample,
-//         N: fixedCosts,
-//       });
-
-//       setCalculationResult(response.data);
-//       setCalculated(true); // Mettre à jour l'état calculé une fois que les résultats sont reçus
-//     } catch (error) {
-//       alert("Error calculating ROI. Please try again.");
-//       console.error(error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <Layout className="min-h-screen">
-//       <TheHeader />
-
-//       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
-//         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-//           <form type="submit" onSubmit={handleSubmit}>
-//             <Card>
-//               <Title level={4} style={{ textAlign: "center" }}>
-//                 Distribution des échantillons
-//               </Title>
-//               <Divider />
-
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="numDoctors"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Nombre de médecins recevant des échantillons (A)
-//                   </label>
-//                   <Input
-//                     id="numDoctors"
-//                     type="number"
-//                     min="0"
-//                     value={numDoctors}
-//                     onChange={(e) => setNumDoctors(Number(e.target.value))}
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* B - Nombre d'échantillons par médecin */}
-//                 <div>
-//                   <label
-//                     htmlFor="samplesPerDoctor"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Nombre d'échantillons par médecin (B)
-//                   </label>
-//                   <Input
-//                     id="samplesPerDoctor"
-//                     type="number"
-//                     min="0"
-//                     value={samplesPerDoctor}
-//                     onChange={(e) =>
-//                       setSamplesPerDoctor(Number(e.target.value))
-//                     }
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label
-//                     htmlFor="percentGivenToPatients"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     % des échantillons donnés aux patients (D)
-//                   </label>
-//                   <Input
-//                     id="percentGivenToPatients"
-//                     type="number"
-//                     min="0"
-//                     max="100"
-//                     value={percentGivenToPatients}
-//                     onChange={(e) =>
-//                       setPercentGivenToPatients(Number(e.target.value))
-//                     }
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* E - Nombre moyen d'échantillons par patient */}
-//                 <div>
-//                   <label
-//                     htmlFor="samplesPerPatient"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Nombre moyen d'échantillons par patient (E)
-//                   </label>
-//                   <Input
-//                     id="samplesPerPatient"
-//                     type="number"
-//                     min="0.1"
-//                     step="0.1"
-//                     value={samplesPerPatient}
-//                     onChange={(e) =>
-//                       setSamplesPerPatient(Number(e.target.value))
-//                     }
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <label
-//                     htmlFor="percentPrescribed"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     % des patients avec prescription après usage (G)
-//                   </label>
-//                   <Input
-//                     id="percentPrescribed"
-//                     type="number"
-//                     min="0"
-//                     max="100"
-//                     value={percentPrescribed}
-//                     onChange={(e) =>
-//                       setPercentPrescribed(Number(e.target.value))
-//                     }
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* I - % des patients prescrits sans échantillon */}
-//                 <div>
-//                   <label
-//                     htmlFor="percentWouldBePrescribed"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     % des patients prescrits sans échantillon (I)
-//                   </label>
-//                   <Input
-//                     id="percentWouldBePrescribed"
-//                     type="number"
-//                     min="0"
-//                     max="100"
-//                     value={percentWouldBePrescribed}
-//                     onChange={(e) =>
-//                       setPercentWouldBePrescribed(Number(e.target.value))
-//                     }
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* K - Valeur moyenne d'un patient incrémental € */}
-//                 <div>
-//                   <label
-//                     htmlFor="valuePerPatient"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Valeur moyenne d'un patient incrémental € (K)
-//                   </label>
-//                   <Input
-//                     id="valuePerPatient"
-//                     type="number"
-//                     min="0"
-//                     value={valuePerPatient}
-//                     onChange={(e) => setValuePerPatient(Number(e.target.value))}
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* M - Coût unitaire d'un échantillon € */}
-//                 <div>
-//                   <label
-//                     htmlFor="costPerSample"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Coût unitaire d'un échantillon € (M)
-//                   </label>
-//                   <Input
-//                     id="costPerSample"
-//                     type="number"
-//                     min="0"
-//                     value={costPerSample}
-//                     onChange={(e) => setCostPerSample(Number(e.target.value))}
-//                     className="w-full"
-//                   />
-//                 </div>
-
-//                 {/* N - Coûts fixes du programme € */}
-//                 <div>
-//                   <label
-//                     htmlFor="fixedCosts"
-//                     className="block text-sm font-medium text-gray-700 mb-1"
-//                   >
-//                     Coûts fixes du programme € (N)
-//                   </label>
-//                   <Input
-//                     id="fixedCosts"
-//                     type="number"
-//                     min="0"
-//                     value={fixedCosts}
-//                     onChange={(e) => setFixedCosts(Number(e.target.value))}
-//                     className="w-full"
-//                   />
-//                 </div>
-//               </div>
-
-//               <Divider />
-
-//               <div className="flex flex-col sm:flex-row justify-between gap-4">
-//                 <Button
-//                   onClick={calculateRoi}
-//                   className="bg-primary"
-//                   disabled={loading}
-//                   style={{ backgroundColor: "#1890ff" }}
-//                 >
-//                   {loading ? (
-//                     <Spin size="small" />
-//                   ) : (
-//                     <>
-//                       <CalculatorOutlined className="mr-2" />
-//                       Calculer ROI
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 <Button
-//                   className="bg-primary"
-//                   type="submit"
-//                   disabled={loading || !calculated} // Désactiver si le calcul n'est pas encore fait
-//                   style={{ backgroundColor: "#1890ff" }}
-//                 >
-//                   {loading ? (
-//                     <Spin size="small" />
-//                   ) : (
-//                     <>
-//                       <CheckCircleOutlined className="mr-2" />
-//                       Inserer les donnees
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 <div className="flex gap-4">
-//                   <Button variant="outline" onClick={handleReset}>
-//                     <ReloadOutlined className="mr-2" />
-//                     Réinitialiser
-//                   </Button>
-//                   <Link to="../DisplayActivity">
-//                     <Button variant="secondary">Retour</Button>
-//                   </Link>
-//                 </div>
-//               </div>
-
-//               {calculationResult && (
-//                 <div className="mt-8">
-//                   <Divider>Résultats</Divider>
-//                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-//                     <Card>
-//                       <Statistic
-//                         title="ROI"
-//                         value={calculationResult.ROI}
-//                         precision={2}
-//                         suffix="%"
-//                         valueStyle={{
-//                           color:
-//                             calculationResult.ROI >= 0 ? "#3f8600" : "#cf1322",
-//                         }}
-//                       />
-//                     </Card>
-//                     <Card>
-//                       <Statistic
-//                         title="Valeur Totale"
-//                         value={calculationResult.L}
-//                         precision={2}
-//                         suffix="€"
-//                       />
-//                     </Card>
-//                     <Card>
-//                       <Statistic
-//                         title="Coût Total"
-//                         value={calculationResult.O}
-//                         precision={2}
-//                         suffix="€"
-//                       />
-//                     </Card>
-//                   </div>
-
-//                   <Card className="mt-4">
-//                     <Statistic
-//                       title="Patients Incrémentaux"
-//                       value={calculationResult.J}
-//                       precision={0}
-//                     />
-//                     <Text type="secondary">
-//                       Nombre estimé de patients additionnels ayant reçu une
-//                       prescription grâce au programme d'échantillons.
-//                     </Text>
-//                   </Card>
-
-//                   {calculationResult.ROI < 0 && (
-//                     <Alert
-//                       style={{ marginTop: "16px" }}
-//                       message="ROI Négatif"
-//                       description="Le programme génère actuellement un retour négatif sur investissement. Essayez d'ajuster les paramètres."
-//                       type="warning"
-//                       showIcon
-//                     />
-//                   )}
-//                 </div>
-//               )}
-//             </Card>
-//           </form>
-//         </div>
-//       </Content>
-//     </Layout>
-//   );
-// };
-
-// export default CalculateAct1;
-
-
 import React, { useState, useEffect } from "react";
 import {
   Layout,
@@ -500,6 +8,7 @@ import {
   message,
   Alert,
   Spin,
+  DatePicker,
 } from "antd";
 import {
   CalculatorOutlined,
@@ -511,21 +20,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TheHeader from "../Header/Header";
 import axiosInstance, { deleteCookie } from "../../axiosConfig";
+import dayjs from "dayjs";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const CalculateAct1 = () => {
-  const [numDoctors, setNumDoctors] = useState();
-  const [samplesPerDoctor, setSamplesPerDoctor] = useState();
-  const [percentGivenToPatients, setPercentGivenToPatients] = useState();
-  const [samplesPerPatient, setSamplesPerPatient] = useState();
-  const [percentPrescribed, setPercentPrescribed] = useState();
-  const [percentWouldBePrescribed, setPercentWouldBePrescribed] = useState();
-  const [valuePerPatient, setValuePerPatient] = useState();
-  const [costPerSample, setCostPerSample] = useState();
-  const [fixedCosts, setFixedCosts] = useState();
+  const [numDoctors, setNumDoctors] = useState(0);
+  const [samplesPerDoctor, setSamplesPerDoctor] = useState(0);
+  const [percentGivenToPatients, setPercentGivenToPatients] = useState(0);
+  const [samplesPerPatient, setSamplesPerPatient] = useState(0);
+  const [percentPrescribed, setPercentPrescribed] = useState(0);
+  const [percentWouldBePrescribed, setPercentWouldBePrescribed] = useState(0);
+  const [valuePerPatient, setValuePerPatient] = useState(0);
+  const [costPerSample, setCostPerSample] = useState(0);
+  const [fixedCosts, setFixedCosts] = useState(0);
+  const [year, setYear] = useState(null);
 
+  const [activityNumber, setActivityNumber] = useState(null);
   const [calculationResult, setCalculationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
@@ -536,92 +48,33 @@ const CalculateAct1 = () => {
 
   useEffect(() => {
     const match = location.pathname.match(/CalculateAct(\d+)/);
-    const activityNumber = match ? parseInt(match[1]) : null;
-    document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
+    const foundActivityNumber = match ? parseInt(match[1]) : null;
+    setActivityNumber(foundActivityNumber);
+    document.cookie = `activityNumber=${foundActivityNumber}; path=/; max-age=3600;`;
 
-    if (!sessionStorage.getItem("reloaded")) {
-      sessionStorage.setItem("reloaded", "true");
-      window.location.reload();
-    } else {
-      sessionStorage.removeItem("reloaded");
-    }
 
     axiosInstance
       .get("getActivityItemsByActivityId/1")
-      .then((response) => {
-        setItems(response.data);
-      })
+      .then((response) => setItems(response.data))
       .catch((error) => {
-        console.error("Error fetching activities:", error);
+        console.error("Erreur lors du chargement des items :", error);
+        message.error("Impossible de charger les données de l'activité.");
       });
-  }, []);
+  }, [location.pathname]);
 
   const handleReset = () => {
     setNumDoctors(0);
     setSamplesPerDoctor(0);
     setPercentGivenToPatients(0);
     setSamplesPerPatient(0);
-    setPercentPrescribed(0);
+    setPercentPrescribed();
     setPercentWouldBePrescribed(0);
     setValuePerPatient(0);
     setCostPerSample(0);
     setFixedCosts(0);
+    setYear(null);
     setCalculationResult(null);
     setCalculated(false);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (items.length === 0) {
-      alert("Les données nécessaires ne sont pas encore disponibles.");
-      return;
-    }
-
-    const formData = {
-      A: numDoctors,
-      B: samplesPerDoctor,
-      D: percentGivenToPatients,
-      E: samplesPerPatient,
-      G: percentPrescribed,
-      I: percentWouldBePrescribed,
-      K: valuePerPatient,
-      M: costPerSample,
-      N: fixedCosts,
-      id_A: items[0]?.id,
-      id_B: items[1]?.id,
-      id_D: items[2]?.id,
-      id_E: items[3]?.id,
-      id_G: items[4]?.id,
-      id_I: items[5]?.id,
-      id_K: items[6]?.id,
-      id_M: items[7]?.id,
-      id_N: items[8]?.id,
-      id_ROI: items[9]?.id,
-    };
-
-    try {
-      const response = await axiosInstance.post("insetrIntoTable1", formData);
-      if (response.status === 201) {
-        message.success("Les données ont été insérées avec succès.");
-        deleteCookie("activityNumber");
-        deleteCookie("activityId");
-        navigate("/DisplayActivity");
-      } else {
-        alert("Une erreur est survenue lors de l'insertion.");
-      }
-    } catch (error) {
-      console.log(error);
-      if (error.response) {
-        alert(
-          error.response.data.message ||
-            "Une erreur est survenue lors de l'insertion."
-        );
-      } else if (error.request) {
-        alert("Aucune réponse reçue du serveur.");
-      } else {
-        alert("Une erreur est survenue lors de l'envoi de la requête.");
-      }
-    }
   };
 
   const validateNumeric = (value, min, max = null) => {
@@ -632,54 +85,144 @@ const CalculateAct1 = () => {
     return true;
   };
 
+  const isFormValid = () =>
+    validateNumeric(numDoctors, 0) &&
+    validateNumeric(samplesPerDoctor, 0) &&
+    validateNumeric(percentGivenToPatients, 0, 100) &&
+    validateNumeric(samplesPerPatient, 0.1) &&
+    validateNumeric(percentPrescribed, 0, 100) &&
+    validateNumeric(percentWouldBePrescribed, 0, 100) &&
+    validateNumeric(valuePerPatient, 0) &&
+    validateNumeric(costPerSample, 0) &&
+    validateNumeric(fixedCosts, 0) &&
+    !!year;
+
   const calculateRoi = async () => {
+    // Validation des champs
     if (!validateNumeric(numDoctors, 0))
-      return alert("Nombre de médecins invalide");
+      return alert("Nombre de médecins recevant des échantillons invalide");
     if (!validateNumeric(samplesPerDoctor, 0))
       return alert("Nombre d'échantillons par médecin invalide");
     if (!validateNumeric(percentGivenToPatients, 0, 100))
-      return alert("Pourcentage donné aux patients invalide");
+      return alert("Pourcentage des échantillons réellement donnés aux patients invalide");
     if (!validateNumeric(samplesPerPatient, 0.1))
-      return alert("Nombre d'échantillons par patient invalide");
+      return alert("Nombre moyen d'échantillons par patient invalide");
     if (!validateNumeric(percentPrescribed, 0, 100))
-      return alert("Pourcentage prescrit invalide");
+      return alert("Pourcentage des patients ayant reçu une prescription invalide");
     if (!validateNumeric(percentWouldBePrescribed, 0, 100))
-      return alert("Pourcentage qui serait prescrit invalide");
+      return alert("Pourcentage des patients prescrits sans échantillon invalide");
     if (!validateNumeric(valuePerPatient, 0))
-      return alert("Valeur par patient invalide");
+      return alert("Valeur moyenne d'un patient incrémental invalide");
     if (!validateNumeric(costPerSample, 0))
-      return alert("Coût par échantillon invalide");
-    if (!validateNumeric(fixedCosts, 0)) return alert("Coûts fixes invalides");
-
+      return alert("Coût unitaire d'un échantillon invalide");
+    if (!validateNumeric(fixedCosts, 0))
+      return alert("Coûts fixes du programme invalides");
+  
     setLoading(true);
-
+  
     try {
-      const response = await axiosInstance.post("calculateROIAct1", {
-        A: numDoctors,
-        B: samplesPerDoctor,
-        D: percentGivenToPatients,
-        E: samplesPerPatient,
-        G: percentPrescribed,
-        I: percentWouldBePrescribed,
-        K: valuePerPatient,
-        M: costPerSample,
-        N: fixedCosts,
+      const A = numDoctors; // Nombre de médecins recevant des échantillons
+      const B = samplesPerDoctor; // Nombre d’échantillons par médecin
+      const D = percentGivenToPatients / 100; // Pourcentage des échantillons donnés aux patients
+      const E = samplesPerPatient; // Nombre moyen d’échantillons donnés par patient
+      const G = percentPrescribed / 100; // Pourcentage des patients ayant reçu une prescription après usage
+      const I = percentWouldBePrescribed / 100; // Pourcentage des patients prescrits sans échantillon
+      const K = valuePerPatient; // Valeur moyenne d’un patient incrémental
+      const M = costPerSample; // Coût unitaire d’un échantillon
+      const N = fixedCosts; // Coûts fixes du programme
+  
+      // Calculs
+      const C = A * B; // Nombre total d’échantillons distribués
+      const F = C * D / E; // Nombre total de patients ayant reçu un échantillon
+      const H = F * G; // Nombre total de patients ayant reçu une prescription
+      const J = H * (1 - I); // Nombre total de patients incrémentaux
+      const L = J * K; // Revenus supplémentaires générés
+      const P = M * C; // Coût total des échantillons distribués
+      const O = P + N; // Coût total du programme
+  
+      // Vérification pour éviter la division par zéro
+      const ROI = O > 0 ? (L / O)  : 0;
+  
+      // Mise à jour des résultats
+      setCalculationResult({
+        roi: ROI,
+        totalSamples: C,
+        totalPatientsWithSample: F,
+        totalPatientsWithPrescription: H,
+        totalIncrementalPatients: J,
+        incrementalRevenue: L,
+        totalCost: O,
+        totalSamplesCost: P,
       });
-
-      console.log("ROI calculation response:", response.data);
-
-      if (!response.data || !response.data.ROI) {
-        alert("Les résultats du calcul ne sont pas valides.");
-        return;
-      }
-
-      setCalculationResult(response.data);
-      setCalculated(true);
+      setCalculated(true); // Mise à true une fois le calcul terminé
     } catch (error) {
-      alert("Erreur lors du calcul du ROI.");
+      alert("Erreur lors du calcul du ROI. Veuillez réessayer.");
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+  console.log(calculationResult)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!items || items.length < 10) {
+      return message.error(
+        "Les données nécessaires ne sont pas encore disponibles."
+      );
+    }
+
+    if (!activityNumber) {
+      return message.error("Le numéro d’activité est manquant.");
+    }
+
+    const formData = {
+      year,
+      A: parseFloat(numDoctors),
+      B: parseFloat(samplesPerDoctor),
+      D: parseFloat(percentGivenToPatients),
+      E: parseFloat(samplesPerPatient),
+      G: parseFloat(percentPrescribed),
+      I: parseFloat(percentWouldBePrescribed),
+      K: parseFloat(valuePerPatient),
+      M: parseFloat(costPerSample),
+      N: parseFloat(fixedCosts),
+
+      id_A: items[0]?.id,
+      id_B: items[1]?.id,
+      id_D: items[2]?.id,
+      id_E: items[3]?.id,
+      id_G: items[4]?.id,
+      id_I: items[5]?.id,
+      id_K: items[6]?.id,
+      id_M: items[7]?.id,
+      id_N: items[8]?.id,
+      id_ROI: items[9]?.id,
+
+    };
+
+    try {
+      const response = await axiosInstance.post(
+        "/insetrIntoTable1",
+        formData
+      );
+
+      if (response.status === 201) {
+        message.success("Les données ont été insérées avec succès.");
+        deleteCookie("activityNumber");
+        deleteCookie("activityId");
+        navigate("/CreateActivity");
+      } else {
+        message.error("Une erreur est survenue lors de l'insertion.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l’envoi du formulaire :", error);
+      if (error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error("Erreur lors de la communication avec le serveur.");
+      }
     }
   };
 
@@ -688,6 +231,64 @@ const CalculateAct1 = () => {
       <TheHeader />
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {calculationResult && (
+            <div className="mt-8">
+              <Divider>Résultats</Divider>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                  <Statistic
+                    title="ROI"
+                    value={calculationResult.roi *100}
+                    precision={2}
+                    suffix="%"
+                    valueStyle={{
+                      color: calculationResult.roi >= 1 ? "#3f8600" : "#cf1322",
+                    }}
+                    
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Valeur Totale"
+                    value={calculationResult.L}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Coût Total"
+                    value={calculationResult.O}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+              </div>
+
+              <Card className="mt-4">
+                <Statistic
+                  title="Patients Incrémentaux"
+                  value={calculationResult.J}
+                  precision={0}
+                />
+                <Text type="secondary">
+                  Nombre estimé de patients additionnels ayant reçu une
+                  prescription grâce au programme.
+                </Text>
+              </Card>
+
+              {calculationResult.ROI < 0 && (
+                <Alert
+                  style={{ marginTop: "16px" }}
+                  message="ROI Négatif"
+                  description="Le programme génère un retour négatif. Essayez d'ajuster les paramètres."
+                  type="warning"
+                  showIcon
+                />
+              )}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <Card>
               <Title level={4} style={{ textAlign: "center" }}>
@@ -696,8 +297,11 @@ const CalculateAct1 = () => {
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Tous les champs d’entrée */}
+                {/* Recyclés sans changement majeur pour la lisibilité */}
+
                 <div>
-                  <label className="block mb-1">
+                  <label>
                     Nombre de médecins recevant des échantillons (A)
                   </label>
                   <Input
@@ -709,9 +313,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    Nombre d'échantillons par médecin (B)
-                  </label>
+                  <label>Nombre d'échantillons par médecin (B)</label>
                   <Input
                     type="number"
                     min="0"
@@ -723,9 +325,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    % des échantillons donnés aux patients (D)
-                  </label>
+                  <label>% des échantillons donnés aux patients (D)</label>
                   <Input
                     type="number"
                     min="0"
@@ -738,9 +338,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    Nombre moyen d'échantillons par patient (E)
-                  </label>
+                  <label>Nombre moyen d'échantillons par patient (E)</label>
                   <Input
                     type="number"
                     min="0.1"
@@ -753,7 +351,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
+                  <label>
                     % des patients avec prescription après usage (G)
                   </label>
                   <Input
@@ -768,9 +366,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    % des patients prescrits sans échantillon (I)
-                  </label>
+                  <label>% des patients prescrits sans échantillon (I)</label>
                   <Input
                     type="number"
                     min="0"
@@ -783,9 +379,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    Valeur moyenne d'un patient incrémental € (K)
-                  </label>
+                  <label>Valeur moyenne d'un patient incrémental MAD (K)</label>
                   <Input
                     type="number"
                     min="0"
@@ -795,9 +389,7 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    Coût unitaire d'un échantillon € (M)
-                  </label>
+                  <label>Coût unitaire d'un échantillon MAD (M)</label>
                   <Input
                     type="number"
                     min="0"
@@ -807,14 +399,22 @@ const CalculateAct1 = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-1">
-                    Coûts fixes du programme € (N)
-                  </label>
+                  <label>Coûts fixes du programme MAD (N)</label>
                   <Input
                     type="number"
                     min="0"
                     value={fixedCosts}
                     onChange={(e) => setFixedCosts(Number(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <label>Année</label>
+                  <DatePicker
+                    picker="year"
+                    onChange={(date, dateString) => setYear(dateString)}
+                    value={year ? dayjs(year, "YYYY") : null}
+                    style={{ width: "100%" }}
                   />
                 </div>
               </div>
@@ -823,89 +423,37 @@ const CalculateAct1 = () => {
 
               <div className="flex flex-col sm:flex-row justify-between gap-4">
                 <Button
+                type="button"
                   onClick={calculateRoi}
-                  className="bg-primary"
                   disabled={loading}
                   style={{ backgroundColor: "#1890ff" }}
                 >
-                  {loading ? <Spin size="small" /> : <><CalculatorOutlined /> Calculer ROI</>}
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <CalculatorOutlined /> Calculer ROI
+                    </>
+                  )}
                 </Button>
 
                 <Button
-                  type="submit"
-                  className="bg-primary"
-                  disabled={loading || !calculated}
                   style={{ backgroundColor: "#1890ff" }}
+                  type="submit"
+                  disabled={loading || !calculated || !isFormValid()}
                 >
-                  <CheckCircleOutlined /> Inserer les donnees
+                  <CheckCircleOutlined /> Insérer les données
                 </Button>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" onClick={handleReset}>
+                  <Button variant="outline" type="button" onClick={handleReset}>
                     <ReloadOutlined /> Réinitialiser
                   </Button>
-                  <Link to="../DisplayActivity">
+                  <Link to="../CreateActivity">
                     <Button variant="secondary">Retour</Button>
                   </Link>
                 </div>
               </div>
-
-              {calculationResult && (
-                <div className="mt-8">
-                  <Divider>Résultats</Divider>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Card>
-                      <Statistic
-                        title="ROI"
-                        value={calculationResult.ROI}
-                        precision={2}
-                        suffix="%"
-                        valueStyle={{
-                          color:
-                            calculationResult.ROI >= 0 ? "#3f8600" : "#cf1322",
-                        }}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Valeur Totale"
-                        value={calculationResult.L}
-                        precision={2}
-                        suffix="€"
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Coût Total"
-                        value={calculationResult.O}
-                        precision={2}
-                        suffix="€"
-                      />
-                    </Card>
-                  </div>
-
-                  <Card className="mt-4">
-                    <Statistic
-                      title="Patients Incrémentaux"
-                      value={calculationResult.J}
-                      precision={0}
-                    />
-                    <Text type="secondary">
-                      Nombre estimé de patients additionnels ayant reçu une prescription grâce au programme d'échantillons.
-                    </Text>
-                  </Card>
-
-                  {calculationResult.ROI < 0 && (
-                    <Alert
-                      style={{ marginTop: "16px" }}
-                      message="ROI Négatif"
-                      description="Le programme génère actuellement un retour négatif sur investissement. Essayez d'ajuster les paramètres."
-                      type="warning"
-                      showIcon
-                    />
-                  )}
-                </div>
-              )}
             </Card>
           </form>
         </div>

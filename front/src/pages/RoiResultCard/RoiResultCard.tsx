@@ -79,7 +79,6 @@ const DisplayCalculatedData = () => {
         .join("\n");
       return header + rows;
     };
-
     const csvContent = convertToCSV(activityData);
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");

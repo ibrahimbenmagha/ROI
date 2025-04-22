@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Labo;
 use App\Models\ActivityByLabo;
-
 use Illuminate\Support\Facades\Hash;
 
 class LaboController extends Controller

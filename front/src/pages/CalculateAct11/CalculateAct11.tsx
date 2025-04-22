@@ -7,6 +7,8 @@ import {
   Statistic,
   Alert,
   message,
+  Spin,
+  DatePicker,
 } from "antd";
 import {
   CalculatorOutlined,
@@ -16,34 +18,37 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import dayjs from "dayjs";
 
 import TheHeader from "../Header/Header";
-import axiosInstance from "../../axiosConfig";
-import {deleteCookie } from "../../axiosConfig";
+import axiosInstance, { deleteCookie } from "../../axiosConfig";
 
-const { Header, Content } = Layout;
-const { Title, Text } = Typography;
+const { Content } = Layout;
+const { Title } = Typography;
 
 const CalculateAct11 = () => {
-  // États pour stocker les valeurs du formulaire
-  const [numConsumers, setNumConsumers] = useState(0); // A - Nombre de consommateurs exposés à l'activité
-  const [percentMemorizing, setPercentMemorizing] = useState(0); // B - % de consommateurs mémorisant le message
-  const [percentConsulting, setPercentConsulting] = useState(0); // D - % de consommateurs ayant consulté après l'exposition
-  const [percentPrescription, setPercentPrescription] = useState(0); // F - % des consultations aboutissant à une prescription
-  const [revenuePerPatient, setRevenuePerPatient] = useState(0); // H - Revenu moyen généré par patient
-  const [totalCost, setTotalCost] = useState(0); // J - Coût fixe total de l'activité
+  const [numConsumers, setNumConsumers] = useState(0);
+  const [percentMemorizing, setPercentMemorizing] = useState(0);
+  const [percentConsulting, setPercentConsulting] = useState(0);
+  const [percentPrescription, setPercentPrescription] = useState(0);
+  const [revenuePerPatient, setRevenuePerPatient] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
+  const [year, setYear] = useState(null);
+  const [activityNumber, setActivityNumber] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
   const [calculationResult, setCalculationResult] = useState(null);
   const [items, setItems] = useState([]);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const match = location.pathname.match(/CalculateAct(\d+)/);
-    const activityNumber = match ? parseInt(match[1]) : null;
-    document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
+    const foundActivityNumber = match ? parseInt(match[1]) : null;
+    setActivityNumber(foundActivityNumber);
+    document.cookie = `activityNumber=${foundActivityNumber}; path=/; max-age=3600;`;
 
     if (!sessionStorage.getItem("reloaded")) {
       sessionStorage.setItem("reloaded", "true");
@@ -54,15 +59,10 @@ const CalculateAct11 = () => {
 
     axiosInstance
       .get("getActivityItemsByActivityId/11")
-      .then((response) => {
-        setItems(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching activities:", error);
-      });
+      .then((response) => setItems(response.data))
+      .catch((error) => console.error("Erreur chargement items:", error));
   }, []);
 
-  // Fonction pour valider une entrée numérique
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
     if (isNaN(num)) return false;
@@ -71,44 +71,31 @@ const CalculateAct11 = () => {
     return true;
   };
 
-  // Calculer le ROI
   const calculateRoi = () => {
-    // Validation simple
     if (!validateNumeric(numConsumers, 0))
       return alert("Nombre de consommateurs invalide");
     if (!validateNumeric(percentMemorizing, 0, 100))
-      return alert(
-        "Pourcentage de consommateurs mémorisant le message invalide"
-      );
+      return alert("Pourcentage de mémorisation invalide");
     if (!validateNumeric(percentConsulting, 0, 100))
-      return alert(
-        "Pourcentage de consommateurs ayant consulté après l'exposition invalide"
-      );
+      return alert("Consultation après exposition invalide");
     if (!validateNumeric(percentPrescription, 0, 100))
-      return alert(
-        "Pourcentage des consultations aboutissant à une prescription invalide"
-      );
+      return alert("Pourcentage de prescription invalide");
     if (!validateNumeric(revenuePerPatient, 0))
-      return alert("Revenu moyen par patient invalide");
-    if (!validateNumeric(totalCost, 0))
-      return alert("Coût total de l'activité invalide");
+      return alert("Revenu par patient invalide");
+    if (!validateNumeric(totalCost, 0)) return alert("Coût total invalide");
 
-    // Conversion des pourcentages
+    const A = numConsumers;
     const B = percentMemorizing / 100;
     const D = percentConsulting / 100;
     const F = percentPrescription / 100;
-
-    // Variables
-    const A = numConsumers;
     const H = revenuePerPatient;
     const J = totalCost;
 
-    // Calculs des métriques
-    const C = A * B; // Nombre de consommateurs ayant mémorisé le message
-    const E = C * D; // Nombre de consultations générées
-    const G = E * F; // Nombre total de patients incrémentaux
-    const I = G * H; // Ventes incrémentales générées
-    const ROI = J > 0 ? (I / J) * 100 : 0; // Calcul du ROI (en pourcentage)
+    const C = A * B;
+    const E = C * D;
+    const G = E * F;
+    const I = G * H;
+    const ROI = J > 0 ? (I / J) * 100 : 0;
 
     setCalculationResult({
       roi: ROI,
@@ -122,7 +109,6 @@ const CalculateAct11 = () => {
     setCalculated(true);
   };
 
-  // Réinitialiser le formulaire
   const handleReset = () => {
     setNumConsumers(0);
     setPercentMemorizing(0);
@@ -130,25 +116,26 @@ const CalculateAct11 = () => {
     setPercentPrescription(0);
     setRevenuePerPatient(0);
     setTotalCost(0);
+    setYear(null);
     setCalculationResult(null);
     setCalculated(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (items.length === 0) {
-      alert("Veuillez d'abord ajouter des éléments d'activité");
-      return;
-    }
+    if (items.length < 7)
+      return alert("Les éléments d'activité sont incomplets");
+    if (!year) return alert("Veuillez sélectionner une année");
 
     const formData = {
+      year,
+      activityId: activityNumber,
       A: numConsumers,
       B: percentMemorizing,
       D: percentConsulting,
       F: percentPrescription,
       H: revenuePerPatient,
       J: totalCost,
-
       id_A: items[0]?.id,
       id_B: items[1]?.id,
       id_D: items[2]?.id,
@@ -166,204 +153,20 @@ const CalculateAct11 = () => {
         deleteCookie("activityId");
         navigate("/DisplayActivity");
       } else {
-        alert("Une erreur est survenue lors de l'insertion.");
+        message.error("Erreur lors de l'insertion.");
       }
     } catch (error) {
-      console.log(error);
-      if (error.response) {
-        alert(
-          error.response.data.message ||
-            "Une erreur est survenue lors de l'insertion."
-        );
-      } else if (error.request) {
-        alert("Aucune réponse reçue du serveur.");
-      } else {
-        alert("Une erreur est survenue lors de l'envoi de la requête.");
-      }
+      console.error(error);
+      message.error(error.response?.data?.message || "Erreur serveur.");
     }
   };
 
   return (
     <Layout className="min-h-screen">
       <TheHeader />
-
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          <form onSubmit={handleSubmit}>
-            <Card>
-              <Title level={4} style={{ textAlign: "center" }}>
-                Campagnes de Communication Grand Public
-              </Title>
-              <Divider />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* A - Nombre de consommateurs exposés */}
-                <div>
-                  <label
-                    htmlFor="numConsumers"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Nombre de consommateurs exposés à l'activité (A)
-                  </label>
-                  <Input
-                    id="numConsumers"
-                    type="number"
-                    min="0"
-                    value={numConsumers}
-                    onChange={(e) => setNumConsumers(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* B - % de consommateurs mémorisant le message */}
-                <div>
-                  <label
-                    htmlFor="percentMemorizing"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    % de consommateurs mémorisant le message (B)
-                  </label>
-                  <Input
-                    id="percentMemorizing"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={percentMemorizing}
-                    onChange={(e) =>
-                      setPercentMemorizing(Number(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                {/* D - % de consommateurs ayant consulté après l'exposition */}
-                <div>
-                  <label
-                    htmlFor="percentConsulting"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    % de consommateurs ayant consulté après l'exposition (D)
-                  </label>
-                  <Input
-                    id="percentConsulting"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={percentConsulting}
-                    onChange={(e) =>
-                      setPercentConsulting(Number(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                {/* F - % des consultations aboutissant à une prescription */}
-                <div>
-                  <label
-                    htmlFor="percentPrescription"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    % des consultations aboutissant à une prescription (F)
-                  </label>
-                  <Input
-                    id="percentPrescription"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={percentPrescription}
-                    onChange={(e) =>
-                      setPercentPrescription(Number(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                {/* H - Revenu moyen par patient */}
-                <div>
-                  <label
-                    htmlFor="revenuePerPatient"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Revenu moyen généré par patient € (H)
-                  </label>
-                  <Input
-                    id="revenuePerPatient"
-                    type="number"
-                    min="0"
-                    value={revenuePerPatient}
-                    onChange={(e) =>
-                      setRevenuePerPatient(Number(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                {/* J - Coût total de l'activité */}
-                <div>
-                  <label
-                    htmlFor="totalCost"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Coût fixe total de l'activité € (J)
-                  </label>
-                  <Input
-                    id="totalCost"
-                    type="number"
-                    min="0"
-                    value={totalCost}
-                    onChange={(e) => setTotalCost(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <Divider />
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <Button
-                  onClick={calculateRoi}
-                  type="button"
-                  className="bg-primary"
-                  disabled={loading}
-                  style={{ backgroundColor: "#1890ff" }}
-                >
-                  {loading ? (
-                    <Spin size="small" />
-                  ) : (
-                    <>
-                      <CalculatorOutlined className="mr-2" />
-                      Calculer ROI
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  className="bg-primary"
-                  type="submit"
-                  disabled={loading || !calculated}
-                  style={{ backgroundColor: "#1890ff" }}
-                >
-                  {loading ? (
-                    <Spin size="small" />
-                  ) : (
-                    <>
-                      <CheckCircleOutlined className="mr-2" />
-                      Insérer les données
-                    </>
-                  )}
-                </Button>
-
-                <div className="flex gap-4">
-                  <Button variant="outline" onClick={handleReset}>
-                    <ReloadOutlined className="mr-2" />
-                    Réinitialiser
-                  </Button>
-                  <Link to="/DisplayActivity">
-                    <Button variant="secondary">Retour</Button>
-                  </Link>
-                </div>
-              </div>
-
-              {calculationResult && (
+        {calculationResult && (
                 <div className="mt-8">
                   <Divider>Résultats</Divider>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -373,10 +176,6 @@ const CalculateAct11 = () => {
                         value={calculationResult.roi}
                         precision={2}
                         suffix="%"
-                        valueStyle={{
-                          color:
-                            calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
-                        }}
                       />
                     </Card>
                     <Card>
@@ -384,7 +183,7 @@ const CalculateAct11 = () => {
                         title="Ventes Incrémentales"
                         value={calculationResult.incrementalSales}
                         precision={2}
-                        suffix="€"
+                        suffix="MAD"
                       />
                     </Card>
                     <Card>
@@ -392,7 +191,7 @@ const CalculateAct11 = () => {
                         title="Coût Total"
                         value={calculationResult.totalCost}
                         precision={2}
-                        suffix="€"
+                        suffix="MAD"
                       />
                     </Card>
                   </div>
@@ -432,6 +231,136 @@ const CalculateAct11 = () => {
                   )}
                 </div>
               )}
+          <form onSubmit={handleSubmit}>
+            <Card>
+              <Title level={4} style={{ textAlign: "center" }}>
+                Campagnes de Communication Grand Public
+              </Title>
+              <Divider />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label>
+                    Nombre de consommateurs exposés à l'activité (A)
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={numConsumers}
+                    onChange={(e) => setNumConsumers(Number(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <label>% de consommateurs mémorisant le message (B)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentMemorizing}
+                    onChange={(e) =>
+                      setPercentMemorizing(Number(e.target.value))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    % de consommateurs ayant consulté après l'exposition (D)
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentConsulting}
+                    onChange={(e) =>
+                      setPercentConsulting(Number(e.target.value))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    % des consultations aboutissant à une prescription (F)
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPrescription}
+                    onChange={(e) =>
+                      setPercentPrescription(Number(e.target.value))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>Revenu moyen généré par patient MAD (H)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={revenuePerPatient}
+                    onChange={(e) =>
+                      setRevenuePerPatient(Number(e.target.value))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>Coût fixe total de l'activité MAD (J)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={totalCost}
+                    onChange={(e) => setTotalCost(Number(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <label>Année</label>
+                  <DatePicker
+                    picker="year"
+                    value={year ? dayjs(year, "YYYY") : null}
+                    onChange={(date, dateString) => setYear(dateString)}
+                    style={{ width: "100%" }}
+                  />
+                </div>
+              </div>
+
+              <Divider />
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <Button
+                  onClick={calculateRoi}
+                  type="button"
+                  disabled={loading}
+                  style={{ backgroundColor: "#1890ff" }}
+                >
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <CalculatorOutlined /> Calculer ROI
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={!calculated}
+                  style={{ backgroundColor: "#1890ff" }}
+                >
+                  <CheckCircleOutlined /> Insérer les données
+                </Button>
+
+                <div className="flex gap-4">
+                  <Button variant="outline" onClick={handleReset}>
+                    <ReloadOutlined /> Réinitialiser
+                  </Button>
+                  <Link to="/DisplayActivity">
+                    <Button variant="secondary">Retour</Button>
+                  </Link>
+                </div>
+              </div>
             </Card>
           </form>
         </div>

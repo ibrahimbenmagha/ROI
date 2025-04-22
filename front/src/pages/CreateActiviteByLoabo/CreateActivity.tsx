@@ -48,15 +48,6 @@ const CreateActivity = () => {
       });
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      // await axiosInstance.post("/auth/logout");
-      navigate("/Login");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion", error);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../axiosConfig"; // Ajuste le chemin
 import { ca } from "date-fns/locale";
-import {message} from "antd";
+import { message } from "antd";
 
 // Composant de chargement pendant la vérification
 const LoadingComponent = () => (
@@ -18,7 +18,6 @@ const LoadingComponent = () => (
   </div>
 );
 
-// Route protégée pour les utilisateurs avec le rôle "Laboratoire"
 export const LaboRoute = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -34,7 +33,7 @@ export const LaboRoute = ({ children }) => {
         ) {
           setAuthenticated(true);
         } else {
-          navigate("/Home");
+          navigate("/CreateActivity");
         }
       } catch (error) {
         navigate("/Login");
@@ -63,13 +62,20 @@ export const AdminRoute = ({ children }) => {
     const checkAuth = async () => {
       try {
         const response = await axiosInstance.get("/auth/check");
-        if (response.data.authenticated && response.data.role === "Admin") {
+        if (
+          response.data.authenticated 
+          && response.data.role === "Admin"
+        ) {
           setAuthenticated(true);
+          navigate("/BackOffice/DislayLabos");
+          // navigate("/");
+
+
         } else {
-          navigate("/DashboardLogin");
+          navigate("/Login");
         }
       } catch (error) {
-        navigate("/DashboardLogin");
+        navigate("/Login");
       } finally {
         setLoading(false);
       }
@@ -97,9 +103,9 @@ export const AuthRoute = ({ children }) => {
         if (response.data.authenticated) {
           const role = response.data.role;
           if (role === "Laboratoire") {
-            navigate("/Home");
+            navigate("/CreateActivity");
           } else if (role === "Admin") {
-            navigate("/Dashboard");
+            navigate("/BackOffice");
           }
           // setShouldRedirect(true);
         } else {
@@ -133,19 +139,19 @@ export const ActRoute = ({ children }) => {
         const response = await axiosInstance.get("/auth/checkActivity");
         if (response.data.authorised == false) {
           message.error("Vous n'êtes pas habilité à accéder à cette activité");
-          navigate("/Home");
+          navigate("/CreateActivity");
         } else if (response.data.authorised === true) {
           // const pat = response.data.activityNumber;
           message.success("Vous êtes bien autorisé");
-          setAccessGranted(true); 
+          setAccessGranted(true);
           // navigate(/CalculateAct${pat});
-        }else {
+        } else {
           message.error("Acune reponse d'autorisation");
-          navigate("/Home");
+          navigate("/CreateActivity");
         }
       } catch (error) {
         message.error("Erreur de vérification");
-        navigate("/Home");
+        navigate("/CreateActivity");
       } finally {
         setLoading(false);
       }
@@ -174,7 +180,6 @@ export const ActRoute = ({ children }) => {
   return accessGranted ? children : null;
 };
 
-
 export const CalcRoute = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -189,16 +194,13 @@ export const CalcRoute = ({ children }) => {
           setIsAuthorized(true);
           navigate("/RoiResultCard");
           message.success("Active bien trouve");
-
-
-        } else if(response.data.authorised == false) {
+        } else if (response.data.authorised == false) {
           navigate("/DisplayCalculatedActivity");
           message.error("Activite non calcule");
         }
       } catch (error) {
         navigate("/DisplayCalculatedActivity");
         message.error("Errror de navigation reseyer plus tard");
-
       } finally {
         setLoading(false);
       }
@@ -214,36 +216,3 @@ export const CalcRoute = ({ children }) => {
   // Render children only if the user is authorized
   return isAuthorized ? children : null;
 };
-
-
-// export const CalcRoute = ({children}) =>{
-//   const navigate = useNavigate();
-//   const [loading, setLoading] = useState(true);
-//   const [checkCalculated, setCheckCalculated] = useState(false);
-//   const location = useLocation();
-//   useEffect(() => {
-//     const checkckalc = async () => {
-//       try {
-//         const response = await axiosInstance.get("/auth/checkCalculated");
-//         if (
-//           response.data.authorised === true 
-//         ) {
-//           setCheckCalculated(true);
-//         } else {
-//           navigate("/RoiResultCard");
-//         }
-//       } catch (error) {
-//         navigate("/DisplayCalculatedActivity");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     checkckalc();
-//   }, [navigate]);
-//   if (loading) {
-//     return <LoadingComponent />;
-//   }
-
-//   return checkCalculated ? children : null;
-// };

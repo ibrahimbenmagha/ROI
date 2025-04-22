@@ -5,37 +5,37 @@ import {
   Card,
   Divider,
   Statistic,
-  Alert,
   message,
+  Alert,
+  Spin,
+  DatePicker,
 } from "antd";
 import {
   CalculatorOutlined,
   ReloadOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import TheHeader from "../Header/Header";
-import axiosInstance from "../../axiosConfig";
-import {deleteCookie } from "../../axiosConfig";
+import axiosInstance, { deleteCookie } from "../../axiosConfig";
+import dayjs from "dayjs";
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const CalculateAct7 = () => {
-  // États pour stocker les valeurs du formulaire
-  const [consumerTarget, setConsumerTarget] = useState(0); // G - Nombre de consommateurs cibles pour la campagne
-  const [reachPercentage, setReachPercentage] = useState(0); // H - Pourcentage d'audience cible atteinte par le plan média
-  const [recallPercentage, setRecallPercentage] = useState(0); // J - Pourcentage de consommateurs se rappelant de la campagne
-  const [consultPercentage, setConsultPercentage] = useState(0); // L - Pourcentage de consommateurs ayant consulté un médecin suite à l'exposition
-  const [prescriptionPercentage, setPrescriptionPercentage] = useState(0); // N - Pourcentage de patients ayant consulté et recevant une prescription
-  const [valuePerPatient, setValuePerPatient] = useState(0); // P - Valeur du revenu par patient incrémental
-  const [mediaCosts, setMediaCosts] = useState(0); // R1 - Dépenses médias (en MAD k)
-  const [productionCosts, setProductionCosts] = useState(0); // S - Coûts de production, frais d'agence et autres (en MAD k)
+  const [consumerTarget, setConsumerTarget] = useState(0);
+  const [reachPercentage, setReachPercentage] = useState(0);
+  const [recallPercentage, setRecallPercentage] = useState(0);
+  const [consultPercentage, setConsultPercentage] = useState(0);
+  const [prescriptionPercentage, setPrescriptionPercentage] = useState(0);
+  const [valuePerPatient, setValuePerPatient] = useState(0);
+  const [mediaCosts, setMediaCosts] = useState(0);
+  const [productionCosts, setProductionCosts] = useState(0);
+  const [year, setYear] = useState(null);
 
-  // État pour stocker les résultats
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
   const [calculationResult, setCalculationResult] = useState(null);
@@ -48,21 +48,14 @@ const CalculateAct7 = () => {
     const activityNumber = match ? parseInt(match[1]) : null;
     document.cookie = `activityNumber=${activityNumber}; path=/; max-age=3600;`;
 
-    if (!sessionStorage.getItem("reloaded")) {
-      sessionStorage.setItem("reloaded", "true");
-      window.location.reload();
-    } else {
-      sessionStorage.removeItem("reloaded");
-    }
     axiosInstance
       .get("getActivityItemsByActivityId/7")
-      .then((response) => {
-        setItems(response.data);
-      })
+      .then((response) => setItems(response.data))
       .catch((error) => {
-        console.error("Error fetching activities:", error);
+        console.error("Erreur lors du chargement des items :", error);
+        message.error("Impossible de charger les données de l'activité.");
       });
-  }, []);
+  }, [location.pathname]);
 
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
@@ -73,25 +66,15 @@ const CalculateAct7 = () => {
   };
 
   const calculateRoi = () => {
-    // Validation simple
-    if (!validateNumeric(consumerTarget, 0))
-      return alert("Nombre de consommateurs cibles invalide");
-    if (!validateNumeric(reachPercentage, 0, 100))
-      return alert("Pourcentage d'audience invalide");
-    if (!validateNumeric(recallPercentage, 0, 100))
-      return alert("Pourcentage de rappel invalide");
-    if (!validateNumeric(consultPercentage, 0, 100))
-      return alert("Pourcentage de consultation invalide");
-    if (!validateNumeric(prescriptionPercentage, 0, 100))
-      return alert("Pourcentage de prescription invalide");
-    if (!validateNumeric(valuePerPatient, 0))
-      return alert("Valeur par patient invalide");
-    if (!validateNumeric(mediaCosts, 0))
-      return alert("Dépenses médias invalides");
-    if (!validateNumeric(productionCosts, 0))
-      return alert("Coûts de production invalides");
+    if (!validateNumeric(consumerTarget, 0)) return alert("Nombre de consommateurs cibles invalide");
+    if (!validateNumeric(reachPercentage, 0, 100)) return alert("Pourcentage d'audience invalide");
+    if (!validateNumeric(recallPercentage, 0, 100)) return alert("Pourcentage de rappel invalide");
+    if (!validateNumeric(consultPercentage, 0, 100)) return alert("Pourcentage de consultation invalide");
+    if (!validateNumeric(prescriptionPercentage, 0, 100)) return alert("Pourcentage de prescription invalide");
+    if (!validateNumeric(valuePerPatient, 0)) return alert("Valeur par patient invalide");
+    if (!validateNumeric(mediaCosts, 0)) return alert("Dépenses médias invalides");
+    if (!validateNumeric(productionCosts, 0)) return alert("Coûts de production invalides");
 
-    // Conversion des pourcentages
     const H = reachPercentage / 100;
     const J = recallPercentage / 100;
     const L = consultPercentage / 100;
@@ -102,15 +85,13 @@ const CalculateAct7 = () => {
     const R1 = mediaCosts;
     const S = productionCosts;
 
-    // Calculs
-    const I = G * H; // Nombre de consommateurs atteints par la campagne
-    const K = I * J; // Nombre de consommateurs se rappelant de la campagne
-    const M = K * L; // Nombre de consommateurs consultant un médecin
-    const O = M * N; // Nombre de patients incrémentaux obtenus
-    const Q = O * P; // Ventes incrémentales générées
-    const T = R1 + S; // Coûts totaux du programme
+    const I = G * H;
+    const K = I * J;
+    const M = K * L;
+    const O = M * N;
+    const Q = O * P;
+    const T = R1 + S;
 
-    // Calcul du ROI
     const ROI = T > 0 ? (Q / T) * 100 : 0;
 
     setCalculationResult({
@@ -134,17 +115,17 @@ const CalculateAct7 = () => {
     setValuePerPatient(0);
     setMediaCosts(0);
     setProductionCosts(0);
+    setYear(null);
     setCalculationResult(null);
+    setCalculated(false);
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (items.length === 0) {
-      alert("Veuillez d'abord ajouter des éléments d'activité");
-      return;
-    }
+    if (items.length === 0) return alert("Veuillez d'abord ajouter des éléments d'activité");
+
     const formData = {
+      year,
       H: reachPercentage,
       J: recallPercentage,
       L: consultPercentage,
@@ -164,6 +145,7 @@ const CalculateAct7 = () => {
       id_S: items[7]?.id,
       id_ROI: items[8]?.id,
     };
+
     try {
       const response = await axiosInstance.post("insertIntoTable7", formData);
       if (response.status === 201) {
@@ -177,10 +159,7 @@ const CalculateAct7 = () => {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        alert(
-          error.response.data.message ||
-            "Une erreur est survenue lors de l'insertion."
-        );
+        alert(error.response.data.message || "Une erreur est survenue lors de l'insertion.");
       } else if (error.request) {
         alert("Aucune réponse reçue du serveur.");
       } else {
@@ -188,13 +167,82 @@ const CalculateAct7 = () => {
       }
     }
   };
-
   return (
     <Layout className="min-h-screen">
       <TheHeader />
 
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          
+        {calculationResult && (
+                <div className="mt-8">
+                  <Divider>Résultats</Divider>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card>
+                      <Statistic
+                        title="ROI"
+                        value={calculationResult.roi}
+                        precision={2}
+                        suffix="%"
+                        valueStyle={{
+                          color:
+                            calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
+                        }}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Ventes Incrémentales"
+                        value={calculationResult.incrementalSales}
+                        precision={2}
+                        suffix="MAD"
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Coût Total"
+                        value={calculationResult.totalCost}
+                        precision={2}
+                        suffix="kMAD"
+                      />
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                    <Card>
+                      <Statistic
+                        title="Consommateurs Atteints"
+                        value={calculationResult.consumersReached}
+                        precision={0}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Consommateurs Consultant"
+                        value={calculationResult.consumersConsulting}
+                        precision={0}
+                      />
+                    </Card>
+                    <Card>
+                      <Statistic
+                        title="Patients Incrémentaux"
+                        value={calculationResult.incrementalPatients}
+                        precision={0}
+                      />
+                    </Card>
+                  </div>
+
+                  {calculationResult.roi < 0 && (
+                    <Alert
+                      style={{ marginTop: "16px" }}
+                      message="ROI Négatif"
+                      description="Le programme génère actuellement un retour négatif sur investissement. Essayez d'ajuster les paramètres."
+                      type="warning"
+                      showIcon
+                    />
+                  )}
+                </div>
+              )}
           <form onSubmit={handleSubmit}>
             <Card>
               <Title level={4} style={{ textAlign: "center" }}>
@@ -309,7 +357,7 @@ const CalculateAct7 = () => {
                     htmlFor="valuePerPatient"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Valeur du revenu par patient €
+                    Valeur du revenu par patient MAD
                   </label>
                   <Input
                     id="valuePerPatient"
@@ -327,7 +375,7 @@ const CalculateAct7 = () => {
                     htmlFor="mediaCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Dépenses médias k€
+                    Dépenses médias kMAD
                   </label>
                   <Input
                     id="mediaCosts"
@@ -345,7 +393,7 @@ const CalculateAct7 = () => {
                     htmlFor="productionCosts"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Coûts de production et frais d'agence k€
+                    Coûts de production et frais d'agence kMAD
                   </label>
                   <Input
                     id="productionCosts"
@@ -354,6 +402,15 @@ const CalculateAct7 = () => {
                     value={productionCosts}
                     onChange={(e) => setProductionCosts(Number(e.target.value))}
                     className="w-full"
+                  />
+                </div>
+                <div>
+                  <label>Année</label>
+                  <DatePicker
+                    picker="year"
+                    onChange={(date, dateString) => setYear(dateString)}
+                    value={year ? dayjs(year, "YYYY") : null}
+                    style={{ width: "100%" }}
                   />
                 </div>
               </div>
@@ -404,76 +461,6 @@ const CalculateAct7 = () => {
                   </Link>
                 </div>
               </div>
-
-              {calculationResult && (
-                <div className="mt-8">
-                  <Divider>Résultats</Divider>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Card>
-                      <Statistic
-                        title="ROI"
-                        value={calculationResult.roi}
-                        precision={2}
-                        suffix="%"
-                        valueStyle={{
-                          color:
-                            calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
-                        }}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Ventes Incrémentales"
-                        value={calculationResult.incrementalSales}
-                        precision={2}
-                        suffix="€"
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Coût Total"
-                        value={calculationResult.totalCost}
-                        precision={2}
-                        suffix="k€"
-                      />
-                    </Card>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                    <Card>
-                      <Statistic
-                        title="Consommateurs Atteints"
-                        value={calculationResult.consumersReached}
-                        precision={0}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Consommateurs Consultant"
-                        value={calculationResult.consumersConsulting}
-                        precision={0}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Patients Incrémentaux"
-                        value={calculationResult.incrementalPatients}
-                        precision={0}
-                      />
-                    </Card>
-                  </div>
-
-                  {calculationResult.roi < 0 && (
-                    <Alert
-                      style={{ marginTop: "16px" }}
-                      message="ROI Négatif"
-                      description="Le programme génère actuellement un retour négatif sur investissement. Essayez d'ajuster les paramètres."
-                      type="warning"
-                      showIcon
-                    />
-                  )}
-                </div>
-              )}
             </Card>
           </form>
         </div>

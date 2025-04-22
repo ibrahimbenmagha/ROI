@@ -17,7 +17,7 @@ export default function LoginForm() {
       
       document.cookie = `access_token=${access_token}; HttpOnly; Secure; SameSite=Strict; path=/`;  
       message.success("Logged in successfully");
-      navigate("/Home");
+      navigate("/");
     } catch (error) {
       message.error("Invalid credentials");
     }

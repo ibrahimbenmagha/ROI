@@ -1,0 +1,27 @@
+.ContentHomePageAdmin{
+    /* display: flex; */
+    margin: 24px 16px;
+    background: white;
+    border-Radius: 11px;
+    overflow: auto;
+    height: calc(100vh - 112px);
+    justify-content: center;
+    align-items: center;
+
+}
+
+.demo-logo-vertical{
+display: flex;
+align-items: center;
+justify-content: center;
+
+}
+
+#logoLarg{
+width: 70%;
+
+}
+.RegisterFormComponent{
+width: 100%;
+height: 100%;
+}

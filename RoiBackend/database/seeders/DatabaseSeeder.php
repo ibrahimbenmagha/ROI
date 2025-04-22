@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur moyenne d’un patient incrémental en MAD", "ActivityId" => 1],
             ["Name" => "Coût unitaire d’un échantillon", "ActivityId" => 1],
             ["Name" => "Coûts fixes du programme", "ActivityId" => 1],
-            ["Name" => "Roi de de l'activite 1", "ActivityId" => 1],
+            ["Name" => "Roi", "ActivityId" => 1],
         ]);
 
         //Activité 2: Essai clinique
@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "ActivityId" => 2],
             ["Name" => "Coût variable par médecin", "ActivityId" => 2],
             ["Name" => "Coût fixe total de l’étude", "ActivityId" => 2],
-            ["Name" => "Roi de de l'activite 2", "ActivityId" => 2],
+            ["Name" => "Roi", "ActivityId" => 2],
 
         ]);
 
@@ -75,7 +75,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Coût variable par email envoyé", "ActivityId" => 3],
             ["Name" => "Nombre moyen d’emails envoyés par médecin", "ActivityId" => 3],
             ["Name" => "Coût fixe total du programme", "ActivityId" => 3],
-            ["Name" => "Roi de de l'activite 3", "ActivityId" => 3],
+            ["Name" => "Roi", "ActivityId" => 3],
 
         ]);
 
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur de revenu générée par patient incrémental", "ActivityId" => 4],
             ["Name" => "Coût variable par médecin", "ActivityId" => 4],
             ["Name" => "Coût fixe du programme", "ActivityId" => 4],
-            ["Name" => "Roi de de l'activite 4", "ActivityId" => 4],
+            ["Name" => "Roi", "ActivityId" => 4],
 
         ]);
         // Activité 5: Tables rondes
@@ -104,7 +104,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "ActivityId" => 5],
             ["Name" => "Coût variable par table ronde", "ActivityId" => 5],
             ["Name" => "Coût fixe total du programme", "ActivityId" => 5],
-            ["Name" => "Roi de de l'activite 5", "ActivityId" => 5],
+            ["Name" => "Roi", "ActivityId" => 5],
 
         ]);
 
@@ -118,7 +118,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "ActivityId" => 6],
             ["Name" => "Coût variable par représentant", "ActivityId" => 6],
             ["Name" => "Nombre total de représentants", "ActivityId" => 6],
-            ["Name" => "Roi de de l'activite 6", "ActivityId" => 6],
+            ["Name" => "Roi", "ActivityId" => 6],
 
         ]);
         // Activité 7: Publicité directe au consommateur
@@ -131,7 +131,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "ActivityId" => 7],
             ["Name" => "Dépenses médias (en MAD k)", "ActivityId" => 7],
             ["Name" => "Coûts de production, frais d’agence et autres (en MAD k)", "ActivityId" => 7],
-            ["Name" => "Roi de de l'activite 7", "ActivityId" => 7],
+            ["Name" => "Roi", "ActivityId" => 7],
 
         ]);
 
@@ -147,7 +147,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "% des patients ayant reçu une prescription Prexige", "ActivityId" => 8],
             ["Name" => "Valeur du revenu généré par patient incrémental", "ActivityId" => 8],
             ["Name" => "Coût total du programme e-campagne", "ActivityId" => 8],
-            ["Name" => "Roi de de l'activite 8", "ActivityId" => 8],
+            ["Name" => "Roi", "ActivityId" => 8],
 
         ]);
 
@@ -161,7 +161,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Revenu moyen généré par chaque nouveau patient traité", "ActivityId" => 9],
             ["Name" => "Coûts d’achat d’espace publicitaire pour la campagne presse", "ActivityId" => 9],
             ["Name" => "Frais de création et de gestion de la campagne", "ActivityId" => 9],
-            ["Name" => "Roi de de l'activite 9", "ActivityId" => 9],
+            ["Name" => "Roi", "ActivityId" => 9],
 
         ]);
 
@@ -174,7 +174,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Nombre moyen de nouveaux patients traités par chaque médecin prescripteur", "ActivityId" => 10],
             ["Name" => "Revenu moyen généré par chaque nouveau patient traité", "ActivityId" => 10],
             ["Name" => "Coût global de l’organisation et de la mise en oeuvre de l’activité", "ActivityId" => 10],
-            ["Name" => "Roi de de l'activite 10", "ActivityId" => 10],
+            ["Name" => "Roi", "ActivityId" => 10],
 
         ]);
 
@@ -186,7 +186,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Pourcentage des consultations aboutissant à une prescription", "ActivityId" => 11],
             ["Name" => "Revenu moyen généré par chaque nouveau patient", "ActivityId" => 11],
             ["Name" => "Coût global de l’organisation et de la mise en oeuvre de l’activité", "ActivityId" => 11],
-            ["Name" => "Roi de de l'activite 11", "ActivityId" => 11],
+            ["Name" => "Roi", "ActivityId" => 11],
 
         ]);
 
@@ -201,7 +201,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Nombre moyen de nouveaux patients par médecin ayant prescrit le produit", "ActivityId" => 12],
             ["Name" => "Valeur moyenne de revenu par patient incrémental", "ActivityId" => 12],
             ["Name" => "Coût total du programme e-digital", "ActivityId" => 12],
-            ["Name" => "Roi de de l'activite", "ActivityId" => 12],
+            ["Name" => "Roi", "ActivityId" => 12],
 
         ]);
         DB::table('users')->insert([
@@ -248,21 +248,21 @@ class DatabaseSeeder extends Seeder
 
 
 
-        $years = ['2026', '2027'];
-        $laboIds = [1, 2];
-        $activityIds = range(1, 12);
-        $data = [];
-        foreach ($years as $year) {
-            foreach ($laboIds as $laboId) {
-                foreach ($activityIds as $activityId) {
-                    $data[] = [
-                        'year' => $year,
-                        'laboId' => $laboId,
-                        'ActivityId' => $activityId,
-                    ];
-                }
-            }
-        }
-        DB::table('ActivityByLabo')->insert($data);
+        // $years = ['2026', '2027'];
+        // $laboIds = [1, 2];
+        // $activityIds = range(1, 12);
+        // $data = [];
+        // foreach ($years as $year) {
+        //     foreach ($laboIds as $laboId) {
+        //         foreach ($activityIds as $activityId) {
+        //             $data[] = [
+        //                 'year' => $year,
+        //                 'laboId' => $laboId,
+        //                 'ActivityId' => $activityId,
+        //             ];
+        //         }
+        //     }
+        // }
+        // DB::table('ActivityByLabo')->insert($data);
     }
 }

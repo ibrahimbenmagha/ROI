@@ -6,16 +6,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "antd/dist/reset.css";
 
-// Importer tes composants de route personnalisés
-
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
+import CreateActivity from "./pages/Create/Create";
+import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
 
-import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
-import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
-import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
-import RoiResultCard from "./pages/RoiResultCard/RoiResultCard.tsx";
+import BackOffice from "./pages/BackOffice/Home/Home";
+import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
+import RealCreate from "./pages/BackOffice/CreateLabo/Creation"
+
+// import Index from "./pages/Index";
+// import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
+// import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
+// import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
 
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
@@ -29,8 +32,9 @@ import CalculateAct9 from "./pages/CalculateAct9/CalculateAct9";
 import CalculateAct10 from "./pages/CalculateAct10/CalculateAct10";
 import CalculateAct11 from "./pages/CalculateAct11/CalculateAct11";
 import CalculateAct12 from "./pages/CalculateAct12/CalculateAct12";
+import Autre from "./pages/Autre/Autres.tsx";
 
-import Dashboard from "./pages/Dashboard/Dashboard";
+// import Dashboard from "./pages/Dashboard/Dashboard";
 import DashboardLogin from "./pages/Dashboard/DashboardLogin";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import {
@@ -51,7 +55,23 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Redirection par défaut */}
-          <Route path="/" element={<Navigate to="/Home" />} />
+
+          <Route path="*" element={<Navigate to="/CreateActivity" />} />
+          <Route path="Creation" element={<RealCreate />} />
+
+
+          <Route
+            path="/BackOffice"
+            element={
+                <AdminRoute>
+                  <BackOffice />
+                </AdminRoute>
+            }
+          >
+            <Route path="DislayLabos" element={<DislayLabos />} />
+            {/* <Route path="Creation" element={<RealCreate />} /> */}
+
+          </Route>
 
           {/* Routes d'authentification */}
           <Route
@@ -74,21 +94,16 @@ const App = () => (
 
           {/* Routes pour le rôle Laboratoire */}
           <Route
-            path="/Home"
+            path="CreateActivity"
             element={
               <AuthRoute>
-                <Index />
+                <LaboRoute>
+                  <CreateActivity />
+                </LaboRoute>
               </AuthRoute>
             }
           />
-          <Route
-            path="CreateActivity"
-            element={
-              <LaboRoute>
-                <CreateActivity />
-              </LaboRoute>
-            }
-          />
+
           <Route
             path="RoiResultCard"
             element={
@@ -99,30 +114,12 @@ const App = () => (
               </LaboRoute>
             }
           />
-          <Route
-            path="/DisplayActivity"
-            element={
-              <LaboRoute>
-                <DisplayActivity />
-              </LaboRoute>
-            }
-          />
-          <Route
-            path="/DisplayCalculatedActivity"
-            element={
-              <LaboRoute>
-                <DisplayCalculatedActivity />
-              </LaboRoute>
-            }
-          />
 
           <Route
             path="/CalculateAct1"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct1 />
-                </ActRoute>
+                <CalculateAct1 />
               </LaboRoute>
             }
           />
@@ -130,9 +127,7 @@ const App = () => (
             path="/CalculateAct2"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct2 />
-                </ActRoute>
+                <CalculateAct2 />
               </LaboRoute>
             }
           />
@@ -140,9 +135,7 @@ const App = () => (
             path="/CalculateAct3"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct3 />
-                </ActRoute>
+                <CalculateAct3 />
               </LaboRoute>
             }
           />
@@ -151,9 +144,7 @@ const App = () => (
             path="/CalculateAct4"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct4 />
-                </ActRoute>
+                <CalculateAct4 />
               </LaboRoute>
             }
           />
@@ -161,9 +152,7 @@ const App = () => (
             path="/CalculateAct5"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct5 />
-                </ActRoute>
+                <CalculateAct5 />
               </LaboRoute>
             }
           />
@@ -172,9 +161,7 @@ const App = () => (
             path="/CalculateAct6"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct6 />
-                </ActRoute>
+                <CalculateAct6 />
               </LaboRoute>
             }
           />
@@ -183,9 +170,7 @@ const App = () => (
             path="/CalculateAct7"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct7 />
-                </ActRoute>
+                <CalculateAct7 />
               </LaboRoute>
             }
           />
@@ -194,9 +179,7 @@ const App = () => (
             path="/CalculateAct8"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct8 />
-                </ActRoute>
+                <CalculateAct8 />
               </LaboRoute>
             }
           />
@@ -205,9 +188,7 @@ const App = () => (
             path="/CalculateAct9"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct9 />
-                </ActRoute>
+                <CalculateAct9 />
               </LaboRoute>
             }
           />
@@ -216,9 +197,7 @@ const App = () => (
             path="/CalculateAct10"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct10 />
-                </ActRoute>
+                <CalculateAct10 />
               </LaboRoute>
             }
           />
@@ -227,9 +206,7 @@ const App = () => (
             path="/CalculateAct11"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct11 />
-                </ActRoute>
+                <CalculateAct11 />
               </LaboRoute>
             }
           />
@@ -238,23 +215,10 @@ const App = () => (
             path="/CalculateAct12"
             element={
               <LaboRoute>
-                <ActRoute>
-                  <CalculateAct12 />
-                </ActRoute>
+                <CalculateAct12 />
               </LaboRoute>
             }
           />
-
-          {/* Routes pour le rôle Admin */}
-          <Route
-            path="/Dashboard/*"
-            element={
-              <AdminRoute>
-                <Dashboard />
-              </AdminRoute>
-            }
-          />
-
           {/* Autres routes */}
           <Route path="/Unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
