@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
-const Unauthorized = () => {
+const  Unauthorized = () => {
   const navigate = useNavigate();
   
   return (

@@ -13,12 +13,7 @@ import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
 
 import BackOffice from "./pages/BackOffice/Home/Home";
 import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
-import RealCreate from "./pages/BackOffice/CreateLabo/Creation"
-
-// import Index from "./pages/Index";
-// import CreateActivity from "./pages/CreateActiviteByLoabo/CreateActivity";
-// import DisplayActivity from "./pages/DisplayActivityByLabo/DisplayActivityByLabo";
-// import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
+import RealCreate from "./pages/BackOffice/CreateLabo/Creation";
 
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
@@ -32,10 +27,8 @@ import CalculateAct9 from "./pages/CalculateAct9/CalculateAct9";
 import CalculateAct10 from "./pages/CalculateAct10/CalculateAct10";
 import CalculateAct11 from "./pages/CalculateAct11/CalculateAct11";
 import CalculateAct12 from "./pages/CalculateAct12/CalculateAct12";
-import Autre from "./pages/Autre/Autres.tsx";
+import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
 
-// import Dashboard from "./pages/Dashboard/Dashboard";
-import DashboardLogin from "./pages/Dashboard/DashboardLogin";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import {
   LaboRoute,
@@ -56,21 +49,26 @@ const App = () => (
         <Routes>
           {/* Redirection par défaut */}
 
-          <Route path="*" element={<Navigate to="/CreateActivity" />} />
-          <Route path="Creation" element={<RealCreate />} />
-
+          {/* <Route path="*" element={<Navigate to="/CreateActivity" />} /> */}
+          {/* <Route path="/BackOffice" element={<Navigate to="BackOffice/DislayLabos" />} /> */}
 
           <Route
             path="/BackOffice"
             element={
-                <AdminRoute>
-                  <BackOffice />
-                </AdminRoute>
+              // <AuthRoute>
+              <AdminRoute>
+                <BackOffice />
+              </AdminRoute>
+              //</AuthRoute>
             }
           >
             <Route path="DislayLabos" element={<DislayLabos />} />
-            {/* <Route path="Creation" element={<RealCreate />} /> */}
+            <Route path="Creation" element={<RealCreate />} />
 
+            <Route
+              path="DisplayCalculatedActivity"
+              element={<DisplayCalculatedActivity />}
+            />
           </Route>
 
           {/* Routes d'authentification */}
@@ -79,15 +77,6 @@ const App = () => (
             element={
               <AuthRoute>
                 <LoginForm />
-              </AuthRoute>
-            }
-          />
-
-          <Route
-            path="/DashboardLogin"
-            element={
-              <AuthRoute>
-                <DashboardLogin />
               </AuthRoute>
             }
           />
@@ -108,9 +97,9 @@ const App = () => (
             path="RoiResultCard"
             element={
               <LaboRoute>
-                <CalcRoute>
-                  <RoiResultCard />
-                </CalcRoute>
+                {/* <CalcRoute> */}
+                <RoiResultCard />
+                {/* </CalcRoute> */}
               </LaboRoute>
             }
           />

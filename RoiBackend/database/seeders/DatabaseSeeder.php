@@ -215,18 +215,18 @@ class DatabaseSeeder extends Seeder
 
         $labos = [
             [
-                'FirstName' => 'haasra',
-                'LastName' => 'letshlift',
-                'email' => 'wasw50@gmail.com',
+                'FirstName' => 'Mark',
+                'LastName' => 'Lermon',
+                'email' => 'Mark.Lermon@gmail.com',
                 'password' => Hash::make('120501@Casahm'),
-                'Name' => 'labo 5wewe0'
+                'Name' => 'Labo Exemple 1'
             ],
             [
                 'FirstName' => 'John',
                 'LastName' => 'Doe',
                 'email' => 'john.doe@example.com',
                 'password' => Hash::make('password123'),
-                'Name' => 'Labo Example'
+                'Name' => 'Labo Example 2'
             ]
         ];
 

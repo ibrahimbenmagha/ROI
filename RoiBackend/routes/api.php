@@ -19,8 +19,7 @@ use App\Http\Controllers\Activity10;
 use App\Http\Controllers\Activity11;
 use App\Http\Controllers\Activity12;
 
-
-Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
+Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
 
 
 // Routes publiques (pas besoin d'authentification)
@@ -36,13 +35,14 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(['check.role:Admin'])->group(function () {
-    // Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
+    Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
     Route::get('GetAllLabos', [LaboController::class, 'GetAllLabos']);
     Route::get('GetAllLabosInfos', [LaboController::class, 'GetAllLabosInfos']);
     Route::get('GetAllLaboNames', [LaboController::class, 'GetAllLaboNames']);
     Route::get('GetLaboInfoByLabName/{Name}', [LaboController::class, 'GetLaboInfoByLabName']);
     Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);
-
+    Route::delete('deleteLaboWithData', [LaboController::class, 'deleteLaboWithData']);
+    
     Route::post('createActivity', [ActivitiesController::class, 'createActivity']);
     Route::get('getAllActivity', [ActivitiesController::class, 'getAllActivity']);
     Route::get('getAllActivitiesByLaboInfos', [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);
@@ -51,19 +51,14 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('getAllActivitiesByLabo', [ActivitiesController::class, 'getAllActivitiesByLabo']);
 });
 
-
 Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
 
     Route::get('GetLaboInfosByLaboId/{id}', [LaboController::class, 'GetLaboInfosByLaboId']);
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
-    Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
-
     Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
-
-    // Route::post("handleFullActivityCreationAndCalculation", [Activity1_12::class, "handleFullActivityCreationAndCalculation"]);
 
     Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
     Route::post("insetrIntoTable1", [Activity1_12::class, "insetrIntoTable1"]);
@@ -116,19 +111,14 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);   
-    // Route::delete('deleteLaboNotCalculatedById', [ActivitiesController::class, 'deleteLaboNotCalculatedById']);
 });               
 
-
-
-// Routes accessibles à tous les utilisateurs authentifiés
 Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getAllActivityNotCustum', [ActivitiesController::class, 'getAllActivityNotCustum']);
     Route::get('getActivityById/{id}', [ActivitiesController::class, 'getActivityById']);
     Route::get('getActivityByName/{Name}', [ActivitiesController::class, 'getActivityByName']);
-
+    // Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
 });
-Route::delete('deleteLaboNotCalculatedById', [ActivitiesController::class, 'deleteLaboNotCalculatedById']);

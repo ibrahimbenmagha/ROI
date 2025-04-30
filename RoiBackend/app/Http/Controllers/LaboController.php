@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Labo;
 use App\Models\ActivityByLabo;
+use App\Models\ActivityItemValue;
 use Illuminate\Support\Facades\Hash;
 
 class LaboController extends Controller
@@ -40,7 +41,6 @@ class LaboController extends Controller
             ]);
             return response()->json([
                 'message' => 'Labo user has been created successfully',
-                'user' => $user
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -60,12 +60,12 @@ class LaboController extends Controller
     {
         $LabosInfos = Labo::join('users', 'labo.userId', '=', 'users.id')
             ->select(
+                'labo.id as id',
                 'labo.Name',
                 'users.FirstName',
                 'users.LastName'
             )->get();
         return response()->json(['labos' => $LabosInfos], 200);
-
     }
 
     public function GetLaboInfosByLaboId(Request $request, $laboId)
@@ -114,7 +114,6 @@ class LaboController extends Controller
         } else {
             return response()->json(['message' => 'Labo not '], 501);
         }
-
     }
 
     public function GetLaboByLabName(Request $request, $labName)
@@ -127,4 +126,66 @@ class LaboController extends Controller
         }
     }
 
+    // public function deleteLaboWithData(Request $request)
+    // {
+    //     // $laboId = $request->input('laboId');
+    //     $laboId = $request->cookie('laboId');
+
+    //     if (empty($laboId) || $laboId === "undefined") {
+    //         return response()->json(['error' => 'Labo ID not found'], 400);
+    //     }
+    //     try {
+    //         // Suppression des données dans la table ActivityItemValue associées au labo
+    //         ActivityItemValue::whereHas('activityByLabo', function ($query) use ($laboId) {
+    //             $query->where('laboId', $laboId);
+    //         })->delete();
+
+    //         // Suppression de l'enregistrement du labo dans la table ActivityByLabo
+    //         ActivityByLabo::where('laboId', $laboId)->delete();
+
+    //         // Suppression du labo lui-même (si nécessaire, si le labo est un modèle en propre, par exemple)
+    //         Labo::where('id', $laboId)->delete(); 
+
+    //         User::find($laboId)->delete();
+
+
+    //         return response()->json(['success' => 'Labo and associated data deleted successfully'], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
+    public function deleteLaboWithData(Request $request)
+    {
+        $laboId = $request->cookie('laboId') ?? $request->input('laboId');
+
+        if (empty($laboId) || $laboId === "undefined") {
+            return response()->json(['error' => 'Labo ID not found'], 400);
+        }
+
+        try {
+            // Supprimer les valeurs d'activité liées à ce labo
+            ActivityItemValue::whereHas('activityByLabo', function ($query) use ($laboId) {
+                $query->where('laboId', $laboId);
+            })->delete();
+
+            // Supprimer les activités du labo
+            ActivityByLabo::where('laboId', $laboId)->delete();
+
+            // Supprimer le labo
+            Labo::where('id', $laboId)->delete();
+
+            // Supprimer l'utilisateur associé (à valider selon ta logique)
+            User::find($laboId)?->delete();
+
+            return response()->json([
+                'message' => 'Labo and associated data deleted successfully',
+                'laboId' => $laboId,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'An error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

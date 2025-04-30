@@ -20,16 +20,17 @@ interface CalculatedActivity {
 }
 
 // ✅ Function to store activity IDs in cookies
-const storeActivityIdInCookie = (id: string, activityId: string) => {
-  if (id === "autre") {
+const storeActivityIdInCookie = (activityId: string) => {
+  if (activityId === "autre") {
     document.cookie = `activityNumber=Autre activité; path=/; max-age=3600;`;
   } else {
     document.cookie = `activityNumber=${activityId}; path=/; max-age=3600;`;
+    document.cookie = `activityId=${activityId}; path=/; max-age=3600;`;
   }
 };
-
-const storeActivityIdInCookie2 = (id: number) => {
-  document.cookie = `activityId=${id}; path=/; max-age=3600;`;
+//activityId
+const storeActivityIdInCookie2 = (activityId: number) => {
+  document.cookie = `activityId=${activityId}; path=/; max-age=3600;`;
 };
 
 const ActivityPage: React.FC = () => {
@@ -128,7 +129,7 @@ const ActivityPage: React.FC = () => {
                           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300 flex items-center"
                           onClick={(e) => {
                             e.stopPropagation();
-                            storeActivityIdInCookie(act.id, act.id);
+                            storeActivityIdInCookie(act.id);
                           }}
                         >
                           <svg
@@ -212,7 +213,7 @@ const ActivityPage: React.FC = () => {
                     <div className="flex justify-end mt-3">
                       <Link to="/RoiResultCard">
                         <Button type="primary" size="small" className="text-xs"
-                      onClick={() => storeActivityIdInCookie(activity.id, activity.id)}
+                      onClick={() => storeActivityIdInCookie(activity.id)}
                       >
                           Détails
                         </Button>

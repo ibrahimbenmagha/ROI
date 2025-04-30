@@ -32,8 +32,9 @@ export const LaboRoute = ({ children }) => {
           response.data.role === "Laboratoire"
         ) {
           setAuthenticated(true);
-        } else {
-          navigate("/CreateActivity");
+        } 
+        else {
+          navigate("/login");
         }
       } catch (error) {
         navigate("/Login");
@@ -52,7 +53,6 @@ export const LaboRoute = ({ children }) => {
   return authenticated ? children : null;
 };
 
-// Route protégée pour les utilisateurs avec le rôle "Admin"
 export const AdminRoute = ({ children }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -67,11 +67,9 @@ export const AdminRoute = ({ children }) => {
           && response.data.role === "Admin"
         ) {
           setAuthenticated(true);
-          navigate("/BackOffice/DislayLabos");
-          // navigate("/");
-
-
-        } else {
+          // navigate("/BackOffice/DislayLabos");
+        } 
+        else {
           navigate("/Login");
         }
       } catch (error) {
@@ -105,16 +103,17 @@ export const AuthRoute = ({ children }) => {
           if (role === "Laboratoire") {
             navigate("/CreateActivity");
           } else if (role === "Admin") {
-            navigate("/BackOffice");
+            navigate("/BackOffice/DislayLabos");
           }
           // setShouldRedirect(true);
-        } else {
+        } else{
           navigate("/Login");
         }
       } catch (error) {
-        // Erreur d'API, on suppose que l'utilisateur n'est pas authentifié
+        navigate("/Login");
       } finally {
         setLoading(false);
+        navigate("/Login");
       }
     };
 

@@ -115,122 +115,6 @@ class ActivitiesController extends Controller
         }
     }
 
-
-    // public function CreateActivityByLabo(Request $request)
-    // {
-    //     try {
-    //         $laboId = JWTHelper::getLaboId($request);
-    //         if (!$laboId) {
-    //             return response()->json([
-    //                 'message' => 'Information du laboratoire non trouvée dans le token.'
-    //             ], 401);
-    //         }
-
-    //         $validated = $request->validate([
-    //             'year' => 'required|integer',
-    //             'ActivityId' => 'required|string', // maintenant c’est le nom
-    //             'otherActivity' => 'nullable|string'
-    //         ]);
-
-    //         $activityName = trim($validated['ActivityId']);
-    //         $year = $validated['year'];
-
-    //         // Cas où l'utilisateur sélectionne "Autre activité"
-    //         if ($activityName === "Autre activité" && !empty($validated['otherActivity'])) {
-    //             $customName = trim($validated['otherActivity']);
-
-    //             // Vérifier si une activité personnalisée de ce nom existe déjà
-    //             $existingCustom = Activitieslist::where('Name', $customName)
-    //                 ->where('is_custom', true)
-    //                 ->first();
-
-    //             if ($existingCustom) {
-    //                 $alreadyInserted = ActivityByLabo::where([
-    //                     ['ActivityId', $existingCustom->id],
-    //                     ['laboId', $laboId],
-    //                     ['year', $year]
-    //                 ])->exists();
-
-    //                 if ($alreadyInserted) {
-    //                     return response()->json([
-    //                         'message' => 'Cette activité personnalisée existe déjà pour cette année.'
-    //                     ], 409);
-    //                 }
-
-    //                 $activity = ActivityByLabo::create([
-    //                     'year' => $year,
-    //                     'laboId' => $laboId,
-    //                     'ActivityId' => $existingCustom->id,
-    //                 ]);
-
-    //                 return response()->json([
-    //                     'message' => 'Activité existante ajoutée pour une nouvelle année.',
-    //                     'activity' => $activity
-    //                 ], 201);
-    //             }
-
-    //             // Création d'une nouvelle activité personnalisée
-    //             $newActivity = Activitieslist::create([
-    //                 'Name' => $customName,
-    //                 'is_custom' => true,
-    //             ]);
-
-    //             ActivityItem::create([
-    //                 'Name' => "ROI",
-    //                 'ActivityId' => $newActivity->id,
-    //             ]);
-
-    //             $activity = ActivityByLabo::create([
-    //                 'year' => $year,
-    //                 'laboId' => $laboId,
-    //                 'ActivityId' => $newActivity->id,
-    //             ]);
-
-    //             return response()->json([
-    //                 'message' => "Vous avez créé une nouvelle activité personnalisée.",
-    //                 'activity' => $activity
-    //             ], 201);
-    //         }
-
-    //         // Cas standard : activité sélectionnée par son nom
-    //         $existing = Activitieslist::where('Name', $activityName)->first();
-    //         if (!$existing) {
-    //             return response()->json([
-    //                 'message' => "Activité non trouvée."
-    //             ], 404);
-    //         }
-
-    //         $existingActivityId = $existing->id;
-
-    //         if (ActivityByLabo::where([
-    //             ['ActivityId', $existingActivityId],
-    //             ['laboId', $laboId],
-    //             ['year', $year]
-    //         ])->exists()) {
-    //             return response()->json([
-    //                 'message' => 'Vous avez déjà comptabilisé cette activité pour cette année.'
-    //             ], 409);
-    //         }
-
-    //         $activity = ActivityByLabo::create([
-    //             'year' => $year,
-    //             'laboId' => $laboId,
-    //             'ActivityId' => $existingActivityId,
-    //         ]);
-
-    //         return response()->json([
-    //             'message' => "Activité créée avec succès.",
-    //             'activity' => $activity
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Échec de la création de l\'activité.',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
-
     public function createActivity(Request $request)
     {
         try {
@@ -385,53 +269,10 @@ class ActivitiesController extends Controller
         }
     }
 
-    // public function getAllCalculatedActivityByLaboInfosByLaboId(Request $request)
-    // {
-    //     $laboId = JWTHelper::getLaboId($request);
-    //     if (!$laboId) {
-    //         return response()->json([
-    //             'message' => 'Information du laboratoire non trouvée dans le token.'
-    //         ], 401);
-    //     }
-
-    //     $Activities = ActivityByLabo::where('laboId', $laboId)
-
-    //         ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
-    //         ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
-    //         // ->join('users', 'labo.userId', '=', 'users.id')
-    //         ->join('activityitems', 'activitieslist.id', '=', 'activityitems.ActivityId')
-    //         ->join('activityitemvalues', 'activitybylabo.id', '=', 'activityitemvalues.ActivityByLaboId' )
-    //         ->select(
-    //             'activitieslist.id',
-    //             'activitieslist.Name',
-    //             'activitybylabo.id',
-    //             'activitybylabo.laboId',
-    //             'activitybylabo.ActivityId',
-    //             'activitybylabo.year',
-    //             'labo.Name as LaboName',
-    //             // 'users.FirstName',
-    //             // 'users.LastName',
-    //             'activityitems.Name',
-    //             'activityitemvalues.value'
-    //             )
-    //             ->where('is_calculated', true)
-    //             ->where('activityitems.Name', 'Roi')
-    //             ->orderBy('activitieslist.id')
-    //         ->get();
-
-
-    //     if ($Activities->isNotEmpty()) {
-    //         return response()->json($Activities, 200);
-    //     } else {
-    //         return response()->json(['message' => 'No activities found for the given labo'], 204);
-    //     }
-    // }
-
-
 
     public function getAllCalculatedActivityByLaboInfosByLaboId(Request $request)
     {
-        $laboId = JWTHelper::getLaboId($request);
+        $laboId = JWTHelper::getLaboId($request) ?? $request->cookie('laboId') ?? $request["laboId"];
         if (!$laboId) {
             return response()->json([
                 'message' => 'Information du laboratoire non trouvée dans le token.'
@@ -463,35 +304,69 @@ class ActivitiesController extends Controller
             return response()->json(['message' => 'Aucune activité trouvée'], 204);
         }
     }
-    
 
     public function calculateDynamicROI(Request $request)
-    {
-        try {
-            $activityByLaboId = $request->cookie('activityId');
-            // $activityByLaboId = $request['activityId'];
+{
+    try {
+        // Priorité : chercher dans les cookies, sinon dans le body/query
+        $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
 
-            if (!$activityByLaboId) {
-                return response()->json(['message' => 'Activity ID is missing.'], 400);
-            }
-            $activity = ActivityByLabo::find($activityByLaboId);
-            if (!$activity) {
-                return response()->json(['message' => 'Activity not found.'], 404);
-            }
-            $activityId = $activity->ActivityId;
-            $method = "calculateROIAct_" . $activityId;
-            $controller = new Activity1_12();
-            if (!method_exists($controller, $method)) {
-                return response()->json(['message' => "No calculation method defined for activity ID $activityId $method ."], 500);
-            }
-            return $controller->$method($request);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur interne lors du calcul du ROI',
-                'error' => $e->getMessage(),
-            ], 500);
+        if (!$activityByLaboId) {
+            return response()->json(['message' => 'Activity ID is missing.'], 400);
         }
+
+        $activity = ActivityByLabo::find($activityByLaboId);
+        if (!$activity) {
+            return response()->json(['message' => 'Activity not found.'], 404);
+        }
+
+        $activityId = $activity->ActivityId;
+        $method = "calculateROIAct_" . $activityId;
+        $controller = new Activity1_12();
+
+        if (!method_exists($controller, $method)) {
+            return response()->json(['message' => "No calculation method defined for activity ID $activityId ($method)."], 500);
+        }
+
+        return $controller->$method($request);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur interne lors du calcul du ROI',
+            'error' => $e->getMessage(),
+            'activityId' => $activityId,
+            ''
+        ], 500);
     }
+}
+
+
+    // public function calculateDynamicROI(Request $request)
+    // {
+    //     try {
+    //         // $activityByLaboId = $request->cookie('activityNumber');
+    //         $activityByLaboId = $request['activityNumber'];
+
+    //         if (!$activityByLaboId) {
+    //             return response()->json(['message' => 'Activity ID is missing.'], 400);
+    //         }
+    //         $activity = ActivityByLabo::find($activityByLaboId);
+    //         if (!$activity) {
+    //             return response()->json(['message' => 'Activity not found.'], 404);
+    //         }
+    //         $activityId = $activity->ActivityId;
+    //         $method = "calculateROIAct_" . $activityId;
+    //         $controller = new Activity1_12();
+    //         if (!method_exists($controller, $method)) {
+    //             return response()->json(['message' => "No calculation method defined for activity ID $activityId $method ."], 500);
+    //         }
+    //         return $controller->$method($request);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Erreur interne lors du calcul du ROI',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
     public function getAllActivityByLaboName(Request $request, $Name)
     {
