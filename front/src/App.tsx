@@ -37,6 +37,7 @@ import {
   ActRoute,
   CalcRoute,
 } from "./components/AuthRoute";
+import CustomActivityPage from "./pages/CalcutaleCustumAct/CalcutaleCustumAct";
 
 const queryClient = new QueryClient();
 
@@ -49,17 +50,18 @@ const App = () => (
         <Routes>
           {/* Redirection par défaut */}
 
-          {/* <Route path="*" element={<Navigate to="/CreateActivity" />} /> */}
-          {/* <Route path="/BackOffice" element={<Navigate to="BackOffice/DislayLabos" />} /> */}
+          <Route path="*" element={<Navigate to="/CreateActivity" />} />
+          <Route
+            path="/BackOffice"
+            element={<Navigate to="BackOffice/DislayLabos" />}
+          />
 
           <Route
             path="/BackOffice"
             element={
-              // <AuthRoute>
               <AdminRoute>
                 <BackOffice />
               </AdminRoute>
-              //</AuthRoute>
             }
           >
             <Route path="DislayLabos" element={<DislayLabos />} />
@@ -71,7 +73,6 @@ const App = () => (
             />
           </Route>
 
-          {/* Routes d'authentification */}
           <Route
             path="/Login"
             element={
@@ -81,15 +82,12 @@ const App = () => (
             }
           />
 
-          {/* Routes pour le rôle Laboratoire */}
           <Route
             path="CreateActivity"
             element={
-              <AuthRoute>
-                <LaboRoute>
-                  <CreateActivity />
-                </LaboRoute>
-              </AuthRoute>
+              <LaboRoute>
+                <CreateActivity />
+              </LaboRoute>
             }
           />
 
@@ -97,13 +95,18 @@ const App = () => (
             path="RoiResultCard"
             element={
               <LaboRoute>
-                {/* <CalcRoute> */}
                 <RoiResultCard />
-                {/* </CalcRoute> */}
               </LaboRoute>
             }
           />
-
+          <Route
+            path="CustomActivityPage"
+            element={
+              <LaboRoute>
+                <CustomActivityPage />
+              </LaboRoute>
+            }
+          />
           <Route
             path="/CalculateAct1"
             element={
@@ -208,7 +211,7 @@ const App = () => (
               </LaboRoute>
             }
           />
-          {/* Autres routes */}
+
           <Route path="/Unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

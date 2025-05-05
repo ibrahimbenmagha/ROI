@@ -20,7 +20,6 @@ class Activity1_12 extends Controller
     {
         try {
             $laboId = JWTHelper::getLaboId($request);
-            // $laboId = 2;
             if (!$laboId) {
                 return response()->json(['message' => 'Token invalide'], 401);
             }
@@ -2490,7 +2489,8 @@ class Activity1_12 extends Controller
 
 
     //Activite 10
-    public function insertIntoTable10(Request $request){
+    public function insertIntoTable10(Request $request)
+    {
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -2993,7 +2993,8 @@ class Activity1_12 extends Controller
     }
 
     //Activite 12
-    public function insertIntoTable12(Request $request){
+    public function insertIntoTable12(Request $request)
+    {
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -3095,7 +3096,8 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct12(Request $request){
+    public function calculateROIAct12(Request $request)
+    {
         try {
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0',  // Nombre de médecins susceptibles de prescrire
@@ -3202,5 +3204,118 @@ class Activity1_12 extends Controller
             'valeur_Q' => $Q,
             'ROI' => $ROI,
         ], 200);
+    }
+
+    //Activite Costum 
+    public function insertCustomActivity(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'activityName' => 'required|string|max:255',
+                'year' => 'required|string',
+                'roi' => 'required|numeric|min:0',
+            ]);
+
+            // 1. Créer d'abord une activité personnalisée dans ActivitiesList
+            $newActivity = ActivitiesList::create([
+                'Name' => $validated['activityName'],
+                'is_custom' => true
+            ]);
+
+            // Récupérer l'ID de l'activité nouvellement créée
+            $activityId = $newActivity->id;
+
+            // 2. Créer un élément ROI dans ActivityItem
+            $roiItem = ActivityItem::create([
+                'Name' => 'ROI',
+                'ActivityId' => $activityId
+            ]);
+
+            // 3. Créer l'entrée dans ActivityByLabo
+            $activityByLabo = ActivityByLabo::create([
+                'ActivityId' => $activityId,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+                'is_calculated' => true
+            ]);
+
+            // 4. Insérer la valeur du ROI
+            ActivityItemValue::create([
+                'activityItemId' => $roiItem->id,
+                'ActivityByLaboId' => $activityByLabo->id,
+                'value' => $validated['roi']
+            ]);
+
+            return response()->json([
+                'message' => 'Activité personnalisée créée avec succès.',
+                'activityId' => $activityId,
+                'roiItemId' => $roiItem->id,
+                'roi' => $validated['roi']
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur côté serveur.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function calculateROIAct_Costum(Request $request)
+    {
+        try {
+            // Récupérer l'ID de l'activité depuis le cookie
+            $activityByLaboId = $request->cookie('activityId');
+
+            if (!$activityByLaboId) {
+                return response()->json(['message' => 'ID d\'activité non trouvé'], 400);
+            }
+
+            // Récupérer l'activité pour vérifier s'il s'agit d'une activité personnalisée
+            $activityByLabo = ActivityByLabo::find($activityByLaboId);
+            if (!$activityByLabo) {
+                return response()->json(['message' => 'Activité non trouvée'], 404);
+            }
+
+            // Vérifier si l'activité est une activité personnalisée
+            $activity = ActivitiesList::find($activityByLabo->ActivityId);
+            if (!$activity || !$activity->is_custom) {
+                return response()->json(['message' => 'Cette activité n\'est pas une activité personnalisée'], 400);
+            }
+
+            // Récupérer l'élément ROI pour cette activité
+            $roiItem = ActivityItem::where('ActivityId', $activity->id)
+                ->where('Name', 'ROI')
+                ->first();
+
+            if (!$roiItem) {
+                return response()->json(['message' => 'Élément ROI non trouvé pour cette activité'], 404);
+            }
+
+            // Récupérer la valeur du ROI
+            $roiValue = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+                ->where('activityItemId', $roiItem->id)
+                ->first();
+
+            if (!$roiValue) {
+                return response()->json(['message' => 'Valeur ROI non trouvée'], 404);
+            }
+
+            // Retourner la réponse avec les données pertinentes
+            return response()->json([
+                'activite_nom' => $activity->Name,
+                'activite_annee' => $activityByLabo->year,
+                'ROI' => $roiValue->value,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors du calcul du ROI pour l\'activité personnalisée.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

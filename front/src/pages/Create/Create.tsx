@@ -19,7 +19,7 @@ interface CalculatedActivity {
   details?: string;
 }
 
-// ✅ Function to store activity IDs in cookies
+
 const storeActivityIdInCookie = (activityId: string) => {
   if (activityId === "autre") {
     document.cookie = `activityNumber=Autre activité; path=/; max-age=3600;`;
@@ -28,7 +28,8 @@ const storeActivityIdInCookie = (activityId: string) => {
     document.cookie = `activityId=${activityId}; path=/; max-age=3600;`;
   }
 };
-//activityId
+
+
 const storeActivityIdInCookie2 = (activityId: number) => {
   document.cookie = `activityId=${activityId}; path=/; max-age=3600;`;
 };
@@ -38,12 +39,12 @@ const ActivityPage: React.FC = () => {
   const [activities, setActivities] = useState<CalculatedActivity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
-    null
-  );
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   useEffect(() => {
     deleteCookie("activityNumber");
+    deleteCookie("activityId");
+
     axiosInstance
       .get("getAllActivityNotCustum")
       .then((response) => {
@@ -89,7 +90,6 @@ const ActivityPage: React.FC = () => {
     }).format(date);
   };
 
-  
   return (
     <div>
       <Head />
@@ -121,7 +121,7 @@ const ActivityPage: React.FC = () => {
                       <Link
                         to={
                           act.id === "autre"
-                            ? "/AddCustomActivity"
+                            ? "/CustomActivityPage"
                             : `/CalculateAct${act.id}`
                         }
                       >
@@ -178,51 +178,57 @@ const ActivityPage: React.FC = () => {
               Historique
             </h1>
 
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 p-4 rounded-md">
-                <p className="text-red-600">{error}</p>
-              </div>
-            ) : activities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Vous n'avez aucun historique</p>
-              </div>
-            ) : (
-              <div className="space-y-4 mt-5">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="bg-gray-50 p-4 rounded-md border-l-4 border-blue-500 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <div className="flex justify-between items-start">
-                      <p className="font-medium text-gray-800">
-                        {(activity as any).actName || "Activité sans nom"}
+            {/* Partie Historique avec défilement */}
+            <div className="max-h-[80vh] overflow-y-auto">
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : error ? (
+                <div className="bg-red-50 p-4 rounded-md">
+                  <p className="text-red-600">{error}</p>
+                </div>
+              ) : activities.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Vous n'avez aucun historique</p>
+                </div>
+              ) : (
+                <div className="space-y-4 mt-5">
+                  {activities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="bg-gray-50 p-4 rounded-md border-l-4 border-blue-500 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      <div className="flex justify-between items-start">
+                        <p className="font-medium text-gray-800">
+                          {(activity as any).actName || "Activité sans nom"}
+                        </p>
+                        <span className="text-xs text-gray-500">
+                          {`Année: ${(activity as any).year}`}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Rendement sur l'investissement{" "}
+                        {activity.details || "Aucun détail disponible"}
                       </p>
-                      <span className="text-xs text-gray-500">
-                        {`Année: ${(activity as any).year}`}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      Rendement sur l'investisement{" "}
-                      {activity.details || "Aucun détail disponible"}
-                    </p>
 
-                    <div className="flex justify-end mt-3">
-                      <Link to="/RoiResultCard">
-                        <Button type="primary" size="small" className="text-xs"
-                      onClick={() => storeActivityIdInCookie(activity.id)}
-                      >
-                          Détails
-                        </Button>
-                      </Link>
+                      <div className="flex justify-end mt-3">
+                        <Link to="/RoiResultCard">
+                          <Button
+                            type="primary"
+                            size="small"
+                            className="text-xs"
+                            onClick={() => storeActivityIdInCookie(activity.id)}
+                          >
+                            Détails
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

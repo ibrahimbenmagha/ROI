@@ -108,6 +108,9 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("insertIntoTable12", [Activity1_12::class, "insertIntoTable12"]);
     Route::post("updateActivity12Values", [Activity1_12::class, "updateActivity12Values"]);
 
+    Route::post("insertCustomActivity", [Activity1_12::class, "insertCustomActivity"]);
+
+
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);   

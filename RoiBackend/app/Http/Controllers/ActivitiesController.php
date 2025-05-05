@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\JwtHelper; // Adjust the namespace as needed
+
 use App\Models\ActivitiesList;
 use App\Models\ActivityByLabo;
 use App\Models\Labo;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityItem;
+
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Activity1_12;
 
@@ -17,7 +19,7 @@ use App\Http\Controllers\Activity1_12;
 
 
 
-class ActivitiesController extends Controller
+class  ActivitiesController extends Controller
 {
 
 
@@ -321,6 +323,9 @@ class ActivitiesController extends Controller
         }
 
         $activityId = $activity->ActivityId;
+        if ($activityId > 12){
+            $activityId="Costum";
+        }
         $method = "calculateROIAct_" . $activityId;
         $controller = new Activity1_12();
 

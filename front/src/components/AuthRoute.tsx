@@ -32,6 +32,8 @@ export const LaboRoute = ({ children }) => {
           response.data.role === "Laboratoire"
         ) {
           setAuthenticated(true);
+          // navigate("/CreateActivity");
+
         } 
         else {
           navigate("/login");
@@ -105,7 +107,7 @@ export const AuthRoute = ({ children }) => {
           } else if (role === "Admin") {
             navigate("/BackOffice/DislayLabos");
           }
-          // setShouldRedirect(true);
+          setShouldRedirect(true);
         } else{
           navigate("/Login");
         }
@@ -113,7 +115,7 @@ export const AuthRoute = ({ children }) => {
         navigate("/Login");
       } finally {
         setLoading(false);
-        navigate("/Login");
+        // navigate("/Login");
       }
     };
 
