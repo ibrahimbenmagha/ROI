@@ -9,17 +9,16 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Input, Select, message, Skeleton } from "antd";
 import axiosInstance, { deleteCookie } from "../../axiosConfig";
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
 import TheHeader from "../Header/Header";
 import Head from "../../components/Head";
 
 const { Option } = Select;
 
 const storeActivityIdInCookie = (id: number) => {
+  document.cookie = `activityNumber=${id}; path=/; max-age=3600;`;
   document.cookie = `activityId=${id}; path=/; max-age=3600;`;
+  
 };
 
 const DisplayActivity = () => {
@@ -29,8 +28,12 @@ const DisplayActivity = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedYearFilter, setSelectedYearFilter] = useState<string | null>(null);
-  const [selectedActivityFilter, setSelectedActivityFilter] = useState<string | null>(null);
+  const [selectedYearFilter, setSelectedYearFilter] = useState<string | null>(
+    null
+  );
+  const [selectedActivityFilter, setSelectedActivityFilter] = useState<
+    string | null
+  >(null);
 
   const navigate = useNavigate();
 
@@ -217,15 +220,22 @@ const DisplayActivity = () => {
                   </CardContent>
                 </span>
 
-                <span style={{
-                  width: "40%",
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                  paddingRight: "10px"
-                }}>
-                  <Link to="/RoiResultCard">
-                    <Button type="primary">Consulter les détails</Button>
+                <span
+                  style={{
+                    width: "40%",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    paddingRight: "10px",
+                  }}
+                >
+                  <Link to="../RoiResultCardAdmin">
+                    <Button
+                      type="primary"
+                      onClick={() => storeActivityIdInCookie(activity.id)}
+                    >
+                      Consulter les détails
+                    </Button>
                   </Link>
                 </span>
               </Card>

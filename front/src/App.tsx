@@ -10,6 +10,8 @@ import NotFound from "./pages/NotFound";
 import LoginForm from "./pages/LoginForm/LoginForm";
 import CreateActivity from "./pages/Create/Create";
 import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
+import RoiResultCardAdmin from "./pages/BackOffice/RoiResultCardAdmin/RoiResultCardAdmin";
+
 
 import BackOffice from "./pages/BackOffice/Home/Home";
 import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
@@ -51,6 +53,7 @@ const App = () => (
           {/* Redirection par défaut */}
 
           <Route path="*" element={<Navigate to="/CreateActivity" />} />
+
           <Route
             path="/BackOffice"
             element={<Navigate to="BackOffice/DislayLabos" />}
@@ -66,6 +69,8 @@ const App = () => (
           >
             <Route path="DislayLabos" element={<DislayLabos />} />
             <Route path="Creation" element={<RealCreate />} />
+            <Route path="RoiResultCardAdmin" element={<RoiResultCardAdmin />} />
+
 
             <Route
               path="DisplayCalculatedActivity"

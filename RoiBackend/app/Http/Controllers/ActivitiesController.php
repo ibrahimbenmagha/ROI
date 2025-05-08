@@ -246,7 +246,7 @@ class  ActivitiesController extends Controller
         }
 
         $Activities = ActivityByLabo::where('laboId', $laboId)
-            ->where('is_calculated', false)
+            // ->where('is_calculated', false)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
             ->join('users', 'labo.userId', '=', 'users.id')
@@ -280,14 +280,14 @@ class  ActivitiesController extends Controller
                 'message' => 'Information du laboratoire non trouvée dans le token.'
             ], 401);
         }
-    
+
         $Activities = ActivityByLabo::where('activitybylabo.laboId', $laboId)
-            ->where('activitybylabo.is_calculated', true)
+            // ->where('activitybylabo.is_calculated', true)
             ->join('activitieslist', 'activitybylabo.ActivityId', '=', 'activitieslist.id')
             ->join('labo', 'activitybylabo.laboId', '=', 'labo.id')
-            ->join('activityitems', function($join) {
+            ->join('activityitems', function ($join) {
                 $join->on('activitieslist.id', '=', 'activityitems.ActivityId')
-                     ->where('activityitems.Name', '=', 'Roi'); // ✅ Filtrer ici
+                    ->where('activityitems.Name', '=', 'Roi'); // ✅ Filtrer ici
             })
             ->join('activityitemvalues', 'activitybylabo.id', '=', 'activityitemvalues.ActivityByLaboId')
             ->whereColumn('activityitems.id', 'activityitemvalues.ActivityItemId') // ✅ S'assurer qu'on lie les bons champs
@@ -299,7 +299,7 @@ class  ActivitiesController extends Controller
             )
             ->orderBy('activitieslist.id')
             ->get();
-    
+
         if ($Activities->isNotEmpty()) {
             return response()->json($Activities, 200);
         } else {
@@ -307,71 +307,87 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function calculateDynamicROI(Request $request)
-{
-    try {
-        // Priorité : chercher dans les cookies, sinon dans le body/query
-        $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
-
-        if (!$activityByLaboId) {
-            return response()->json(['message' => 'Activity ID is missing.'], 400);
-        }
-
-        $activity = ActivityByLabo::find($activityByLaboId);
-        if (!$activity) {
-            return response()->json(['message' => 'Activity not found.'], 404);
-        }
-
-        $activityId = $activity->ActivityId;
-        if ($activityId > 12){
-            $activityId="Costum";
-        }
-        $method = "calculateROIAct_" . $activityId;
-        $controller = new Activity1_12();
-
-        if (!method_exists($controller, $method)) {
-            return response()->json(['message' => "No calculation method defined for activity ID $activityId ($method)."], 500);
-        }
-
-        return $controller->$method($request);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Erreur interne lors du calcul du ROI',
-            'error' => $e->getMessage(),
-            'activityId' => $activityId,
-            ''
-        ], 500);
-    }
-}
-
-
     // public function calculateDynamicROI(Request $request)
     // {
     //     try {
-    //         // $activityByLaboId = $request->cookie('activityNumber');
-    //         $activityByLaboId = $request['activityNumber'];
+    //         $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
 
     //         if (!$activityByLaboId) {
     //             return response()->json(['message' => 'Activity ID is missing.'], 400);
     //         }
+
     //         $activity = ActivityByLabo::find($activityByLaboId);
     //         if (!$activity) {
     //             return response()->json(['message' => 'Activity not found.'], 404);
     //         }
+
     //         $activityId = $activity->ActivityId;
+    //         if ($activityId > 12) {
+    //             $activityId = "Costum";
+    //         }
     //         $method = "calculateROIAct_" . $activityId;
     //         $controller = new Activity1_12();
+
     //         if (!method_exists($controller, $method)) {
-    //             return response()->json(['message' => "No calculation method defined for activity ID $activityId $method ."], 500);
+    //             return response()->json(['message' => "No calculation method defined for activity ID $activityId ($method)."], 500);
     //         }
+
     //         return $controller->$method($request);
     //     } catch (\Exception $e) {
     //         return response()->json([
     //             'message' => 'Erreur interne lors du calcul du ROI',
     //             'error' => $e->getMessage(),
+    //             'activityId' => $activityId,
     //         ], 500);
     //     }
     // }
+
+
+    public function calculateDynamicROI(Request $request)
+    {
+        try {
+            // Récupère l'identifiant de l'activité depuis le cookie ou la requête
+            $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
+
+            if (!$activityByLaboId) {
+                return response()->json(['message' => 'Activity ID is missing.'], 400);
+            }
+
+            // Cherche l'activité en base
+            $activity = ActivityByLabo::find($activityByLaboId);
+            if (!$activity) {
+                return response()->json(['message' => 'Activity not found.'], 404);
+            }
+
+            // Récupère l'ID de l'activité
+            $activityId = $activity->ActivityId;
+
+            // Si l'activité dépasse 12, on utilise une méthode personnalisée
+            if ($activityId > 12) {
+                $activityId = "Costum";
+            }
+
+            $method = "calculateROIAct_" . $activityId;
+            $controller = new Activity1_12();
+
+            // Vérifie si la méthode existe
+            if (!method_exists($controller, $method)) {
+                return response()->json([
+                    'message' => "No calculation method defined for activity ID $activityId ($method)."
+                ], 500);
+            }
+
+            // Appelle dynamiquement la méthode correspondante
+            return $controller->$method($request);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'    => 'Erreur interne lors du calcul du ROI',
+                'error'      => $e->getMessage(),
+                'activityId' => $activityId ?? null, // éviter l'erreur si non défini
+            ], 500);
+        }
+    }
+
 
     public function getAllActivityByLaboName(Request $request, $Name)
     {
@@ -529,14 +545,12 @@ class  ActivitiesController extends Controller
 
     public function deleteActivityValues(Request $request)
     {
-        // $ActivityByLaboId = $request->cookie('activityId');
         $ActivityByLaboId = $request->cookie('activityId');
 
         try {
-            // Suppression des valeurs liées à l'activité
             ActivityItemValue::where('id', $ActivityByLaboId)->delete();
-            $UPDATE = ActivityByLabo::where('id', $ActivityByLaboId)
-                ->update(['is_calculated' => false]);
+            // $UPDATE = ActivityByLabo::where('id', $ActivityByLaboId);
+            //     ->update(['is_calculated' => false]);
 
             return response()->json([
                 'message' => 'Values deleted successfully'
@@ -553,13 +567,11 @@ class  ActivitiesController extends Controller
     public function deleteLaboData(Request $request)
     {
         $laboId = JWTHelper::getLaboId($request);
-        // $laboId = $request["laboId"];
         if (!$laboId) {
             return response()->json(['error' => 'Labo ID not found'], 400);
         }
 
         try {
-            // DB:statement();
             ActivityItemValue::whereHas('activityByLabo', function ($query) use ($laboId) {
                 $query->where('laboId', $laboId);
             })->delete();
@@ -586,8 +598,8 @@ class  ActivitiesController extends Controller
             ActivityItemValue::whereIn('ActivityByLaboId', $activityByLaboIds)->delete();
 
             // Mise à jour du champ is_calculated à false pour toutes les entrées liées au laboId
-            $UPDATE = ActivityByLabo::where('laboId', $laboId)
-                ->update(['is_calculated' => false]);
+            $UPDATE = ActivityByLabo::where('laboId', $laboId);
+            // ->update(['is_calculated' => false]);
 
             return response()->json([
                 'message' => 'Values deleted successfully'
@@ -602,7 +614,6 @@ class  ActivitiesController extends Controller
 
     public function deleteLaboNotCalculatedById(Request $request)
     {
-        // $activityByLaboId = $request->input('activityId');
         $activityByLaboId = $request->cookie('activityId');
 
         if (empty($activityByLaboId)) {
@@ -619,11 +630,11 @@ class  ActivitiesController extends Controller
                 ], 404);
             }
 
-            if ($activity->is_calculated) {
-                return response()->json([
-                    'message' => 'Activity has values and cannot be deleted.',
-                ], 403); // 403 Forbidden
-            }
+            // if ($activity->is_calculated) {
+            //     return response()->json([
+            //         'message' => 'Activity has values and cannot be deleted.',
+            //     ], 403); // 403 Forbidden
+            // }
             $activity->delete();
             return response()->json(["message" => "Activity deleted successfully."], 200);
         } catch (\Exception $e) {
@@ -695,5 +706,4 @@ class  ActivitiesController extends Controller
             'ActivityId' => $existing->id,
         ]);
     }
-    
 }

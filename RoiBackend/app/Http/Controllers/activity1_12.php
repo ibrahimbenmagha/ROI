@@ -16,6 +16,7 @@ use App\Models\Labo;
 class Activity1_12 extends Controller
 {
     //Activite 1
+
     public function insetrIntoTable1(Request $request)
     {
         try {
@@ -54,17 +55,12 @@ class Activity1_12 extends Controller
                 return response()->json(['message' => 'Numéro d’activité manquant.'], 400);
             }
 
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
 
             // Conversion des pourcentages
             $D = $validated['D'] / 100;
@@ -103,14 +99,14 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
-
             return response()->json([
                 'message' => 'Activité créée et calculée avec succès.',
                 'ROI' => $ROI,
+                'C'=>$C,
+                'F'=>$F,
+                'J'=>$J,
                 'L' => $L,
                 'O' => $O,
-                'J' => $J,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -119,6 +115,7 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
+    
 
     public function calculateROIAct1(Request $request)
     {
@@ -355,17 +352,13 @@ class Activity1_12 extends Controller
             ]);
 
             // 🔁 Récupérer ou créer ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $validated['activityId'],
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+     
 
             // Calculs
             $D = $validated['D'] / 100;
@@ -397,7 +390,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 2 calculée et enregistrée avec succès.',
@@ -567,10 +560,6 @@ class Activity1_12 extends Controller
             "Coût fixe total de l’étude" => $K,
             "Coût total du programme" => $L,
             "Retour sur investissement (ROI)" => $ROI
-
-
-
-
         ], 200);
     }
 
@@ -612,17 +601,11 @@ class Activity1_12 extends Controller
             ]);
 
             // Création ou récupération d’ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $validated['activityId'],
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
-
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
 
             // Conversion des pourcentages
             $C = $validated['C'] / 100;
@@ -659,7 +642,7 @@ class Activity1_12 extends Controller
             ];
 
             ActivityItemValue::insert($values);
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité créée et calculée avec succès.',
@@ -678,7 +661,6 @@ class Activity1_12 extends Controller
 
     public function calculateROIAct3(Request $request)
     {
-        // Validation des données entrantes
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par l’email
             'B' => 'required|numeric|min:0', // Nombre moyen d’emails envoyés par médecin
@@ -893,17 +875,13 @@ class Activity1_12 extends Controller
             $activityNumber = 4;
 
             // Création ou récupération d’ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion des pourcentages
             $B = $validated['B'] / 100;
@@ -941,7 +919,7 @@ class Activity1_12 extends Controller
             ];
 
             ActivityItemValue::insert($values);
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 4 enregistrée et calculée avec succès.',
@@ -1175,17 +1153,13 @@ class Activity1_12 extends Controller
             $activityNumber = 5;
 
             // Création ou récupération de l'activité pour ce labo et cette année
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion des %
             $B = $validated['B'];
@@ -1227,7 +1201,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 5 enregistrée et calculée avec succès.',
@@ -1403,7 +1377,6 @@ class Activity1_12 extends Controller
 
         $ROI = ($P > 0) ? round($M / $P, 4) : 0;
 
-        // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
             'nombre_de_médecins_participant_aux_tables_rondes' => $A,
             'nombre_moyen_de_tables_rondes_par_médecin' => $B,
@@ -1462,21 +1435,14 @@ class Activity1_12 extends Controller
             ]);
 
             $activityNumber = 6;
-
-            // Création ou récupération d’ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
 
-            // Conversion des pourcentages
+
             $E = $validated['E'] / 100;
             $G = $validated['G'] / 100;
 
@@ -1488,7 +1454,6 @@ class Activity1_12 extends Controller
             $M1 = $validated['M1'];
             $M2 = $validated['M2'];
 
-            // Calculs
             $C = $A * $B;      // Total des visites
             $F = $A * $E;      // Médecins se rappelant du message
             $H = $F * $G;      // Médecins qui prescrivent
@@ -1497,7 +1462,6 @@ class Activity1_12 extends Controller
             $M = $M1 * $M2;    // Coût total
             $ROI = ($M > 0) ? round($L / $M, 4) : 0;
 
-            // Insertion dans ActivityItemValue
             $values = [
                 ['activityItemId' => $validated['id_A'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $A],
                 ['activityItemId' => $validated['id_B'], 'ActivityByLaboId' => $activityByLabo->id, 'value' => $B],
@@ -1512,7 +1476,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 6 enregistrée et calculée avec succès.',
@@ -1531,7 +1495,6 @@ class Activity1_12 extends Controller
 
     public function calculateROIAct6(Request $request)
     {
-        // Validation des entrées
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par le représentant
             'B' => 'required|numeric|min:0', // Nombre moyen de visites par médecin
@@ -1543,11 +1506,9 @@ class Activity1_12 extends Controller
             'M2' => 'required|numeric|min:0', // Nombre total de représentants
         ]);
 
-        // Conversion des pourcentages en valeurs décimales
         $E = $validated['E'] / 100;
         $G = $validated['G'] / 100;
 
-        // Récupération des variables de la requête
         $A = $validated['A']; // Nombre total de médecins ciblés
         $B = $validated['B']; // Nombre moyen de visites par médecin
         $I = $validated['I']; // Nombre moyen de nouveaux patients par médecin
@@ -1555,7 +1516,6 @@ class Activity1_12 extends Controller
         $M1 = $validated['M1']; // Coût variable par représentant
         $M2 = $validated['M2']; // Nombre total de représentants
 
-        // Calculs
         $C = $A * $B; // Nombre total de visites (détails)
         $F = $A * $E; // Nombre de médecins se rappelant du message
         $H = $F * $G; // Nombre de médecins prescrivant Prexige
@@ -1563,10 +1523,8 @@ class Activity1_12 extends Controller
         $L = $J * $K; // Ventes incrémentales
         $M = $M1 * $M2; // Coût total du programme
 
-        // Calcul du ROI
         $ROI = ($M > 0) ? round($L / $M, 4) : 0; // ROI, évite la division par zéro
 
-        // Retour de la réponse avec les résultats
         return response()->json([
             'nombre_medecins_cibles_par_representant' => $A,
             'nombre_moyen_visites_par_medecin' => $B,
@@ -1740,17 +1698,13 @@ class Activity1_12 extends Controller
             $activityNumber = 7;
 
             // Création ou récupération d’ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion des pourcentages
             $H = $validated['H'] / 100;
@@ -1788,7 +1742,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 7 enregistrée et calculée avec succès.',
@@ -1977,6 +1931,7 @@ class Activity1_12 extends Controller
     }
 
 
+
     //Activite 8
     public function insertIntoTable8(Request $request)
     {
@@ -2015,20 +1970,14 @@ class Activity1_12 extends Controller
 
             $activityNumber = 8;
 
-            // Création ou récupération d'ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
 
-            // Conversion des pourcentages
+
             $B = $validated['B'] / 100;
             $D = $validated['D'] / 100;
             $F = $validated['F'] / 100;
@@ -2070,7 +2019,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 8 enregistrée et calculée avec succès.',
@@ -2323,21 +2272,13 @@ class Activity1_12 extends Controller
             ]);
 
             $activityNumber = 9;
-
-            // Création ou récupération de l'activité
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
 
-            // Conversion des pourcentages
             $C = $validated['C'] / 100;
             $E = $validated['E'] / 100;
 
@@ -2372,7 +2313,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 9 enregistrée et calculée avec succès.',
@@ -2521,17 +2462,13 @@ class Activity1_12 extends Controller
             $activityNumber = 10;
 
             // Création ou récupération d’ActivityByLabo
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion pourcentages
             $B = $validated['B'] / 100;
@@ -2566,7 +2503,7 @@ class Activity1_12 extends Controller
 
             ActivityItemValue::insert($values);
 
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 10 enregistrée et calculée avec succès.',
@@ -2779,17 +2716,13 @@ class Activity1_12 extends Controller
 
             $activityNumber = 11;
 
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion pourcentages
             $B = $validated['B'] / 100;
@@ -2819,7 +2752,7 @@ class Activity1_12 extends Controller
             ];
 
             ActivityItemValue::insert($values);
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 11 enregistrée et calculée avec succès.',
@@ -3028,17 +2961,13 @@ class Activity1_12 extends Controller
 
             $activityNumber = 12;
 
-            $activityByLabo = ActivityByLabo::firstOrCreate([
+            $activityByLabo = ActivityByLabo::Create([
                 'ActivityId' => $activityNumber,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            if (ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)->exists()) {
-                return response()->json([
-                    'message' => 'Les valeurs de cette activité ont déjà été enregistrées.',
-                ], 409);
-            }
+
 
             // Conversion des pourcentages
             $B = $validated['B'] / 100;
@@ -3079,7 +3008,7 @@ class Activity1_12 extends Controller
             ];
 
             ActivityItemValue::insert($values);
-            $activityByLabo->update(['is_calculated' => true]);
+            //$activityByLabo->update(['is_calculated' => true]);
 
             return response()->json([
                 'message' => 'Activité 12 enregistrée et calculée avec succès.',
@@ -3241,7 +3170,7 @@ class Activity1_12 extends Controller
                 'ActivityId' => $activityId,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
-                'is_calculated' => true
+                // 'is_calculated' => true
             ]);
 
             // 4. Insérer la valeur du ROI
@@ -3315,6 +3244,333 @@ class Activity1_12 extends Controller
             return response()->json([
                 'message' => 'Erreur lors du calcul du ROI pour l\'activité personnalisée.',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // public function insertCustomActivity1(Request $request)
+    // {
+    //     try {
+    //         $laboId = JWTHelper::getLaboId($request);
+    //         if (!$laboId) {
+    //             return response()->json(['message' => 'Token invalide'], 401);
+    //         }
+
+    //         $validated = $request->validate([
+    //             'name' => 'required|string|max:255',
+    //             'year' => 'required|integer',
+    //             'items' => 'required|array|min:1',
+    //             'items.*.name' => 'required|string',
+    //             'items.*.value' => 'required|numeric',
+    //             'items.*.type' => 'required|in:number,percentage',
+    //             'calculatedItems' => 'required|array|min:1',
+    //             'calculatedItems.*.name' => 'required|string',
+    //             'calculatedItems.*.value' => 'required|numeric',
+    //         ]);
+
+    //         $activityNameLower = strtolower($validated['name']);
+
+    //         $existingActivity = ActivitiesList::whereRaw('LOWER(Name) = ?', [$activityNameLower])
+    //             ->where('is_custom', true)
+    //             ->first();
+
+    //         if ($existingActivity) {
+    //             $existingByLabo = ActivityByLabo::where('ActivityId', $existingActivity->id)
+    //                 ->where('laboId', $laboId)
+    //                 ->where('year', $validated['year'])
+    //                 ->first();
+
+    //             if ($existingByLabo) {
+    //                 return response()->json([
+    //                     'message' => 'Cette activité personnalisée existe déjà pour cette année.'
+    //                 ], 409);
+    //             }
+
+    //             // On insère uniquement le lien avec une nouvelle année
+    //             $activityByLabo = ActivityByLabo::create([
+    //                 'ActivityId' => $existingActivity->id,
+    //                 'laboId' => $laboId,
+    //                 'year' => $validated['year'],
+    //                 // 'is_calculated' => false
+    //             ]);
+
+    //             $baseItems = ActivityItem::where('ActivityId', $existingActivity->id)->get();
+
+    //             $baseValues = [];
+    //             foreach ($validated['items'] as $item) {
+    //                 $matchingItem = $baseItems->firstWhere('Name', $item['name']);
+    //                 if ($matchingItem) {
+    //                     $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
+    //                     $baseValues[] = [
+    //                         'activityItemId' => $matchingItem->id,
+    //                         'ActivityByLaboId' => $activityByLabo->id,
+    //                         'value' => $value
+    //                     ];
+    //                 }
+    //             }
+
+    //             // Ajouter ROI si présent
+    //             $roiItemData = null;
+    //             if (isset($validated['calculatedItems']) && is_array($validated['calculatedItems'])) {
+    //                 $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
+    //             }
+
+    //             if ($roiItemData) {
+    //                 $roiItem = $baseItems->firstWhere('Name', 'ROI');
+    //                 if ($roiItem) {
+    //                     $baseValues[] = [
+    //                         'activityItemId' => $roiItem->id,
+    //                         'ActivityByLaboId' => $activityByLabo->id,
+    //                         'value' => $roiItemData['value']
+    //                     ];
+    //                 }
+    //             }
+
+    //             ActivityItemValue::insert($baseValues);
+
+    //             return response()->json([
+    //                 'message' => 'Activité existante, mais ajoutée pour une nouvelle année.',
+    //                 'activityId' => $activityByLabo->id,
+    //                 'activityName' => $validated['name'],
+    //                 'year' => $validated['year']
+    //             ], 201);
+    //         }
+
+    //         // Sinon, créer une nouvelle activité complète
+    //         $customActivity = ActivitiesList::create([
+    //             'Name' => $validated['name'],
+    //             'is_custom' => true,
+    //             'created_by' => $laboId
+    //         ]);
+
+    //         $baseItems = [];
+    //         foreach ($validated['items'] as $item) {
+    //             $baseItems[] = ActivityItem::create([
+    //                 'ActivityId' => $customActivity->id,
+    //                 'Name' => $item['name'],
+    //                 'Type' => $item['type'],
+    //                 'is_custom' => true
+    //             ]);
+    //         }
+
+    //         $roiItemData = null;
+    //         if (isset($validated['calculatedItems']) && is_array($validated['calculatedItems'])) {
+    //             $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
+    //         }
+
+    //         $roiItem = null;
+    //         if ($roiItemData) {
+    //             $roiItem = ActivityItem::create([
+    //                 'ActivityId' => $customActivity->id,
+    //                 'Name' => 'ROI',
+    //                 'Type' => 'calculated',
+    //                 'is_custom' => true,
+    //                 'calculation_expression' => null
+    //             ]);
+    //         }
+
+    //         $activityByLabo = ActivityByLabo::create([
+    //             'ActivityId' => $customActivity->id,
+    //             'laboId' => $laboId,
+    //             'year' => $validated['year'],
+    //             // 'is_calculated' => false
+    //         ]);
+
+    //         $baseValues = [];
+    //         foreach ($validated['items'] as $index => $item) {
+    //             $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
+    //             $baseValues[] = [
+    //                 'activityItemId' => $baseItems[$index]->id,
+    //                 'ActivityByLaboId' => $activityByLabo->id,
+    //                 'value' => $value
+    //             ];
+    //         }
+
+    //         if ($roiItem && isset($roiItemData['value'])) {
+    //             $baseValues[] = [
+    //                 'activityItemId' => $roiItem->id,
+    //                 'ActivityByLaboId' => $activityByLabo->id,
+    //                 'value' => $roiItemData['value']
+    //             ];
+    //         }
+
+    //         ActivityItemValue::insert($baseValues);
+
+    //         return response()->json([
+    //             'message' => 'Activité personnalisée créée avec succès',
+    //             'activityId' => $activityByLabo->id,
+    //             'ROI' => $roiItemData['value'] ?? null,
+    //             'activityName' => $validated['name'],
+    //             'year' => $validated['year']
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Erreur lors de la création de l\'activité personnalisée',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
+    public function insertCustomActivity1(Request $request)
+    {
+        try {
+            $laboId = JWTHelper::getLaboId($request);
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'year' => 'required|integer',
+                'items' => 'required|array|min:1',
+                'items.*.name' => 'required|string',
+                'items.*.value' => 'required|numeric',
+                'items.*.type' => 'required|in:number,percentage',
+                'calculatedItems' => 'required|array|min:1',
+                'calculatedItems.*.name' => 'required|string',
+                'calculatedItems.*.value' => 'required|numeric',
+            ]);
+
+            $activityNameLower = strtolower($validated['name']);
+
+            $existingActivity = ActivitiesList::whereRaw('LOWER(Name) = ?', [$activityNameLower])
+                ->where('is_custom', true)
+                ->first();
+
+            if ($existingActivity) {
+                $existingByLabo = ActivityByLabo::where('ActivityId', $existingActivity->id)
+                    ->where('laboId', $laboId)
+                    ->where('year', $validated['year'])
+                    ->first();
+
+                if ($existingByLabo) {
+                    return response()->json([
+                        'message' => 'Cette activité personnalisée existe déjà pour cette année.'
+                    ], 409);
+                }
+
+                // On insère uniquement le lien avec une nouvelle année
+                $activityByLabo = ActivityByLabo::create([
+                    'ActivityId' => $existingActivity->id,
+                    'laboId' => $laboId,
+                    'year' => $validated['year'],
+                    // 'is_calculated' => false
+                ]);
+
+                $baseItems = ActivityItem::where('ActivityId', $existingActivity->id)->get();
+
+                $baseValues = [];
+                foreach ($validated['items'] as $item) {
+                    $matchingItem = $baseItems->firstWhere('Name', $item['name']);
+                    if ($matchingItem) {
+                        $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
+                        $baseValues[] = [
+                            'activityItemId' => $matchingItem->id,
+                            'ActivityByLaboId' => $activityByLabo->id,
+                            'value' => $value
+                        ];
+                    }
+                }
+
+                // Ajouter ROI si présent
+                $roiItemData = null;
+                if (isset($validated['calculatedItems']) && is_array($validated['calculatedItems'])) {
+                    $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
+                }
+
+                if ($roiItemData) {
+                    $roiItem = $baseItems->firstWhere('Name', 'ROI');
+                    if ($roiItem) {
+                        $baseValues[] = [
+                            'activityItemId' => $roiItem->id,
+                            'ActivityByLaboId' => $activityByLabo->id,
+                            'value' => $roiItemData['value']
+                        ];
+                    }
+                }
+
+                ActivityItemValue::insert($baseValues);
+
+                return response()->json([
+                    'message' => 'Activité existante, mais ajoutée pour une nouvelle année.',
+                    'activityId' => $activityByLabo->id,
+                    'activityName' => $validated['name'],
+                    'year' => $validated['year']
+                ], 201);
+            }
+
+            // Sinon, créer une nouvelle activité complète
+            $customActivity = ActivitiesList::create([
+                'Name' => $validated['name'],
+                'is_custom' => true,
+                'created_by' => $laboId
+            ]);
+
+            $baseItems = [];
+            foreach ($validated['items'] as $item) {
+                $baseItems[] = ActivityItem::create([
+                    'ActivityId' => $customActivity->id,
+                    'Name' => $item['name'],
+                    'Type' => $item['type'],
+                    'is_custom' => true
+                ]);
+            }
+
+            $roiItemData = null;
+            if (isset($validated['calculatedItems']) && is_array($validated['calculatedItems'])) {
+                $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
+            }
+
+            $roiItem = null;
+            if ($roiItemData) {
+                $roiItem = ActivityItem::create([
+                    'ActivityId' => $customActivity->id,
+                    'Name' => 'ROI',
+                    'Type' => 'calculated',
+                    'is_custom' => true,
+                    'calculation_expression' => null
+                ]);
+            }
+
+            $activityByLabo = ActivityByLabo::create([
+                'ActivityId' => $customActivity->id,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+
+            ]);
+
+            $baseValues = [];
+            foreach ($validated['items'] as $index => $item) {
+                $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
+                $baseValues[] = [
+                    'activityItemId' => $baseItems[$index]->id,
+                    'ActivityByLaboId' => $activityByLabo->id,
+                    'value' => $value
+                ];
+            }
+
+            if ($roiItem && isset($roiItemData['value'])) {
+                $baseValues[] = [
+                    'activityItemId' => $roiItem->id,
+                    'ActivityByLaboId' => $activityByLabo->id,
+                    'value' => $roiItemData['value']
+                ];
+            }
+
+            ActivityItemValue::insert($baseValues);
+
+            return response()->json([
+                'message' => 'Activité personnalisée créée avec succès',
+                'activityId' => $activityByLabo->id,
+                'ROI' => $roiItemData['value'] ?? null,
+                'activityName' => $validated['name'],
+                'year' => $validated['year']
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'activité personnalisée',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

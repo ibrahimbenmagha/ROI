@@ -168,9 +168,7 @@
 
     
     const handleSubmit = async (e) => {
-      
       e.preventDefault();
-  
       if (!items || items.length < 10) {
         return message.error(
           "Les données nécessaires ne sont pas encore disponibles."
@@ -254,7 +252,7 @@
                   <Card>
                     <Statistic
                       title="Valeur Totale"
-                      value={calculationResult.L}
+                      value={calculationResult.incrementalRevenue}
                       precision={2}
                       suffix=" MAD"
                     />
@@ -262,24 +260,60 @@
                   <Card>
                     <Statistic
                       title="Coût Total"
-                      value={calculationResult.O}
+                      value={calculationResult.totalCost}
                       precision={2}
                       suffix=" MAD"
                     />
                   </Card>
+
+                  <Card>
+                    <Statistic
+                      title="Nombre total d’échantillons distribués"
+                      value={calculationResult.totalSamples}
+                      precision={0}
+                      suffix=" Echantillons"
+                    />
+                  </Card>
+
+                  <Card>
+                    <Statistic
+                      title="Nombre total de patients ayant reçu un échantillon"
+                      value={calculationResult.totalPatientsWithSample}
+                      precision={0}
+                      suffix="Patient"
+                    />
+                  </Card>
+
+                  <Card>
+                    <Statistic
+                      title="Nombre total de patients obtenant une prescription"
+                      value={calculationResult.totalPatientsWithPrescription}
+                      precision={0}
+                      suffix=" Patient"
+                    />
+                  </Card>
+
+                  <Card>
+                    <Statistic
+                      title="Nombre total de patients incrémentaux gagnés grâce aux échantillons"
+                      value={calculationResult.totalIncrementalPatients}
+                      precision={0}
+                      suffix=" Patient"
+                    />
+                  </Card>
+
+                  <Card>
+                    <Statistic
+                      title="Coût total des échantillons distribués"
+                      value={calculationResult.totalSamplesCost}
+                      precision={2}
+                      suffix="Mad"
+                    />
+                  </Card>
+
                 </div>
   
-                <Card className="mt-4">
-                  <Statistic
-                    title="Patients Incrémentaux"
-                    value={calculationResult.J}
-                    precision={0}
-                  />
-                  <Text type="secondary">
-                    Nombre estimé de patients additionnels ayant reçu une
-                    prescription grâce au programme.
-                  </Text>
-                </Card>
+
   
                 {calculationResult.ROI < 0 && (
                   <Alert

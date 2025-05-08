@@ -6,6 +6,7 @@ import {
   Statistic,
   Alert,
   Layout,
+  DatePicker,
   message,
 } from "antd";
 import {
@@ -193,73 +194,72 @@ const CalculateAct2 = () => {
     <Layout className="min-h-screen">
       <TheHeader />
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
-  <div style={{ maxWidth: 800, margin: "0 auto" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {calculationResult && (
+            <div className="mt-8">
+              <Divider>Résultats</Divider>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                  <Statistic
+                    title="ROI"
+                    value={calculationResult.roi}
+                    precision={2}
+                    suffix="%"
+                    valueStyle={{
+                      color: calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
+                    }}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Ventes Incrémentales"
+                    value={calculationResult.incrementalSales}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Coût Total"
+                    value={calculationResult.totalCost}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+              </div>
 
-    {calculationResult && (
-      <div className="mt-8">
-        <Divider>Résultats</Divider>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
-            <Statistic
-              title="ROI"
-              value={calculationResult.roi}
-              precision={2}
-              suffix="%"
-              valueStyle={{
-                color: calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
-              }}
-            />
-          </Card>
-          <Card>
-            <Statistic
-              title="Ventes Incrémentales"
-              value={calculationResult.incrementalSales}
-              precision={2}
-              suffix=" MAD"
-            />
-          </Card>
-          <Card>
-            <Statistic
-              title="Coût Total"
-              value={calculationResult.totalCost}
-              precision={2}
-              suffix=" MAD"
-            />
-          </Card>
-        </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                <Card>
+                  <Statistic
+                    title="Patients Inscrits"
+                    value={calculationResult.totalPatients}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Patients Poursuivant"
+                    value={calculationResult.continuingPatients}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Patients Incrémentaux"
+                    value={calculationResult.incrementalPatients}
+                  />
+                </Card>
+              </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-          <Card>
-            <Statistic
-              title="Patients Inscrits"
-              value={calculationResult.totalPatients}
-            />
-          </Card>
-          <Card>
-            <Statistic
-              title="Patients Poursuivant"
-              value={calculationResult.continuingPatients}
-            />
-          </Card>
-          <Card>
-            <Statistic
-              title="Patients Incrémentaux"
-              value={calculationResult.incrementalPatients}
-            />
-          </Card>
-        </div>
-
-        {calculationResult.roi < 0 && (
-          <Alert
-            style={{ marginTop: "16px" }}
-            message="ROI Négatif"
-            description="Le programme génère actuellement un retour négatif."
-            type="warning"
-            showIcon
-          />
-        )}
-      </div>
-    )}
+              {calculationResult.roi < 0 && (
+                <Alert
+                  style={{ marginTop: "16px" }}
+                  message="ROI Négatif"
+                  description="Le programme génère actuellement un retour négatif."
+                  type="warning"
+                  showIcon
+                />
+              )}
+            </div>
+          )}
           <form type="submit" onSubmit={handleSubmit}>
             <Card>
               <Title level={4} style={{ textAlign: "center" }}>
@@ -351,12 +351,11 @@ const CalculateAct2 = () => {
 
                 <div>
                   <label>Année</label>
-                  <Input
-                    type="number"
-                    min="2000"
-                    max="2099"
-                    value={year || ""}
-                    onChange={(e) => setYear(e.target.value)}
+                  <DatePicker
+                    picker="year"
+                    onChange={(date, dateString) => setYear(dateString)}
+                    value={year ? dayjs(year, "YYYY") : null}
+                    style={{ width: "100%" }}
                   />
                 </div>
               </div>
@@ -395,73 +394,6 @@ const CalculateAct2 = () => {
                   </Link>
                 </div>
               </div>
-
-              {calculationResult && (
-                <div className="mt-8">
-                  <Divider>Résultats</Divider>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Card>
-                      <Statistic
-                        title="ROI"
-                        value={calculationResult.roi}
-                        precision={2}
-                        suffix="%"
-                        valueStyle={{
-                          color:
-                            calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
-                        }}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Ventes Incrémentales"
-                        value={calculationResult.incrementalSales}
-                        precision={2}
-                        suffix=" MAD"
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Coût Total"
-                        value={calculationResult.totalCost}
-                        precision={2}
-                        suffix=" MAD"
-                      />
-                    </Card>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                    <Card>
-                      <Statistic
-                        title="Patients Inscrits"
-                        value={calculationResult.totalPatients}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Patients Poursuivant"
-                        value={calculationResult.continuingPatients}
-                      />
-                    </Card>
-                    <Card>
-                      <Statistic
-                        title="Patients Incrémentaux"
-                        value={calculationResult.incrementalPatients}
-                      />
-                    </Card>
-                  </div>
-
-                  {calculationResult.roi < 0 && (
-                    <Alert
-                      style={{ marginTop: "16px" }}
-                      message="ROI Négatif"
-                      description="Le programme génère actuellement un retour négatif."
-                      type="warning"
-                      showIcon
-                    />
-                  )}
-                </div>
-              )}
             </Card>
           </form>
         </div>

@@ -8,21 +8,8 @@ use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\activityitems;
 
 use App\Http\Controllers\Activity1_12;
-use App\Http\Controllers\Activity3;
-use App\Http\Controllers\Activity4;
-use App\Http\Controllers\Activity5;
-use App\Http\Controllers\Activity6;
-use App\Http\Controllers\Activity7;
-use App\Http\Controllers\Activity8;
-use App\Http\Controllers\Activity9;
-use App\Http\Controllers\Activity10;
-use App\Http\Controllers\Activity11;
-use App\Http\Controllers\Activity12;
-
-Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
 
 
-// Routes publiques (pas besoin d'authentification)
 Route::prefix('auth')->group(function () {
     Route::post('loginadmin', [AuthController::class, 'loginadmin']);
     Route::post('login', [AuthController::class, 'login']);
@@ -58,7 +45,6 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
-    Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
 
     Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
     Route::post("insetrIntoTable1", [Activity1_12::class, "insetrIntoTable1"]);
@@ -109,6 +95,9 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("updateActivity12Values", [Activity1_12::class, "updateActivity12Values"]);
 
     Route::post("insertCustomActivity", [Activity1_12::class, "insertCustomActivity"]);
+    Route::post("insertCustomActivity1", [Activity1_12::class, "insertCustomActivity1"]);
+
+
 
 
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
@@ -120,8 +109,11 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getAllActivityNotCustum', [ActivitiesController::class, 'getAllActivityNotCustum']);
     Route::get('getActivityById/{id}', [ActivitiesController::class, 'getActivityById']);
     Route::get('getActivityByName/{Name}', [ActivitiesController::class, 'getActivityByName']);
-    // Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
+    Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
+    Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+
 });
+
