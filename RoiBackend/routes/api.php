@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LaboController;
 use App\Http\Controllers\ActivitiesController;
 use App\Http\Controllers\activityitems;
+use App\Http\Controllers\InterpretationController;
 
 use App\Http\Controllers\Activity1_12;
 
@@ -29,7 +30,7 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('GetLaboInfoByLabName/{Name}', [LaboController::class, 'GetLaboInfoByLabName']);
     Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);
     Route::delete('deleteLaboWithData', [LaboController::class, 'deleteLaboWithData']);
-    
+
     Route::post('createActivity', [ActivitiesController::class, 'createActivity']);
     Route::get('getAllActivity', [ActivitiesController::class, 'getAllActivity']);
     Route::get('getAllActivitiesByLaboInfos', [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);
@@ -95,15 +96,16 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("updateActivity12Values", [Activity1_12::class, "updateActivity12Values"]);
 
     Route::post("insertCustomActivity", [Activity1_12::class, "insertCustomActivity"]);
+    
     Route::post("insertCustomActivity1", [Activity1_12::class, "insertCustomActivity1"]);
 
-
+    Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 
 
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
-    Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);   
-});               
+    Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
+});
 
 Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getAllActivityNotCustum', [ActivitiesController::class, 'getAllActivityNotCustum']);
@@ -114,6 +116,7 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
     Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
-
 });
 
+
+    Route::get('getLaboWithActivities', [ActivitiesController::class, 'getLaboWithActivities']);

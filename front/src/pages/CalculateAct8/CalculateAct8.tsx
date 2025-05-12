@@ -42,6 +42,7 @@ const CalculateAct8 = () => {
   // États de l'application
   const [activityNumber, setActivityNumber] = useState(null);
   const [calculationResult, setCalculationResult] = useState(null);
+  const [interpretation, setInterpretation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
   const [items, setItems] = useState([]);
@@ -77,6 +78,7 @@ const CalculateAct8 = () => {
     setR(0);
     setYear(null);
     setCalculationResult(null);
+    setInterpretation(null);
     setCalculated(false);
   };
 
@@ -101,6 +103,32 @@ const CalculateAct8 = () => {
     validateNumeric(R, 0) &&
     !!year;
 
+  const generateInterpretation = async (result) => {
+    try {
+      // Combine result and input fields into a single payload
+      const payload = {
+        ...result, // roi, incrementalSales, totalPatients, etc.
+        inputs: {
+          totalPopulation: A,
+          incidenceRate: B,
+          percentSatisfiedPatients: D,
+          percentTargetedPatients: F,
+          uniqueVisits: H,
+          percentInterestedVisitors: J,
+          percentConsultingVisitors: L,
+          percentPrescribedPatients: N,
+          valuePerPatient: P,
+          campaignCost: R,
+        },
+      };
+      const response = await axiosInstance.post("/generate-interpretation", payload);
+      return response.data.interpretation;
+    } catch (error) {
+      console.error("Erreur lors de la génération de l'interprétation :", error);
+      return null;
+    }
+  };
+
   const calculateRoi = async () => {
     if (!validateNumeric(A, 0)) return message.error("Population totale invalide");
     if (!validateNumeric(B, 0, 100)) return message.error("Taux d'incidence invalide");
@@ -112,22 +140,23 @@ const CalculateAct8 = () => {
     if (!validateNumeric(N, 0, 100)) return message.error("% Prescriptions invalide");
     if (!validateNumeric(P, 0)) return message.error("Valeur patient invalide");
     if (!validateNumeric(R, 0)) return message.error("Coût campagne invalide");
+    if (!year) return message.error("Veuillez sélectionner une année");
 
     setLoading(true);
 
     try {
       // Calculs intermédiaires
       const C = A * (B / 100); // Patients souffrant
-      const E = C * (1 - (D / 100)); // Patients non traités/insatisfaits
+      const E = C * (1 - D / 100); // Patients non traités/insatisfaits
       const G = E * (F / 100); // Patients ciblés
-      const I = H / G; // Taux efficacité
+      const I = G > 0 ? (H / G) * 100 : 0; // Taux efficacité (en %)
       const K = H * (J / 100); // Visiteurs intéressés
       const M = K * (L / 100); // Visiteurs consultant
       const O = M * (N / 100); // Patients prescrits
       const Q = O * P; // Ventes incrémentales
       const ROI = R > 0 ? (Q / R) * 100 : 0; // ROI en %
 
-      setCalculationResult({
+      const result = {
         roi: ROI,
         incrementalSales: Q,
         totalPatients: C,
@@ -138,8 +167,17 @@ const CalculateAct8 = () => {
         consultedVisitors: M,
         prescribedPatients: O,
         totalCost: R,
-      });
+      };
+
+      setCalculationResult(result);
       setCalculated(true);
+
+      const interpretationText = await generateInterpretation(result);
+      if (interpretationText) {
+        setInterpretation(interpretationText);
+      } else {
+        message.error("L'interprétation n'est pas disponible pour le moment.");
+      }
     } catch (error) {
       message.error("Erreur lors du calcul du ROI");
       console.error(error);
@@ -171,7 +209,6 @@ const CalculateAct8 = () => {
       N: parseFloat(N),
       P: parseFloat(P),
       R: parseFloat(R),
-
       id_A: items[0]?.id,
       id_B: items[1]?.id,
       id_D: items[2]?.id,
@@ -219,7 +256,7 @@ const CalculateAct8 = () => {
                     precision={2}
                     suffix="%"
                     valueStyle={{
-                      color: calculationResult.roi >= 0 ? "#3f8600" : "#cf1322",
+                      color: calculationResult.roi >= 100 ? "#3f8600" : "#cf1322",
                     }}
                   />
                 </Card>
@@ -228,7 +265,7 @@ const CalculateAct8 = () => {
                     title="Ventes Incrémentales"
                     value={calculationResult.incrementalSales}
                     precision={2}
-                    suffix="MAD"
+                    suffix=" MAD"
                   />
                 </Card>
                 <Card>
@@ -236,7 +273,7 @@ const CalculateAct8 = () => {
                     title="Coût Total"
                     value={calculationResult.totalCost}
                     precision={2}
-                    suffix="MAD"
+                    suffix=" MAD"
                   />
                 </Card>
               </div>
@@ -263,26 +300,66 @@ const CalculateAct8 = () => {
                     precision={0}
                   />
                 </Card>
+                <Card>
+                  <Statistic
+                    title="Patients Non Traités"
+                    value={calculationResult.untreatedPatients}
+                    precision={0}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Patients Ciblés"
+                    value={calculationResult.targetedPatients}
+                    precision={0}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Visiteurs Consultants"
+                    value={calculationResult.consultedVisitors}
+                    precision={0}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Efficacité Campagne"
+                    value={calculationResult.efficacyRate}
+                    precision={2}
+                    suffix="%"
+                  />
+                  <Text type="secondary">
+                    Pourcentage de visites par rapport aux patients ciblés
+                  </Text>
+                </Card>
               </div>
 
-              <Card className="mt-4">
-                <Statistic
-                  title="Efficacité Campagne"
-                  value={calculationResult.efficacyRate}
-                  precision={2}
-                />
-                <Text type="secondary">
-                  Ratio visites/patients ciblés
-                </Text>
-              </Card>
-
-              {calculationResult.roi < 0 && (
+              {calculationResult.roi < 100 && (
                 <Alert
-                  message="ROI Négatif"
-                  description="Ajustez les paramètres pour améliorer le ROI"
+                  style={{ marginTop: "16px" }}
+                  message="ROI Négatif ou Faible"
+                  description="Le programme génère un retour insuffisant. Consultez les conseils ci-dessous pour améliorer vos résultats."
                   type="warning"
                   showIcon
                 />
+              )}
+              {calculationResult.roi >= 100 && (
+                <Alert
+                  style={{ marginTop: "16px" }}
+                  message="ROI Positif"
+                  description="Le programme génère un retour positif. Continuez à optimiser pour maximiser les résultats."
+                  type="success"
+                  showIcon
+                />
+              )}
+
+              {interpretation && (
+                <div className="mt-6">
+                  <Divider>Interprétation et Conseils</Divider>
+                  <Card>
+                    <Text>{interpretation}</Text>
+                  </Card>
+                </div>
               )}
             </div>
           )}
@@ -304,7 +381,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setA(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>Taux d'incidence % (B)</label>
                   <Input
@@ -315,7 +391,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setB(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>% Patients satisfaits (D)</label>
                   <Input
@@ -326,7 +401,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setD(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>% Patients visés (F)</label>
                   <Input
@@ -337,7 +411,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setF(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>Visites uniques (H)</label>
                   <Input
@@ -347,7 +420,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setH(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>% Visiteurs intéressés (J)</label>
                   <Input
@@ -358,7 +430,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setJ(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>% Visiteurs consultant (L)</label>
                   <Input
@@ -369,7 +440,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setL(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>% Prescriptions (N)</label>
                   <Input
@@ -380,9 +450,8 @@ const CalculateAct8 = () => {
                     onChange={(e) => setN(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
-                  <label>Valeur patient (MAD) (P)</label>
+                  <label>Valeur patient MAD (P)</label>
                   <Input
                     type="number"
                     min="0"
@@ -390,9 +459,8 @@ const CalculateAct8 = () => {
                     onChange={(e) => setP(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
-                  <label>Coût campagne (MAD) (R)</label>
+                  <label>Coût campagne MAD (R)</label>
                   <Input
                     type="number"
                     min="0"
@@ -400,7 +468,6 @@ const CalculateAct8 = () => {
                     onChange={(e) => setR(Number(e.target.value))}
                   />
                 </div>
-
                 <div>
                   <label>Année</label>
                   <DatePicker
@@ -421,23 +488,29 @@ const CalculateAct8 = () => {
                   disabled={loading}
                   style={{ backgroundColor: "#1890ff" }}
                 >
-                  {loading ? <Spin size="small" /> : <><CalculatorOutlined /> Calculer ROI</>}
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <CalculatorOutlined className="mr-2" /> Calculer ROI
+                    </>
+                  )}
                 </Button>
-
                 <Button
                   type="submit"
                   disabled={loading || !calculated || !isFormValid()}
                   style={{ backgroundColor: "#1890ff" }}
                 >
-                  <CheckCircleOutlined /> Enregistrer
+                  <CheckCircleOutlined className="mr-2" /> Enregistrer
                 </Button>
-
                 <div className="flex gap-4">
-                  <Button variant="outline" onClick={handleReset}>
-                    <ReloadOutlined /> Réinitialiser
+                  <Button variant="outline" onClick={handleReset} type="button">
+                    <ReloadOutlined className="mr-2" /> Réinitialiser
                   </Button>
                   <Link to="/CreateActivity">
-                    <Button variant="secondary">Retour</Button>
+                    <Button variant="secondary" type="button">
+                      Retour
+                    </Button>
                   </Link>
                 </div>
               </div>
@@ -448,5 +521,4 @@ const CalculateAct8 = () => {
     </Layout>
   );
 };
-
 export default CalculateAct8;

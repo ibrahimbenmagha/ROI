@@ -29,6 +29,8 @@ import CalculateAct9 from "./pages/CalculateAct9/CalculateAct9";
 import CalculateAct10 from "./pages/CalculateAct10/CalculateAct10";
 import CalculateAct11 from "./pages/CalculateAct11/CalculateAct11";
 import CalculateAct12 from "./pages/CalculateAct12/CalculateAct12";
+import CustomActivityPage from "./pages/CalcutaleCustumAct/CalcutaleCustumAct";
+
 import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
 
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
@@ -39,7 +41,6 @@ import {
   ActRoute,
   CalcRoute,
 } from "./components/AuthRoute";
-import CustomActivityPage from "./pages/CalcutaleCustumAct/CalcutaleCustumAct";
 
 const queryClient = new QueryClient();
 

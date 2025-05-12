@@ -24,7 +24,7 @@ import TheHeader from "../Header/Header";
 import axiosInstance, { deleteCookie } from "../../axiosConfig";
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const CalculateAct9 = () => {
   const [numDoctors, setNumDoctors] = useState(0);
@@ -39,6 +39,7 @@ const CalculateAct9 = () => {
   const [activityNumber, setActivityNumber] = useState(null);
 
   const [calculationResult, setCalculationResult] = useState(null);
+  const [interpretation, setInterpretation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [calculated, setCalculated] = useState(false);
   const [items, setItems] = useState([]);
@@ -51,18 +52,14 @@ const CalculateAct9 = () => {
     setActivityNumber(foundActivityNumber);
     document.cookie = `activityNumber=${foundActivityNumber}; path=/; max-age=3600;`;
 
-    if (!sessionStorage.getItem("reloaded")) {
-      sessionStorage.setItem("reloaded", "true");
-      window.location.reload();
-    } else {
-      sessionStorage.removeItem("reloaded");
-    }
-
     axiosInstance
       .get("getActivityItemsByActivityId/9")
       .then((response) => setItems(response.data))
-      .catch((error) => console.error("Erreur items:", error));
-  }, []);
+      .catch((error) => {
+        console.error("Erreur items:", error);
+        message.error("Impossible de charger les données de l'activité.");
+      });
+  }, [location.pathname]);
 
   const validateNumeric = (value, min, max = null) => {
     const num = Number(value);
@@ -72,41 +69,101 @@ const CalculateAct9 = () => {
     return true;
   };
 
-  const calculateRoi = () => {
-    if (!validateNumeric(numDoctors, 0)) return alert("Nombre de médecins invalide");
-    if (!validateNumeric(numInsertions, 0)) return alert("Nombre d'insertions invalide");
-    if (!validateNumeric(percentRemember, 0, 100)) return alert("Pourcentage de rappel invalide");
-    if (!validateNumeric(percentPrescribing, 0, 100)) return alert("Pourcentage de prescription invalide");
-    if (!validateNumeric(patientsPerPrescriber, 0)) return alert("Patients par prescripteur invalide");
-    if (!validateNumeric(revenuePerPatient, 0)) return alert("Revenu par patient invalide");
-    if (!validateNumeric(mediaCosts, 0)) return alert("Coûts média invalides");
-    if (!validateNumeric(managementCosts, 0)) return alert("Coûts de gestion invalides");
+  const isFormValid = () =>
+    validateNumeric(numDoctors, 0) &&
+    validateNumeric(numInsertions, 0) &&
+    validateNumeric(percentRemember, 0, 100) &&
+    validateNumeric(percentPrescribing, 0, 100) &&
+    validateNumeric(patientsPerPrescriber, 0) &&
+    validateNumeric(revenuePerPatient, 0) &&
+    validateNumeric(mediaCosts, 0) &&
+    validateNumeric(managementCosts, 0) &&
+    !!year;
 
-    const C = percentRemember / 100;
-    const E = percentPrescribing / 100;
+  const generateInterpretation = async (result) => {
+    try {
+      const payload = {
+        ...result, // roi, doctorsRemembering, doctorsPrescribing, etc.
+        inputs: {
+          numDoctorsReading: numDoctors,
+          numInsertions: numInsertions,
+          percentRemember: percentRemember,
+          percentPrescribing: percentPrescribing,
+          patientsPerPrescriber: patientsPerPrescriber,
+          revenuePerPatient: revenuePerPatient,
+          mediaCosts: mediaCosts,
+          managementCosts: managementCosts,
+        },
+      };
+      const response = await axiosInstance.post("/generate-interpretation", payload);
+      return response.data.interpretation;
+    } catch (error) {
+      console.error("Erreur lors de la génération de l'interprétation :", error);
+      return null;
+    }
+  };
 
-    const A = numDoctors;
-    const G = patientsPerPrescriber;
-    const I = revenuePerPatient;
-    const K = mediaCosts;
-    const L = managementCosts;
+  const calculateRoi = async () => {
+    if (!validateNumeric(numDoctors, 0))
+      return message.error("Nombre de médecins invalide");
+    if (!validateNumeric(numInsertions, 0))
+      return message.error("Nombre d'insertions invalide");
+    if (!validateNumeric(percentRemember, 0, 100))
+      return message.error("Pourcentage de rappel invalide");
+    if (!validateNumeric(percentPrescribing, 0, 100))
+      return message.error("Pourcentage de prescription invalide");
+    if (!validateNumeric(patientsPerPrescriber, 0))
+      return message.error("Patients par prescripteur invalide");
+    if (!validateNumeric(revenuePerPatient, 0))
+      return message.error("Revenu par patient invalide");
+    if (!validateNumeric(mediaCosts, 0))
+      return message.error("Coûts média invalides");
+    if (!validateNumeric(managementCosts, 0))
+      return message.error("Coûts de gestion invalides");
+    if (!year) return message.error("Veuillez sélectionner une année");
 
-    const D = A * C;
-    const F = D * E;
-    const H = F * G;
-    const J = H * I;
-    const M = K + L;
-    const ROI = M > 0 ? (J / M) * 100 : 0;
+    setLoading(true);
+    try {
+      const C = percentRemember / 100;
+      const E = percentPrescribing / 100;
 
-    setCalculationResult({
-      roi: ROI,
-      doctorsRemembering: D,
-      doctorsPrescribing: F,
-      incrementalPatients: H,
-      incrementalSales: J,
-      totalCost: M,
-    });
-    setCalculated(true);
+      const A = numDoctors;
+      const G = patientsPerPrescriber;
+      const I = revenuePerPatient;
+      const K = mediaCosts;
+      const L = managementCosts;
+
+      const D = A * C; // Médecins se souvenant
+      const F = D * E; // Médecins prescripteurs
+      const H = F * G; // Patients incrémentaux
+      const J = H * I; // Ventes incrémentales
+      const M = K + L; // Coût total
+      const ROI = M > 0 ? (J / M) * 100 : 0; // ROI en %
+
+      const result = {
+        roi: ROI,
+        doctorsRemembering: D,
+        doctorsPrescribing: F,
+        incrementalPatients: H,
+        incrementalSales: J,
+        totalCost: M,
+      };
+
+      setCalculationResult(result);
+      setCalculated(true);
+
+      const interpretationText = await generateInterpretation(result);
+      if (interpretationText) {
+        setInterpretation(interpretationText);
+      } else {
+        message.error("L'interprétation n'est pas disponible pour le moment.");
+      }
+    } catch (error) {
+      console.error("Erreur lors du calcul du ROI :", error);
+      message.error("Erreur lors du calcul du ROI.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -120,14 +177,24 @@ const CalculateAct9 = () => {
     setManagementCosts(0);
     setYear(null);
     setCalculationResult(null);
+    setInterpretation(null);
     setCalculated(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (items.length < 9) return alert("Données incomplètes");
-    if (!year) return alert("Veuillez sélectionner une année");
-    if (!activityNumber) return alert("Aucune activité détectée");
+    if (items.length < 9) {
+      message.error("Données incomplètes");
+      return;
+    }
+    if (!year) {
+      message.error("Veuillez sélectionner une année");
+      return;
+    }
+    if (!activityNumber) {
+      message.error("Aucune activité détectée");
+      return;
+    }
 
     const formData = {
       year,
@@ -163,7 +230,9 @@ const CalculateAct9 = () => {
       }
     } catch (error) {
       console.error("Erreur :", error);
-      message.error(error.response?.data?.message || "Erreur serveur.");
+      message.error(
+        error.response?.data?.message || "Erreur de communication avec le serveur."
+      );
     }
   };
 
@@ -172,76 +241,171 @@ const CalculateAct9 = () => {
       <TheHeader />
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        {calculationResult && (
-                <div className="mt-8">
-                  <Divider>Résultats</Divider>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Card><Statistic title="ROI" value={calculationResult.roi} precision={2} suffix="%" /></Card>
-                    <Card><Statistic title="Ventes Incrémentales" value={calculationResult.incrementalSales} precision={2} suffix=" MAD" /></Card>
-                    <Card><Statistic title="Coût Total" value={calculationResult.totalCost} precision={2} suffix=" MAD" /></Card>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                    <Card><Statistic title="Médecins se Souvenant" value={calculationResult.doctorsRemembering} precision={0} /></Card>
-                    <Card><Statistic title="Médecins Prescripteurs" value={calculationResult.doctorsPrescribing} precision={0} /></Card>
-                    <Card><Statistic title="Patients Incrémentaux" value={calculationResult.incrementalPatients} precision={0} /></Card>
-                  </div>
-                  {calculationResult.roi < 0 && (
-                    <Alert
-                      style={{ marginTop: "16px" }}
-                      message="ROI Négatif"
-                      description="Le programme génère actuellement un retour négatif. Ajustez les paramètres."
-                      type="warning"
-                      showIcon
-                    />
-                  )}
+          {calculationResult && (
+            <div className="mt-8">
+              <Divider>Résultats</Divider>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card>
+                  <Statistic
+                    title="ROI"
+                    value={calculationResult.roi}
+                    precision={2}
+                    suffix="%"
+                    valueStyle={{
+                      color: calculationResult.roi >= 100 ? "#3f8600" : "#cf1322",
+                    }}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Ventes Incrémentales"
+                    value={calculationResult.incrementalSales}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Coût Total"
+                    value={calculationResult.totalCost}
+                    precision={2}
+                    suffix=" MAD"
+                  />
+                </Card>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                <Card>
+                  <Statistic
+                    title="Médecins se Souvenant"
+                    value={calculationResult.doctorsRemembering}
+                    precision={0}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Médecins Prescripteurs"
+                    value={calculationResult.doctorsPrescribing}
+                    precision={0}
+                  />
+                </Card>
+                <Card>
+                  <Statistic
+                    title="Patients Incrémentaux"
+                    value={calculationResult.incrementalPatients}
+                    precision={0}
+                  />
+                </Card>
+              </div>
+              {calculationResult.roi < 100 && (
+                <Alert
+                  style={{ marginTop: "16px" }}
+                  message="ROI Négatif ou Faible"
+                  description="Le programme génère un retour insuffisant. Consultez les conseils ci-dessous pour améliorer vos résultats."
+                  type="warning"
+                  showIcon
+                />
+              )}
+              {calculationResult.roi >= 100 && (
+                <Alert
+                  style={{ marginTop: "16px" }}
+                  message="ROI Positif"
+                  description="Le programme génère un retour positif. Continuez à optimiser pour maximiser les résultats."
+                  type="success"
+                  showIcon
+                />
+              )}
+              {interpretation && (
+                <div className="mt-6">
+                  <Divider>Interprétation et Conseils</Divider>
+                  <Card>
+                    <Text>{interpretation}</Text>
+                  </Card>
                 </div>
               )}
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <Card>
-              <Title level={4} style={{ textAlign: "center" }}>Publicité dans les revues</Title>
+              <Title level={4} style={{ textAlign: "center" }}>
+                Publicité dans les revues
+              </Title>
               <Divider />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label>Nombre de médecins lisant les publications (A)</label>
-                  <Input type="number" min="0" value={numDoctors} onChange={(e) => setNumDoctors(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min="0"
+                    value={numDoctors}
+                    onChange={(e) => setNumDoctors(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
                   <label>Nombre d'insertions publicitaires prévues (B)</label>
-                  <Input type="number" min="0" value={numInsertions} onChange={(e) => setNumInsertions(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min="0"
+                    value={numInsertions}
+                    onChange={(e) => setNumInsertions(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
-                  <label>Pourcentage de médecins se souvenant de la marque (C)</label>
-                  <Input type="number" min="0" max="100" value={percentRemember} onChange={(e) => setPercentRemember(Number(e.target.value))} />
+                  <label>Pourcentage de médecins se souvenant de la marque % (C)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentRemember}
+                    onChange={(e) => setPercentRemember(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
-                  <label>Pourcentage de médecins prescrivant après exposition (E)</label>
-                  <Input type="number" min="0" max="100" value={percentPrescribing} onChange={(e) => setPercentPrescribing(Number(e.target.value))} />
+                  <label>Pourcentage de médecins prescrivant après exposition % (E)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={percentPrescribing}
+                    onChange={(e) => setPercentPrescribing(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
                   <label>Nombre moyen de nouveaux patients par prescripteur (G)</label>
-                  <Input type="number" min="0" value={patientsPerPrescriber} onChange={(e) => setPatientsPerPrescriber(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min="0"
+                    value={patientsPerPrescriber}
+                    onChange={(e) => setPatientsPerPrescriber(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
                   <label>Revenu par nouveau patient MAD (I)</label>
-                  <Input type="number" min="0" value={revenuePerPatient} onChange={(e) => setRevenuePerPatient(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min="0"
+                    value={revenuePerPatient}
+                    onChange={(e) => setRevenuePerPatient(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
-                  <label>Coûts d'achat media MAD (K)</label>
-                  <Input type="number" min="0" value={mediaCosts} onChange={(e) => setMediaCosts(Number(e.target.value))} />
+                  <label>Coûts d'achat média MAD (K)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={mediaCosts}
+                    onChange={(e) => setMediaCosts(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
                   <label>Coûts de création et gestion MAD (L)</label>
-                  <Input type="number" min="0" value={managementCosts} onChange={(e) => setManagementCosts(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min="0"
+                    value={managementCosts}
+                    onChange={(e) => setManagementCosts(Number(e.target.value))}
+                  />
                 </div>
-
                 <div>
                   <label>Année</label>
                   <DatePicker
@@ -256,19 +420,36 @@ const CalculateAct9 = () => {
               <Divider />
 
               <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <Button type="button" onClick={calculateRoi} disabled={loading} style={{ backgroundColor: "#1890ff" }}>
-                  {loading ? <Spin size="small" /> : <><CalculatorOutlined /> Calculer ROI</>}
+                <Button
+                  type="button"
+                  onClick={calculateRoi}
+                  disabled={loading}
+                  style={{ backgroundColor: "#1890ff" }}
+                >
+                  {loading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <CalculatorOutlined className="mr-2" /> Calculer ROI
+                    </>
+                  )}
                 </Button>
-
-                <Button type="submit" disabled={!calculated} style={{ backgroundColor: "#1890ff" }}>
-                  <CheckCircleOutlined /> Insérer les données
+                <Button
+                  type="submit"
+                  disabled={loading || !calculated || !isFormValid()}
+                  style={{ backgroundColor: "#1890ff" }}
+                >
+                  <CheckCircleOutlined className="mr-2" /> Insérer les données
                 </Button>
-
                 <div className="flex gap-4">
                   <Button variant="outline" type="button" onClick={handleReset}>
-                    <ReloadOutlined /> Réinitialiser
+                    <ReloadOutlined className="mr-2" /> Réinitialiser
                   </Button>
-                  <Link to="/DisplayActivity"><Button variant="secondary">Retour</Button></Link>
+                  <Link to="/DisplayActivity">
+                    <Button variant="secondary" type="button">
+                      Retour
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </Card>

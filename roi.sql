@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mer. 02 avr. 2025 à 17:46
+-- Généré le : ven. 09 mai 2025 à 12:55
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -63,7 +63,6 @@ CREATE TABLE `activitybylabo` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `laboId` bigint(20) UNSIGNED NOT NULL,
   `ActivityId` bigint(20) UNSIGNED NOT NULL,
-  `is_calculated` tinyint(1) NOT NULL DEFAULT 0,
   `year` year(4) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -73,55 +72,14 @@ CREATE TABLE `activitybylabo` (
 -- Déchargement des données de la table `activitybylabo`
 --
 
-INSERT INTO `activitybylabo` (`id`, `laboId`, `ActivityId`, `is_calculated`, `year`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 0, '2026', NULL, NULL),
-(2, 1, 2, 0, '2026', NULL, NULL),
-(3, 1, 3, 0, '2026', NULL, NULL),
-(4, 1, 4, 0, '2026', NULL, NULL),
-(5, 1, 5, 0, '2026', NULL, NULL),
-(6, 1, 6, 0, '2026', NULL, NULL),
-(7, 1, 7, 0, '2026', NULL, NULL),
-(8, 1, 8, 0, '2026', NULL, NULL),
-(9, 1, 9, 0, '2026', NULL, NULL),
-(10, 1, 10, 0, '2026', NULL, NULL),
-(11, 1, 11, 0, '2026', NULL, NULL),
-(12, 1, 12, 0, '2026', NULL, NULL),
-(13, 2, 1, 0, '2026', NULL, NULL),
-(14, 2, 2, 0, '2026', NULL, NULL),
-(15, 2, 3, 0, '2026', NULL, NULL),
-(16, 2, 4, 0, '2026', NULL, NULL),
-(17, 2, 5, 0, '2026', NULL, NULL),
-(18, 2, 6, 0, '2026', NULL, NULL),
-(19, 2, 7, 0, '2026', NULL, NULL),
-(20, 2, 8, 0, '2026', NULL, NULL),
-(21, 2, 9, 0, '2026', NULL, NULL),
-(22, 2, 10, 0, '2026', NULL, NULL),
-(23, 2, 11, 0, '2026', NULL, NULL),
-(24, 2, 12, 0, '2026', NULL, NULL),
-(25, 1, 1, 0, '2027', NULL, NULL),
-(26, 1, 2, 0, '2027', NULL, NULL),
-(27, 1, 3, 0, '2027', NULL, NULL),
-(28, 1, 4, 0, '2027', NULL, NULL),
-(29, 1, 5, 0, '2027', NULL, NULL),
-(30, 1, 6, 0, '2027', NULL, NULL),
-(31, 1, 7, 0, '2027', NULL, NULL),
-(32, 1, 8, 0, '2027', NULL, NULL),
-(33, 1, 9, 0, '2027', NULL, NULL),
-(34, 1, 10, 0, '2027', NULL, NULL),
-(35, 1, 11, 0, '2027', NULL, NULL),
-(36, 1, 12, 0, '2027', NULL, NULL),
-(37, 2, 1, 0, '2027', NULL, NULL),
-(38, 2, 2, 0, '2027', NULL, NULL),
-(39, 2, 3, 0, '2027', NULL, NULL),
-(40, 2, 4, 0, '2027', NULL, NULL),
-(41, 2, 5, 0, '2027', NULL, NULL),
-(42, 2, 6, 0, '2027', NULL, NULL),
-(43, 2, 7, 0, '2027', NULL, NULL),
-(44, 2, 8, 0, '2027', NULL, NULL),
-(45, 2, 9, 0, '2027', NULL, NULL),
-(46, 2, 10, 0, '2027', NULL, NULL),
-(47, 2, 11, 0, '2027', NULL, NULL),
-(48, 2, 12, 0, '2027', NULL, NULL);
+INSERT INTO `activitybylabo` (`id`, `laboId`, `ActivityId`, `year`, `created_at`, `updated_at`) VALUES
+(1, 2, 2, '2029', '2025-05-08 14:00:54', '2025-05-08 14:00:54'),
+(2, 2, 2, '2029', '2025-05-08 14:02:00', '2025-05-08 14:02:00'),
+(3, 2, 1, '2029', '2025-05-08 14:02:30', '2025-05-08 14:02:30'),
+(4, 2, 2, '2029', '2025-05-08 14:18:40', '2025-05-08 14:18:40'),
+(5, 2, 4, '2029', '2025-05-08 14:18:58', '2025-05-08 14:18:58'),
+(6, 2, 4, '2029', '2025-05-08 14:19:16', '2025-05-08 14:19:16'),
+(7, 2, 4, '2029', '2025-05-08 14:19:41', '2025-05-08 14:19:41');
 
 -- --------------------------------------------------------
 
@@ -151,7 +109,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (7, 'Valeur moyenne d’un patient incrémental en MAD', 1, NULL, NULL),
 (8, 'Coût unitaire d’un échantillon', 1, NULL, NULL),
 (9, 'Coûts fixes du programme', 1, NULL, NULL),
-(10, 'Roi de de l\'activite 1', 1, NULL, NULL),
+(10, 'Roi', 1, NULL, NULL),
 (11, 'Nombre de médecins participant à l\'étude', 2, NULL, NULL),
 (12, 'Nombre moyen de patients inscrits par médecin', 2, NULL, NULL),
 (13, 'Pourcentage moyen de patients qui continuent le traitement après l\'étude', 2, NULL, NULL),
@@ -159,7 +117,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (15, 'Valeur du revenu par patient incrémental', 2, NULL, NULL),
 (16, 'Coût variable par médecin', 2, NULL, NULL),
 (17, 'Coût fixe total de l’étude', 2, NULL, NULL),
-(18, 'Roi de de l\'activite 2', 2, NULL, NULL),
+(18, 'Roi', 2, NULL, NULL),
 (19, 'Nombre total de médecins ciblés par l’email', 3, NULL, NULL),
 (20, 'Pourcentage de médecins se rappelant avoir reçu l’email', 3, NULL, NULL),
 (21, 'Pourcentage de médecins se rappelant de la marque et du message', 3, NULL, NULL),
@@ -169,7 +127,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (25, 'Coût variable par email envoyé', 3, NULL, NULL),
 (26, 'Nombre moyen d’emails envoyés par médecin', 3, NULL, NULL),
 (27, 'Coût fixe total du programme', 3, NULL, NULL),
-(28, 'Roi de de l\'activite 3', 3, NULL, NULL),
+(28, 'Roi', 3, NULL, NULL),
 (29, 'Nombre de médecins participants à la conférence', 4, NULL, NULL),
 (30, 'Pourcentage de médecins ayant retenu le message', 4, NULL, NULL),
 (31, 'Pourcentage de médecins ayant changé positivement leur perception après la conférence', 4, NULL, NULL),
@@ -179,7 +137,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (35, 'Valeur de revenu générée par patient incrémental', 4, NULL, NULL),
 (36, 'Coût variable par médecin', 4, NULL, NULL),
 (37, 'Coût fixe du programme', 4, NULL, NULL),
-(38, 'Roi de de l\'activite 4', 4, NULL, NULL),
+(38, 'Roi', 4, NULL, NULL),
 (39, 'Nombre total de médecins participant', 5, NULL, NULL),
 (40, 'Nombre moyen de tables rondes assistées par médecin par an', 5, NULL, NULL),
 (41, 'Nombre moyen de médecins par table ronde', 5, NULL, NULL),
@@ -189,7 +147,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (45, 'Valeur du revenu par patient incrémental', 5, NULL, NULL),
 (46, 'Coût variable par table ronde', 5, NULL, NULL),
 (47, 'Coût fixe total du programme', 5, NULL, NULL),
-(48, 'Roi de de l\'activite 5', 5, NULL, NULL),
+(48, 'Roi', 5, NULL, NULL),
 (49, 'Nombre total de médecins ciblés par le représentant', 6, NULL, NULL),
 (50, 'Nombre moyen de visites (détails) par médecin', 6, NULL, NULL),
 (51, '% de médecins se rappelant du message délivré lors de la visite', 6, NULL, NULL),
@@ -198,7 +156,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (54, 'Valeur du revenu par patient incrémental', 6, NULL, NULL),
 (55, 'Coût variable par représentant', 6, NULL, NULL),
 (56, 'Nombre total de représentants', 6, NULL, NULL),
-(57, 'Roi de de l\'activite 6', 6, NULL, NULL),
+(57, 'Roi', 6, NULL, NULL),
 (58, 'Nombre de consommateurs cibles pour la campagne', 7, NULL, NULL),
 (59, '% d’audience cible atteinte par le plan média', 7, NULL, NULL),
 (60, '% de consommateurs atteints se rappelant de la campagne (taux de mémorisation)', 7, NULL, NULL),
@@ -207,7 +165,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (63, 'Valeur du revenu par patient incrémental', 7, NULL, NULL),
 (64, 'Dépenses médias (en MAD k)', 7, NULL, NULL),
 (65, 'Coûts de production, frais d’agence et autres (en MAD k)', 7, NULL, NULL),
-(66, 'Roi de de l\'activite 7', 7, NULL, NULL),
+(66, 'Roi', 7, NULL, NULL),
 (67, 'Population totale', 8, NULL, NULL),
 (68, 'Taux d’incidence de la maladie dans la population', 8, NULL, NULL),
 (69, '% de patients déjà traités et satisfaits', 8, NULL, NULL),
@@ -218,7 +176,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (74, '% des patients ayant reçu une prescription Prexige', 8, NULL, NULL),
 (75, 'Valeur du revenu généré par patient incrémental', 8, NULL, NULL),
 (76, 'Coût total du programme e-campagne', 8, NULL, NULL),
-(77, 'Roi de de l\'activite 8', 8, NULL, NULL),
+(77, 'Roi', 8, NULL, NULL),
 (78, 'Nombre de médecins ayant lu au moins une publication contenant une annonce produit', 9, NULL, NULL),
 (79, 'Nombre total d’insertions prévues sur l’année', 9, NULL, NULL),
 (80, 'Pourcentage des médecins lecteurs capables de se souvenir de la marque et du message après exposition', 9, NULL, NULL),
@@ -227,7 +185,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (83, 'Revenu moyen généré par chaque nouveau patient traité', 9, NULL, NULL),
 (84, 'Coûts d’achat d’espace publicitaire pour la campagne presse', 9, NULL, NULL),
 (85, 'Frais de création et de gestion de la campagne', 9, NULL, NULL),
-(86, 'Roi de de l\'activite 9', 9, NULL, NULL),
+(86, 'Roi', 9, NULL, NULL),
 (87, 'Nombre de médecins exposés à l’activité', 10, NULL, NULL),
 (88, 'Pourcentage des médecins capables de se souvenir de la marque et du message', 10, NULL, NULL),
 (89, 'Pourcentage des médecins ayant amélioré leur perception du produit', 10, NULL, NULL),
@@ -235,14 +193,14 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (91, 'Nombre moyen de nouveaux patients traités par chaque médecin prescripteur', 10, NULL, NULL),
 (92, 'Revenu moyen généré par chaque nouveau patient traité', 10, NULL, NULL),
 (93, 'Coût global de l’organisation et de la mise en oeuvre de l’activité', 10, NULL, NULL),
-(94, 'Roi de de l\'activite 10', 10, NULL, NULL),
+(94, 'Roi', 10, NULL, NULL),
 (95, 'Nombre de consommateurs exposés à l’activité', 11, NULL, NULL),
 (96, 'Pourcentage des consommateurs capables de se souvenir du message', 11, NULL, NULL),
 (97, 'Pourcentage des consommateurs ayant consulté un médecin', 11, NULL, NULL),
 (98, 'Pourcentage des consultations aboutissant à une prescription', 11, NULL, NULL),
 (99, 'Revenu moyen généré par chaque nouveau patient', 11, NULL, NULL),
 (100, 'Coût global de l’organisation et de la mise en oeuvre de l’activité', 11, NULL, NULL),
-(101, 'Roi de de l\'activite 11', 11, NULL, NULL),
+(101, 'Roi', 11, NULL, NULL),
 (102, 'Nombre de médecins susceptibles de prescrire le produit', 12, NULL, NULL),
 (103, 'Pourcentage des médecins utilisant internet pour des informations professionnelles', 12, NULL, NULL),
 (104, 'Nombre total de visites uniques sur le site', 12, NULL, NULL),
@@ -252,7 +210,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `ActivityId`, `created_at`, `updated_
 (108, 'Nombre moyen de nouveaux patients par médecin ayant prescrit le produit', 12, NULL, NULL),
 (109, 'Valeur moyenne de revenu par patient incrémental', 12, NULL, NULL),
 (110, 'Coût total du programme e-digital', 12, NULL, NULL),
-(111, 'Roi de de l\'activite', 12, NULL, NULL);
+(111, 'Roi', 12, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -270,24 +228,74 @@ CREATE TABLE `activityitemvalues` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Déclencheurs `activityitemvalues`
+-- Déchargement des données de la table `activityitemvalues`
 --
-DELIMITER $$
-CREATE TRIGGER `update_activitybylabo` AFTER INSERT ON `activityitemvalues` FOR EACH ROW BEGIN
-                UPDATE activitybylabo
-                SET is_calculated = TRUE
-                WHERE id = NEW.ActivityByLaboId;
-            END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `update_activitybylabo_after_delete` AFTER DELETE ON `activityitemvalues` FOR EACH ROW BEGIN
-                UPDATE activitybylabo
-                SET is_calculated = FALSE
-                WHERE id = OLD.ActivityByLaboId;
-            END
-$$
-DELIMITER ;
+
+INSERT INTO `activityitemvalues` (`id`, `activityItemId`, `ActivityByLaboId`, `value`, `created_at`, `updated_at`) VALUES
+(1, 11, 1, 78, NULL, NULL),
+(2, 12, 1, 87, NULL, NULL),
+(3, 13, 1, 0.78, NULL, NULL),
+(4, 14, 1, 87, NULL, NULL),
+(5, 15, 1, 78, NULL, NULL),
+(6, 16, 1, 87, NULL, NULL),
+(7, 17, 1, 78, NULL, NULL),
+(8, 18, 1, 4768.7073, NULL, NULL),
+(9, 11, 2, 71, NULL, NULL),
+(10, 12, 2, 87, NULL, NULL),
+(11, 13, 2, 0.78, NULL, NULL),
+(12, 14, 2, 87, NULL, NULL),
+(13, 15, 2, 78, NULL, NULL),
+(14, 16, 2, 87, NULL, NULL),
+(15, 17, 2, 78, NULL, NULL),
+(16, 18, 2, 4342.8013, NULL, NULL),
+(17, 1, 3, 78, NULL, NULL),
+(18, 2, 3, 87, NULL, NULL),
+(19, 3, 3, 0.07, NULL, NULL),
+(20, 4, 3, 8, NULL, NULL),
+(21, 5, 3, 0.87, NULL, NULL),
+(22, 6, 3, 0.08, NULL, NULL),
+(23, 7, 3, 87, NULL, NULL),
+(24, 8, 3, 788, NULL, NULL),
+(25, 9, 3, 78, NULL, NULL),
+(26, 10, 3, 0.0008, NULL, NULL),
+(27, 11, 4, 78, NULL, NULL),
+(28, 12, 4, 87, NULL, NULL),
+(29, 13, 4, 0.78, NULL, NULL),
+(30, 14, 4, 87, NULL, NULL),
+(31, 15, 4, 78, NULL, NULL),
+(32, 16, 4, 87, NULL, NULL),
+(33, 17, 4, 87, NULL, NULL),
+(34, 18, 4, 4762.4628, NULL, NULL),
+(35, 29, 5, 67, NULL, NULL),
+(36, 30, 5, 0.76, NULL, NULL),
+(37, 31, 5, 0.67, NULL, NULL),
+(38, 32, 5, 0.07, NULL, NULL),
+(39, 33, 5, 66, NULL, NULL),
+(40, 34, 5, 7, NULL, NULL),
+(41, 35, 5, 76, NULL, NULL),
+(42, 36, 5, 6776, NULL, NULL),
+(43, 37, 5, 67, NULL, NULL),
+(44, 38, 5, 0.0276, NULL, NULL),
+(45, 29, 6, 67, NULL, NULL),
+(46, 30, 6, 0.76, NULL, NULL),
+(47, 31, 6, 0.67, NULL, NULL),
+(48, 32, 6, 0.76, NULL, NULL),
+(49, 33, 6, 67, NULL, NULL),
+(50, 34, 6, 76, NULL, NULL),
+(51, 35, 6, 67, NULL, NULL),
+(52, 36, 6, 7667, NULL, NULL),
+(53, 37, 6, 766, NULL, NULL),
+(54, 38, 6, 0.2361, NULL, NULL),
+(55, 29, 7, 67, NULL, NULL),
+(56, 30, 7, 0.76, NULL, NULL),
+(57, 31, 7, 0.67, NULL, NULL),
+(58, 32, 7, 0.07, NULL, NULL),
+(59, 33, 7, 667, NULL, NULL),
+(60, 34, 7, 56, NULL, NULL),
+(61, 35, 7, 566, NULL, NULL),
+(62, 36, 7, 56, NULL, NULL),
+(63, 37, 7, 56, NULL, NULL),
+(64, 38, 7, 245.0826, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -306,31 +314,11 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('2cyWNovySMZmjPLv', 'a:1:{s:11:\"valid_until\";i:1743174186;}', 1744383846),
-('2uvrbarKH7cRBxGV', 'a:1:{s:11:\"valid_until\";i:1743164768;}', 1744374428),
-('4GyZaQQf2sEEoTtn', 'a:1:{s:11:\"valid_until\";i:1743170835;}', 1744380496),
-('6SxzfGJsn8DaMGlf', 'a:1:{s:11:\"valid_until\";i:1743607926;}', 1744817586),
-('7AEwLFevbezeVBPh', 'a:1:{s:11:\"valid_until\";i:1743604045;}', 1744813705),
-('8cJQZBNQYamEzw9X', 'a:1:{s:11:\"valid_until\";i:1743437117;}', 1744646777),
-('aBGLgximN9SxGC5Q', 'a:1:{s:11:\"valid_until\";i:1743080020;}', 1744289680),
-('aguZpqudwlh5OlQK', 'a:1:{s:11:\"valid_until\";i:1743242564;}', 1744452224),
-('ajBQpUZFh99bDykR', 'a:1:{s:11:\"valid_until\";i:1743170141;}', 1744379801),
-('C2N7YymhG5GYLRxM', 'a:1:{s:11:\"valid_until\";i:1743443522;}', 1744653182),
-('dtPeZh64Pydriwyn', 'a:1:{s:11:\"valid_until\";i:1743590361;}', 1744800022),
-('EbzzZhIM44GW6kje', 'a:1:{s:11:\"valid_until\";i:1743255670;}', 1744465331),
-('FifK38UqRkrp6Ltd', 'a:1:{s:11:\"valid_until\";i:1743246820;}', 1744456480),
-('N9d8iq63yEcnIXxG', 'a:1:{s:11:\"valid_until\";i:1743158984;}', 1744368644),
-('P2Rpd66XbyC6jzc7', 'a:1:{s:11:\"valid_until\";i:1743260197;}', 1744469857),
-('PKAn0gpHxtOs89wX', 'a:1:{s:11:\"valid_until\";i:1743153672;}', 1744363332),
-('QWk5YWeWKAReVpZA', 'a:1:{s:11:\"valid_until\";i:1743174287;}', 1744383947),
-('R53BfDuAkR3c3ax4', 'a:1:{s:11:\"valid_until\";i:1743084098;}', 1744293758),
-('scghNC1kWFpFHdU8', 'a:1:{s:11:\"valid_until\";i:1743156353;}', 1744366013),
-('T1YtyZS3VISjOqK8', 'a:1:{s:11:\"valid_until\";i:1743594013;}', 1744803673),
-('vZwmYb70SNBKzBmG', 'a:1:{s:11:\"valid_until\";i:1743430615;}', 1744640275),
-('WacLCrfFCgGhgSKS', 'a:1:{s:11:\"valid_until\";i:1743586645;}', 1744796305),
-('wommIT9H5sLimcrJ', 'a:1:{s:11:\"valid_until\";i:1743176240;}', 1744385900),
-('wrswh2koStnuSBpM', 'a:1:{s:11:\"valid_until\";i:1743160602;}', 1744370263),
-('YCjt3bdDx1n4A0kd', 'a:1:{s:11:\"valid_until\";i:1743085884;}', 1744295544);
+('cTFjrSiYywxHsblu', 'a:1:{s:11:\"valid_until\";i:1746779166;}', 1747988826),
+('lhBT9c8M1TVfPLkh', 'a:1:{s:11:\"valid_until\";i:1746719927;}', 1747929587),
+('P0GxX7TwGHEgPbga', 'a:1:{s:11:\"valid_until\";i:1746721599;}', 1747931259),
+('QRm9kf76qGaJt0rF', 'a:1:{s:11:\"valid_until\";i:1746787964;}', 1747997624),
+('x59Up2qtoQnQU7le', 'a:1:{s:11:\"valid_until\";i:1746721545;}', 1747931205);
 
 -- --------------------------------------------------------
 
@@ -415,8 +403,8 @@ CREATE TABLE `labo` (
 --
 
 INSERT INTO `labo` (`id`, `Name`, `userId`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'labo 5wewe0', 5, 'Activated', '2025-03-27 12:43:17', '2025-03-27 12:43:17'),
-(2, 'Labo Example', 6, 'Activated', '2025-03-27 12:43:17', '2025-03-27 12:43:17');
+(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-08 13:47:37', '2025-05-08 13:47:37'),
+(2, 'Labo Example 2', 6, 'Activated', '2025-05-08 13:47:37', '2025-05-08 13:47:37');
 
 -- --------------------------------------------------------
 
@@ -444,10 +432,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (7, '05activity_by_labo', 1),
 (8, '06activity_item_value', 1),
 (9, '07rapport_ROI', 1),
-(10, '09add_trigger_update_activitybylabo', 1),
-(11, '10add_trigger_update2_activitybylabo', 1),
-(12, '2025_03_06_100742_add_two_factor_columns_to_users_table', 1),
-(13, '2025_03_06_100816_create_personal_access_tokens_table', 1);
+(10, '2025_03_06_100742_add_two_factor_columns_to_users_table', 1),
+(11, '2025_03_06_100816_create_personal_access_tokens_table', 1);
 
 -- --------------------------------------------------------
 
@@ -537,12 +523,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `FirstName`, `LastName`, `email`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `Role`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$JinGsO3WqnnzCENFBN5GtOQfySy3OmFEeVr.0ZQf8l500wSRDvE.G', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$DxjUVjjPtvKHBU.cy0Ay.OwldALEThi3VaEXf3w/.a.I8JwZrQ3Fa', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$szgMga.b93ml/GCIpOYrs.Eol8hPWkS0D935kiJvklkN1Ks7BlnMS', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$vYPypsnvkGD/or1faUusBu0OQrtLoPHMEA.17byqUbgCREuhqgdGK', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(5, 'haasra', 'letshlift', 'wasw50@gmail.com', '$2y$12$qr5RPBOQKhOCj7JCpsSZI.dTGOEOJJznFacxerGVOPZ8CPNML.VZm', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-03-27 12:43:17', '2025-03-27 12:43:17'),
-(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$N4q0rfoc/ZaQi/7LE6Qp6uic3moXebBHflsV6svXmf6fB.76PLQAu', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-03-27 12:43:17', '2025-03-27 12:43:17');
+(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$DCLZVWVBwFNaZclUgGsJYesjSbnSDsZdvlbYF..zXKoQoYU4pvW2G', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$3KktxrQZV8eJiJAAJg8gJOltjqTgnoO6AN0qeZYPrF1uSRS6e1im6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$ejoNPJ/TjZVBHhI1x9cMVOCbLC6diYX76JPA5dGHZdnguzvA5qgjK', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$mrdcvftnrOsgp/JjIwB/dOiFRfG9Wvvp5EAoIZ78ef7MQk9M2v7su', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$xU4N2nau4GhOig/fvwEPX.WlA234PCRj4IlmLAoXKH0YhZiWMao.a', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-08 13:47:37', '2025-05-08 13:47:37'),
+(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$8lV1Av4n14lMDLMGetzFs.W1fe7utPNAH.83wWJybv76kzzMiTG5G', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-08 13:47:37', '2025-05-08 13:47:37');
 
 --
 -- Index pour les tables déchargées
@@ -673,7 +659,7 @@ ALTER TABLE `activitieslist`
 -- AUTO_INCREMENT pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT pour la table `activityitems`
@@ -685,7 +671,7 @@ ALTER TABLE `activityitems`
 -- AUTO_INCREMENT pour la table `activityitemvalues`
 --
 ALTER TABLE `activityitemvalues`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT pour la table `failed_jobs`
@@ -709,7 +695,7 @@ ALTER TABLE `labo`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT pour la table `personal_access_tokens`

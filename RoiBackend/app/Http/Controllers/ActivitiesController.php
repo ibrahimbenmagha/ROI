@@ -306,43 +306,6 @@ class  ActivitiesController extends Controller
             return response()->json(['message' => 'Aucune activité trouvée'], 204);
         }
     }
-
-    // public function calculateDynamicROI(Request $request)
-    // {
-    //     try {
-    //         $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
-
-    //         if (!$activityByLaboId) {
-    //             return response()->json(['message' => 'Activity ID is missing.'], 400);
-    //         }
-
-    //         $activity = ActivityByLabo::find($activityByLaboId);
-    //         if (!$activity) {
-    //             return response()->json(['message' => 'Activity not found.'], 404);
-    //         }
-
-    //         $activityId = $activity->ActivityId;
-    //         if ($activityId > 12) {
-    //             $activityId = "Costum";
-    //         }
-    //         $method = "calculateROIAct_" . $activityId;
-    //         $controller = new Activity1_12();
-
-    //         if (!method_exists($controller, $method)) {
-    //             return response()->json(['message' => "No calculation method defined for activity ID $activityId ($method)."], 500);
-    //         }
-
-    //         return $controller->$method($request);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Erreur interne lors du calcul du ROI',
-    //             'error' => $e->getMessage(),
-    //             'activityId' => $activityId,
-    //         ], 500);
-    //     }
-    // }
-
-
     public function calculateDynamicROI(Request $request)
     {
         try {
@@ -543,15 +506,13 @@ class  ActivitiesController extends Controller
         return response()->json(['data' => $formattedData], 200);
     }
 
+
     public function deleteActivityValues(Request $request)
     {
         $ActivityByLaboId = $request->cookie('activityId');
-
         try {
-            ActivityItemValue::where('id', $ActivityByLaboId)->delete();
-            // $UPDATE = ActivityByLabo::where('id', $ActivityByLaboId);
-            //     ->update(['is_calculated' => false]);
-
+            ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+            ActivityByLabo::where('id', $ActivityByLaboId)->delete();
             return response()->json([
                 'message' => 'Values deleted successfully'
             ], 200);
@@ -705,5 +666,107 @@ class  ActivitiesController extends Controller
             'laboId' => $laboId,
             'ActivityId' => $existing->id,
         ]);
+    }
+
+
+
+
+
+    public function getLaboWithActivities(Request $request)
+    {
+        // Récupérer laboId depuis JWT ou la requête
+        $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+
+        if (!$laboId) {
+            return response()->json([
+                'message' => 'Information du laboratoire non trouvée dans le token ou la requête.'
+            ], 401);
+        }
+
+        // Tester l'existence du laboratoire
+        if (!Labo::where('id', $laboId)->exists()) {
+            return response()->json([
+                'message' => 'Laboratoire non trouvé'
+            ], 404);
+        }
+
+        // Récupérer les informations du laboratoire avec les détails de l'utilisateur
+        $labo = DB::table('labo')
+            ->join('users', 'labo.userId', '=', 'users.id')
+            ->select(
+                'labo.Name as LaboName',
+                'users.FirstName as firstName',
+                'users.LastName as lastName'
+            )
+            ->where('labo.id', $laboId)
+            ->first();
+
+        // Récupérer les activités associées au laboratoire avec les détails de activitieslist
+        $activities = ActivityByLabo::where('laboId', $laboId)
+            ->with(['activity' => function ($query) {
+                $query->select('id', 'Name as activityName', 'is_custom');
+            }])
+            ->select(
+                'id as activityByLaboId',
+                'laboId',
+                'ActivityId as activityId',
+                'year'
+            )
+            ->orderBy('ActivityId')
+            ->get();
+
+        // Débogage temporaire : retourner les activités chargées
+        return response()->json([
+            'laboId' => $laboId,
+            'rawActivities' => $activities->toArray(),
+            'LaboName' => $labo->LaboName,
+            'firstName' => $labo->firstName,
+            'lastName' => $labo->lastName,
+            'Activity' => []
+        ]);
+
+        // Si aucune activité n'est trouvée, retourner un message approprié
+        if ($activities->isEmpty()) {
+            return response()->json([
+                'message' => 'Aucune activité trouvée pour le laboratoire'
+            ], 404);
+        }
+
+        // Construire la réponse au format demandé
+        $result = [
+            'LaboName' => $labo->LaboName,
+            'firstName' => $labo->firstName,
+            'lastName' => $labo->lastName,
+            'Activity' => []
+        ];
+
+        foreach ($activities as $activity) {
+            // Gérer les cas où la relation activity est null
+            if (!$activity->activity) {
+                continue; // Ignorer cette activité si la relation est null
+            }
+
+            // Récupérer les valeurs des items pour l'activité courante
+            $items = ActivityItemValue::where('ActivityByLaboId', $activity->activityByLaboId)
+                ->join('activityitems', 'activityitemvalues.activityItemId', '=', 'activityitems.id')
+                ->select(
+                    'activityitems.Name as itemName',
+                    'activityitemvalues.value'
+                )
+                ->get();
+
+            // Formater les items comme paires itemName: value
+            $itemData = [];
+            foreach ($items as $item) {
+                $itemData[$item->itemName] = $item->value;
+            }
+
+            // Ajouter l'activité au tableau Activity
+            $result['Activity'][] = [
+                $activity->activity->activityName => $itemData
+            ];
+        }
+
+        return response()->json($result, 200);
     }
 }
