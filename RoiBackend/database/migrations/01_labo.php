@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('labo', function (Blueprint $table) {
-            $table->bigIncrements("id");
+            $table->id("id");
             $table->string('Name');
             $table->foreignId('userId')->references("id")->on("users");
             $table->string("status");

@@ -24,8 +24,8 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
-import TheHeader from "../Header/Header";
-import axiosInstance from "../../axiosConfig";
+import TheHeader from "../../Header/Header";
+import axiosInstance from "../../../axiosConfig";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,8 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const CreateActivity = () => {
+const AddActivity= () => {
+
   const [activityName, setActivityName] = useState("");
   const [year, setYear] = useState(null);
   const [items, setItems] = useState([]);
@@ -510,7 +511,7 @@ const CreateActivity = () => {
 
   return (
     <Layout className="min-h-screen">
-      <TheHeader />
+      {/* <TheHeader /> */}
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           {roiResult && (
@@ -584,15 +585,7 @@ const CreateActivity = () => {
                     placeholder="Entrez le nom de l'activité"
                   />
                 </div>
-                <div>
-                  <label>Année</label>
-                  <DatePicker
-                    picker="year"
-                    onChange={(date, dateString) => setYear(dateString)}
-                    value={year ? dayjs(year, "YYYY") : null}
-                    style={{ width: "100%" }}
-                  />
-                </div>
+
               </div>
 
               <Divider>Items de base</Divider>
@@ -892,4 +885,4 @@ const CreateActivity = () => {
   );
 };
 
-export default CreateActivity;
+export default AddActivity;

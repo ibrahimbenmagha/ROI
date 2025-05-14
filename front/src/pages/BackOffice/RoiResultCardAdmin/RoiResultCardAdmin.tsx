@@ -71,25 +71,33 @@ const DisplayCalculatedDataAdmin = () => {
     }
   };
 
-  const handleExport = () => {
-    const convertToCSV = (data: ActivityItemData[]) => {
-      const header = "L'item de l'activité\n";
-      const rows = data
-        .map((item) => `"${item.key}","${item.value}"`)
-        .join("\n");
-      return header + rows;
-    };
-    const csvContent = convertToCSV(activityData);
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `activity-data.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+const handleExport = () => {
+  const convertToCSV = (data: ActivityItemData[]) => {
+    const header = "L'item de l'activité\n";
+    const rows = data
+      .map((item) => `"${item.key}","${item.value}"`)
+      .join("\n");
+    return header + rows;
   };
+
+  const csvContent = convertToCSV(activityData);
+
+  // Ajout du BOM (Byte Order Mark) pour supporter les caractères spéciaux
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", "activity-data.csv");
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
   const handleExportPdf = () => {
     const convertToText = (data: ActivityItemData[]) => {
@@ -199,14 +207,8 @@ const DisplayCalculatedDataAdmin = () => {
                     Retour
                   </NavLink>
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={deleteActivityValues}
-                >
-                  <DeleteOutlined className="mr-2" />
-                  Mettre A 0
-                </Button>
+              
+              
                 <Button
                   variant="outline"
                   onClick={handleExport}

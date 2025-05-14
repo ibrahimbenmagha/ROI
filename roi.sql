@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 09 mai 2025 à 12:55
+-- Généré le : mer. 14 mai 2025 à 10:52
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -67,19 +67,6 @@ CREATE TABLE `activitybylabo` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Déchargement des données de la table `activitybylabo`
---
-
-INSERT INTO `activitybylabo` (`id`, `laboId`, `ActivityId`, `year`, `created_at`, `updated_at`) VALUES
-(1, 2, 2, '2029', '2025-05-08 14:00:54', '2025-05-08 14:00:54'),
-(2, 2, 2, '2029', '2025-05-08 14:02:00', '2025-05-08 14:02:00'),
-(3, 2, 1, '2029', '2025-05-08 14:02:30', '2025-05-08 14:02:30'),
-(4, 2, 2, '2029', '2025-05-08 14:18:40', '2025-05-08 14:18:40'),
-(5, 2, 4, '2029', '2025-05-08 14:18:58', '2025-05-08 14:18:58'),
-(6, 2, 4, '2029', '2025-05-08 14:19:16', '2025-05-08 14:19:16'),
-(7, 2, 4, '2029', '2025-05-08 14:19:41', '2025-05-08 14:19:41');
 
 -- --------------------------------------------------------
 
@@ -227,75 +214,18 @@ CREATE TABLE `activityitemvalues` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
--- Déchargement des données de la table `activityitemvalues`
+-- Structure de la table `admins`
 --
 
-INSERT INTO `activityitemvalues` (`id`, `activityItemId`, `ActivityByLaboId`, `value`, `created_at`, `updated_at`) VALUES
-(1, 11, 1, 78, NULL, NULL),
-(2, 12, 1, 87, NULL, NULL),
-(3, 13, 1, 0.78, NULL, NULL),
-(4, 14, 1, 87, NULL, NULL),
-(5, 15, 1, 78, NULL, NULL),
-(6, 16, 1, 87, NULL, NULL),
-(7, 17, 1, 78, NULL, NULL),
-(8, 18, 1, 4768.7073, NULL, NULL),
-(9, 11, 2, 71, NULL, NULL),
-(10, 12, 2, 87, NULL, NULL),
-(11, 13, 2, 0.78, NULL, NULL),
-(12, 14, 2, 87, NULL, NULL),
-(13, 15, 2, 78, NULL, NULL),
-(14, 16, 2, 87, NULL, NULL),
-(15, 17, 2, 78, NULL, NULL),
-(16, 18, 2, 4342.8013, NULL, NULL),
-(17, 1, 3, 78, NULL, NULL),
-(18, 2, 3, 87, NULL, NULL),
-(19, 3, 3, 0.07, NULL, NULL),
-(20, 4, 3, 8, NULL, NULL),
-(21, 5, 3, 0.87, NULL, NULL),
-(22, 6, 3, 0.08, NULL, NULL),
-(23, 7, 3, 87, NULL, NULL),
-(24, 8, 3, 788, NULL, NULL),
-(25, 9, 3, 78, NULL, NULL),
-(26, 10, 3, 0.0008, NULL, NULL),
-(27, 11, 4, 78, NULL, NULL),
-(28, 12, 4, 87, NULL, NULL),
-(29, 13, 4, 0.78, NULL, NULL),
-(30, 14, 4, 87, NULL, NULL),
-(31, 15, 4, 78, NULL, NULL),
-(32, 16, 4, 87, NULL, NULL),
-(33, 17, 4, 87, NULL, NULL),
-(34, 18, 4, 4762.4628, NULL, NULL),
-(35, 29, 5, 67, NULL, NULL),
-(36, 30, 5, 0.76, NULL, NULL),
-(37, 31, 5, 0.67, NULL, NULL),
-(38, 32, 5, 0.07, NULL, NULL),
-(39, 33, 5, 66, NULL, NULL),
-(40, 34, 5, 7, NULL, NULL),
-(41, 35, 5, 76, NULL, NULL),
-(42, 36, 5, 6776, NULL, NULL),
-(43, 37, 5, 67, NULL, NULL),
-(44, 38, 5, 0.0276, NULL, NULL),
-(45, 29, 6, 67, NULL, NULL),
-(46, 30, 6, 0.76, NULL, NULL),
-(47, 31, 6, 0.67, NULL, NULL),
-(48, 32, 6, 0.76, NULL, NULL),
-(49, 33, 6, 67, NULL, NULL),
-(50, 34, 6, 76, NULL, NULL),
-(51, 35, 6, 67, NULL, NULL),
-(52, 36, 6, 7667, NULL, NULL),
-(53, 37, 6, 766, NULL, NULL),
-(54, 38, 6, 0.2361, NULL, NULL),
-(55, 29, 7, 67, NULL, NULL),
-(56, 30, 7, 0.76, NULL, NULL),
-(57, 31, 7, 0.67, NULL, NULL),
-(58, 32, 7, 0.07, NULL, NULL),
-(59, 33, 7, 667, NULL, NULL),
-(60, 34, 7, 56, NULL, NULL),
-(61, 35, 7, 566, NULL, NULL),
-(62, 36, 7, 56, NULL, NULL),
-(63, 37, 7, 56, NULL, NULL),
-(64, 38, 7, 245.0826, NULL, NULL);
+CREATE TABLE `admins` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `userId` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -314,11 +244,7 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('cTFjrSiYywxHsblu', 'a:1:{s:11:\"valid_until\";i:1746779166;}', 1747988826),
-('lhBT9c8M1TVfPLkh', 'a:1:{s:11:\"valid_until\";i:1746719927;}', 1747929587),
-('P0GxX7TwGHEgPbga', 'a:1:{s:11:\"valid_until\";i:1746721599;}', 1747931259),
-('QRm9kf76qGaJt0rF', 'a:1:{s:11:\"valid_until\";i:1746787964;}', 1747997624),
-('x59Up2qtoQnQU7le', 'a:1:{s:11:\"valid_until\";i:1746721545;}', 1747931205);
+('08aJOFkdiS0P5FjJ', 'a:1:{s:11:\"valid_until\";i:1747212651;}', 1748422312);
 
 -- --------------------------------------------------------
 
@@ -330,6 +256,20 @@ CREATE TABLE `cache_locks` (
   `key` varchar(255) NOT NULL,
   `owner` varchar(255) NOT NULL,
   `expiration` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `calculationformula`
+--
+
+CREATE TABLE `calculationformula` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `ActivityId` bigint(20) UNSIGNED NOT NULL,
+  `fomulat` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -403,8 +343,8 @@ CREATE TABLE `labo` (
 --
 
 INSERT INTO `labo` (`id`, `Name`, `userId`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-08 13:47:37', '2025-05-08 13:47:37'),
-(2, 'Labo Example 2', 6, 'Activated', '2025-05-08 13:47:37', '2025-05-08 13:47:37');
+(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-13 15:49:53', '2025-05-13 15:49:53'),
+(2, 'Labo Example 2', 6, 'Activated', '2025-05-13 15:49:53', '2025-05-13 15:49:53');
 
 -- --------------------------------------------------------
 
@@ -423,17 +363,19 @@ CREATE TABLE `migrations` (
 --
 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
-(1, '0001_01_01_000001_create_cache_table', 1),
-(2, '0001_01_01_000002_create_jobs_table', 1),
-(3, '00_users', 1),
-(4, '02_labo', 1),
-(5, '03activities_list', 1),
-(6, '04activity_items', 1),
-(7, '05activity_by_labo', 1),
-(8, '06activity_item_value', 1),
-(9, '07rapport_ROI', 1),
-(10, '2025_03_06_100742_add_two_factor_columns_to_users_table', 1),
-(11, '2025_03_06_100816_create_personal_access_tokens_table', 1);
+(1, '00_users', 1),
+(2, '01_labo', 1),
+(3, '02_activities_list', 1),
+(4, '03_activity_items', 1),
+(5, '04_activity_by_labo', 1),
+(6, '05_activity_item_value', 1),
+(7, '06_rapport_ROI', 1),
+(8, '07_admins', 1),
+(9, '08_calculatiuon_formula', 1),
+(10, '09_create_cache_table', 1),
+(11, '10_create_jobs_table', 1),
+(12, '11_add_two_factor_columns_to_users_table', 1),
+(13, '12_create_personal_access_tokens_table', 1);
 
 -- --------------------------------------------------------
 
@@ -523,12 +465,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `FirstName`, `LastName`, `email`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `Role`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$DCLZVWVBwFNaZclUgGsJYesjSbnSDsZdvlbYF..zXKoQoYU4pvW2G', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$3KktxrQZV8eJiJAAJg8gJOltjqTgnoO6AN0qeZYPrF1uSRS6e1im6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$ejoNPJ/TjZVBHhI1x9cMVOCbLC6diYX76JPA5dGHZdnguzvA5qgjK', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$mrdcvftnrOsgp/JjIwB/dOiFRfG9Wvvp5EAoIZ78ef7MQk9M2v7su', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$xU4N2nau4GhOig/fvwEPX.WlA234PCRj4IlmLAoXKH0YhZiWMao.a', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-08 13:47:37', '2025-05-08 13:47:37'),
-(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$8lV1Av4n14lMDLMGetzFs.W1fe7utPNAH.83wWJybv76kzzMiTG5G', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-08 13:47:37', '2025-05-08 13:47:37');
+(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$DI/5q/N3l/18H/L9hQwWZ.ek9GQwVzoMdcFD1EaWJW8jP4AeePhr6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$/k4pdHWDeBANEfmbbDe79eDlKQQdmX2H/djiyTyRRC7wEgAqLmZSe', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$RE6dZZK3KqmoxHb2ykCPouyX240DTc/0/1mD0xZA6suALi5SiBV0m', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$qUm4/UF65NHvwutH84U9auIkRfAv/kc5WQrCL7gsbGrqGtB5bFvYy', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$TTEUndV1dXRf8xSqbTyaW.CKpZrwkl5ILpn8FId7M95o4eydtZouS', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-13 15:49:53', '2025-05-13 15:49:53'),
+(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$/JM.uPCWFSMbI0o4ZHr5fOjAPx2ZaxP23eEpP9n7hdfl2eGyoXRaC', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-13 15:49:53', '2025-05-13 15:49:53');
 
 --
 -- Index pour les tables déchargées
@@ -565,6 +507,13 @@ ALTER TABLE `activityitemvalues`
   ADD KEY `activityitemvalues_activitybylaboid_foreign` (`ActivityByLaboId`);
 
 --
+-- Index pour la table `admins`
+--
+ALTER TABLE `admins`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `admins_userid_foreign` (`userId`);
+
+--
 -- Index pour la table `cache`
 --
 ALTER TABLE `cache`
@@ -575,6 +524,13 @@ ALTER TABLE `cache`
 --
 ALTER TABLE `cache_locks`
   ADD PRIMARY KEY (`key`);
+
+--
+-- Index pour la table `calculationformula`
+--
+ALTER TABLE `calculationformula`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `calculationformula_activityid_foreign` (`ActivityId`);
 
 --
 -- Index pour la table `failed_jobs`
@@ -659,7 +615,7 @@ ALTER TABLE `activitieslist`
 -- AUTO_INCREMENT pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `activityitems`
@@ -671,7 +627,19 @@ ALTER TABLE `activityitems`
 -- AUTO_INCREMENT pour la table `activityitemvalues`
 --
 ALTER TABLE `activityitemvalues`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `admins`
+--
+ALTER TABLE `admins`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `calculationformula`
+--
+ALTER TABLE `calculationformula`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `failed_jobs`
@@ -695,7 +663,7 @@ ALTER TABLE `labo`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `personal_access_tokens`
@@ -738,6 +706,18 @@ ALTER TABLE `activityitems`
 ALTER TABLE `activityitemvalues`
   ADD CONSTRAINT `activityitemvalues_activitybylaboid_foreign` FOREIGN KEY (`ActivityByLaboId`) REFERENCES `activitybylabo` (`id`),
   ADD CONSTRAINT `activityitemvalues_activityitemid_foreign` FOREIGN KEY (`activityItemId`) REFERENCES `activityitems` (`id`);
+
+--
+-- Contraintes pour la table `admins`
+--
+ALTER TABLE `admins`
+  ADD CONSTRAINT `admins_userid_foreign` FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
+
+--
+-- Contraintes pour la table `calculationformula`
+--
+ALTER TABLE `calculationformula`
+  ADD CONSTRAINT `calculationformula_activityid_foreign` FOREIGN KEY (`ActivityId`) REFERENCES `activitieslist` (`id`);
 
 --
 -- Contraintes pour la table `labo`

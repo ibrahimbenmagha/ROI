@@ -271,7 +271,6 @@ class  ActivitiesController extends Controller
         }
     }
 
-
     public function getAllCalculatedActivityByLaboInfosByLaboId(Request $request)
     {
         $laboId = JWTHelper::getLaboId($request) ?? $request->cookie('laboId') ?? $request["laboId"];
@@ -306,8 +305,8 @@ class  ActivitiesController extends Controller
             return response()->json(['message' => 'Aucune activité trouvée'], 204);
         }
     }
-    public function calculateDynamicROI(Request $request)
-    {
+
+    public function calculateDynamicROI(Request $request){
         try {
             // Récupère l'identifiant de l'activité depuis le cookie ou la requête
             $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
@@ -352,8 +351,7 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function getAllActivityByLaboName(Request $request, $Name)
-    {
+    public function getAllActivityByLaboName(Request $request, $Name){
         $LaboId = Labo::where('Name', $Name)->select('id')->get();
         $Activities = ActivityByLabo::where('laboId', $LaboId)
             ->select('id', 'laboId')
@@ -365,8 +363,7 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function getActivityRepport()
-    {
+    public function getActivityRepport(){
         // Récupérer toutes les données nécessaires
         $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
             ->join("users", "labo.userId", "=", "users.id")
@@ -433,8 +430,7 @@ class  ActivitiesController extends Controller
         return response()->json(['data' => $formattedData], 200);
     }
 
-    public function getActivityRepportBYActivityId(Request $request, $activityListId)
-    {
+    public function getActivityRepportBYActivityId(Request $request, $activityListId){
         if (!$activityListId) {
             return response()->json(['error' => 'activityListId is required'], 400);
         }
@@ -507,8 +503,7 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deleteActivityValues(Request $request)
-    {
+    public function deleteActivityValues(Request $request){
         $ActivityByLaboId = $request->cookie('activityId');
         try {
             ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
@@ -525,8 +520,7 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deleteLaboData(Request $request)
-    {
+    public function deleteLaboData(Request $request){
         $laboId = JWTHelper::getLaboId($request);
         if (!$laboId) {
             return response()->json(['error' => 'Labo ID not found'], 400);
@@ -544,8 +538,7 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deletelabovalues(Request $request)
-    {
+    public function deletelabovalues(Request $request){
         $laboId = JWTHelper::getLaboId($request);
         if (empty($laboId)) {
             return response()->json([
@@ -573,8 +566,7 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function deleteLaboNotCalculatedById(Request $request)
-    {
+    public function deleteLaboNotCalculatedById(Request $request){
         $activityByLaboId = $request->cookie('activityId');
 
         if (empty($activityByLaboId)) {
@@ -606,8 +598,7 @@ class  ActivitiesController extends Controller
         }
     }
 
-    private function findOrCreateActivityByLabo($laboId, $activityName, $year, $otherActivity = null)
-    {
+    private function findOrCreateActivityByLabo($laboId, $activityName, $year, $otherActivity = null){
         // Cas "Autre activité"
         if ($activityName === "Autre activité" && !empty($otherActivity)) {
             $customName = trim($otherActivity);
@@ -667,9 +658,6 @@ class  ActivitiesController extends Controller
             'ActivityId' => $existing->id,
         ]);
     }
-
-
-
 
 
     public function getLaboWithActivities(Request $request)

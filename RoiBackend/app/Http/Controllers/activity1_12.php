@@ -267,7 +267,7 @@ class Activity1_12 extends Controller
     public function calculateROIAct_1(Request $request)
     {
         $activityByLaboId = $request->cookie('activityId') ?? $request['activityId'];
-    
+
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
         $A = $values[0]->value;  // 1st value
@@ -295,27 +295,28 @@ class Activity1_12 extends Controller
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
             // 'activitybylaboId'=>,
-            'nombre_medecins_recevant_echantillons' => $A,
-            'nombre_echantillons_par_medecin' => $B,
-            'pourcentage_echantillons_reellement_donnes' => $D,
-            'nombre_moyen_echantillons_par_patient' => $E,
-            'pourcentage_patients_ayant_prescription' => $G,
-            'pourcentage_patients_prescrits_sans_echantillon' => $I,
-            'valeur_moyenne_patient_incremental' => $K,
-            'cout_unitaire_echantillon' => $M,
-            'couts_fixes_programme' => $N,
-            'nombre_total_echantillons_distribues' => $C,
-            'nombre_total_patients_ayant_recu_un_echantillon' => $F,
-            'nombre_total_patients_ayant_recu_une_prescription' => $H,
-            'nombre_total_patients_incrementaux_gagnes' => $J,
-            'revenus_supplémentaires' => $L,
-            'cout_total_programme' => $O,
-            'cout_total_echantillons' => $P,
+            'Nombre de médecins recevant des échantillons' => $A,
+            'Nombre d’échantillons donnés à chaque médecin' => $B,
+            'Pourcentage des échantillons réellement donnés aux patients' => $D,
+            'Nombre moyen d’échantillons donnés par patient (éviter division par zéro)' => $E,
+            'Pourcentage des patients ayant reçu une prescription après usage' => $G,
+            'Pourcentage des patients prescrits sans échantillon' => $I,
+            'Valeur moyenne d’un patient incrémental' => $K,
+            'Coût unitaire d’un échantillon' => $M,
+            'Coûts fixes du programme' => $N,
+            'Nombre total d’échantillons distribués' => $C,
+            'Nombre total de patients ayant reçu un échantillon' => $F,
+            'Nombre total de patients obtenant une prescription' => $H,
+            'Nombre total de patients incrémentaux gagnés grâce aux échantillons' => $J,
+            ' Revenus supplémentaires générés' => $L,
+            'Coût total du programme' => $O,
+            'Coût total des échantillons distribués' => $P,
             'ROI' => $ROI,
             // "was" =>$values
 
         ], 200);
     }
+
 
 
 
@@ -561,6 +562,7 @@ class Activity1_12 extends Controller
             "Retour sur investissement (ROI)" => $ROI
         ], 200);
     }
+
 
 
 
@@ -816,24 +818,26 @@ class Activity1_12 extends Controller
 
         // Retourner les données avec les mêmes clés que dans la requête, y compris les calculs
         return response()->json([
-            'nombre_total_de_médecins_ciblés_par_email' => $A,
-            'nombre_moyen_d_emails_envoyés_par_médecin' => $B,
-            'pourcentage_de_médecins_se_rappelant_avoir_reçu_email' => $C,
-            'nombre_de_médecins_ayant_reçu_et_rappelé_email' => $D,
-            'pourcentage_de_médecins_se_rappelant_marque_message' => $E,
-            'pourcentage_de_médecins_prescrivant_prexige_nouveaux_patients' => $G,
-            'nombre_de_médecins_se_rappelant_du_produit_message' => $F,
-            'nombre_de_médecins_prescrivant_prexige_email' => $H,
-            'nombre_moyen_de_nouveaux_patients_mis_sous_prexige_par_médecin' => $I,
-            'nombre_de_patients_incrementaux_generes_par_email' => $J,
-            'valeur_du_revenu_par_patient_incremental' => $K,
-            'ventes_incrementales_generées' => $L,
-            'cout_variable_par_email_envoye' => $M,
-            'cout_fixe_total_du_programme' => $N,
-            'cout_total_du_programme' => $O,
-            'Retour sur investissement (ROI)' => $ROI, // Modifier la clé pour correspondre aux autres fonctions
-        ], 200); // Changer le code de statut à 200
+            'Nombre total de médecins ciblés par email' => $A,
+            'Nombre moyen d\'emails envoyés par médecin' => $B,
+            'Pourcentage de médecins se rappelant avoir reçu email' => $C,
+            'Nombre de médecins ayant reçu et rappelé email' => $D,
+            'Pourcentage de médecins se rappelant marque message' => $E,
+            'Pourcentage de médecins prescrivant Prexige nouveaux patients' => $G,
+            'Nombre de médecins se rappelant du produit message' => $F,
+            'Nombre de médecins prescrivant Prexige email' => $H,
+            'Nombre moyen de nouveaux patients mis sous Prexige par médecin' => $I,
+            'Nombre de patients incrémentaux générés par email' => $J,
+            'Valeur du revenu par patient incrémental' => $K,
+            'Ventes incrémentales générées' => $L,
+            'Coût variable par email envoyé' => $M,
+            'Coût fixe total du programme' => $N,
+            'Coût total du programme' => $O,
+            'Retour sur investissement (ROI)' => $ROI,
+        ], 200);
     }
+
+
 
 
     //Activite 4
@@ -1066,8 +1070,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_4(Request $request)
-    {
+    public function calculateROIAct_4(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -1092,29 +1095,29 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_de_médecins_participants_à_la_conférence' => $A,
-            'pourcentage_de_médecins_ayant_retenu_le_message' => $B,
-            'nombre_de_médecins_exposés_au_message' => $C,
-            'pourcentage_de_médecins_ayant_une_perception_positive' => $D,
-            'nombre_de_médecins_ayant_une_perception_positive' => $E,
-            'pourcentage_de_médecins_qui_prescrivent_à_de_nouveaux_patients' => $F,
-            'nombre_de_médecins_prescrivant_à_de_nouveaux_patients' => $G,
-            'nombre_moyen_de_nouveaux_patients_prescrits_par_médecin' => $H,
-            'nombre_de_patients_incrémentaux_gagnés' => $I,
-            'valeur_de_revenu_générée_par_patient_incrémental' => $J,
-            'ventes_incrémentales_générées' => $K,
-            'coût_variable_par_médecin' => $L,
-            'coût_fixe_total_du_programme' => $M,
-            'coût_total_du_programme' => $N,
-            'ajustement_lié_à_influence_des_leaders_opinion' => $KOL,
-            'ROI' => $ROI,
+            'Nombre de médecins participants à la conférence' => $A,
+            'Pourcentage de médecins ayant retenu le message' => $B,
+            'Nombre de médecins exposés au message' => $C,
+            'Pourcentage de médecins ayant une perception positive' => $D,
+            'Nombre de médecins ayant une perception positive' => $E,
+            'Pourcentage de médecins qui prescrivent à de nouveaux patients' => $F,
+            'Nombre de médecins prescrivant à de nouveaux patients' => $G,
+            'Nombre moyen de nouveaux patients prescrits par médecin' => $H,
+            'Nombre de patients incrémentaux gagnés' => $I,
+            'Valeur de revenu générée par patient incrémental' => $J,
+            'Ventes incrémentales générées' => $K,
+            'Coût variable par médecin' => $L,
+            'Coût fixe total du programme' => $M,
+            'Coût total du programme' => $N,
+            'Ajustement lié à l\'influence des leaders d\'opinion' => $KOL,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
 
 
+
     //Activite 5
-    public function insertIntoTable5(Request $request)
-    {
+    public function insertIntoTable5(Request $request){
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -1215,8 +1218,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct5(Request $request)
-    {
+    public function calculateROIAct5(Request $request){
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre de médecins participant aux tables rondes
             'B' => 'required|numeric|min:0|max:100', // Nombre moyen de tables rondes assistées par médecin par an
@@ -1374,24 +1376,24 @@ class Activity1_12 extends Controller
         $ROI = ($P > 0) ? round($M / $P, 4) : 0;
 
         return response()->json([
-            'nombre_de_médecins_participant_aux_tables_rondes' => $A,
-            'nombre_moyen_de_tables_rondes_par_médecin' => $B,
-            'nombre_total_de_contacts_médecins' => $C,
-            'nombre_moyen_de_médecins_par_table_ronde' => $D,
-            'nombre_total_de_tables_rondes_requises' => $E,
-            'pourcentage_de_médecins_ayant_changé_positivement_perception' => $F,
-            'nombre_de_médecins_ayant_changé_positivement_perception' => $G,
-            'pourcentage_de_médecins_influencés_qui_vont_prescrire' => $H,
-            'nombre_de_médecins_prescrivant' => $I,
-            'nombre_moyen_de_nouveaux_patients_par_médecin' => $J,
-            'nombre_de_patients_incrémentaux_gagnés' => $K,
-            'valeur_du_revenu_par_patient_incrémental' => $L,
-            'ventes_incrémentales' => $M,
-            'coût_variable_par_table_ronde' => $N,
-            'coût_fixe_total_du_programme' => $O,
-            'coût_total_du_programme' => $P,
-            'coût_par_contact_médecin' => $Q,
-            'ROI' => $ROI,
+            'Nombre de médecins participant aux tables rondes' => $A,
+            'Nombre moyen de tables rondes par médecin' => $B,
+            'Nombre total de contacts médecins' => $C,
+            'Nombre moyen de médecins par table ronde' => $D,
+            'Nombre total de tables rondes requises' => $E,
+            'Pourcentage de médecins ayant changé positivement leur perception' => $F,
+            'Nombre de médecins ayant changé positivement leur perception' => $G,
+            'Pourcentage de médecins influencés qui vont prescrire' => $H,
+            'Nombre de médecins prescrivant' => $I,
+            'Nombre moyen de nouveaux patients par médecin' => $J,
+            'Nombre de patients incrémentaux gagnés' => $K,
+            'Valeur du revenu par patient incrémental' => $L,
+            'Ventes incrémentales' => $M,
+            'Coût variable par table ronde' => $N,
+            'Coût fixe total du programme' => $O,
+            'Coût total du programme' => $P,
+            'Coût par contact médecin' => $Q,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
 
@@ -1399,8 +1401,7 @@ class Activity1_12 extends Controller
 
 
     //Activite 6 
-    public function insertIntoTable6(Request $request)
-    {
+    public function insertIntoTable6(Request $request){
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -1489,8 +1490,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct6(Request $request)
-    {
+    public function calculateROIAct6(Request $request){
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par le représentant
             'B' => 'required|numeric|min:0', // Nombre moyen de visites par médecin
@@ -1540,8 +1540,7 @@ class Activity1_12 extends Controller
         ], 200);
     }
 
-    public function updateActivity6Values(Request $request)
-    {
+    public function updateActivity6Values(Request $request){
         try {
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0', // Nombre total de médecins ciblés par le représentant
@@ -1613,8 +1612,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_6(Request $request)
-    {
+    public function calculateROIAct_6(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -1639,23 +1637,24 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_total_de_médecins_ciblés' => $A,
-            'nombre_moyen_de_visites_par_médecin' => $B,
-            'nombre_total_de_visites' => $C,
-            'pourcentage_de_médecins_se_rappelant_du_message' => $E,
-            'nombre_de_médecins_se_rappelant_du_message' => $F,
-            'pourcentage_de_médecins_prescrivant_prexige' => $G,
-            'nombre_de_médecins_prescrivant_prexige' => $H,
-            'nombre_moyen_de_nouveaux_patients_par_médecin' => $I,
-            'nombre_de_patients_incrémentaux' => $J,
-            'valeur_du_revenu_par_patient_incrémental' => $K,
-            'ventes_incrémentales' => $L,
-            'coût_variable_par_représentant' => $M1,
-            'nombre_total_de_représentants' => $M2,
-            'coût_total_du_programme' => $M,
-            'ROI' => $ROI,
+            'Nombre total de médecins ciblés' => $A,
+            'Nombre moyen de visites par médecin' => $B,
+            'Nombre total de visites' => $C,
+            'Pourcentage de médecins se rappelant du message' => $E,
+            'Nombre de médecins se rappelant du message' => $F,
+            'Pourcentage de médecins prescrivant Prexige' => $G,
+            'Nombre de médecins prescrivant Prexige' => $H,
+            'Nombre moyen de nouveaux patients par médecin' => $I,
+            'Nombre de patients incrémentaux' => $J,
+            'Valeur du revenu par patient incrémental' => $K,
+            'Ventes incrémentales' => $L,
+            'Coût variable par représentant' => $M1,
+            'Nombre total de représentants' => $M2,
+            'Coût total du programme' => $M,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
+
 
 
 
@@ -1882,8 +1881,8 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_7(Request $request)
-    {
+    public function calculateROIAct_7(Request $request){
+
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -1908,15 +1907,15 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_de_consommateurs_cibles' => $G,
-            'pourcentage_audience_cible_atteinte' => $H,
-            'nombre_de_consommateurs_atteints' => $I,
-            'pourcentage_consommateurs_se_rappelant' => $J,
-            'nombre_de_consommateurs_se_rappelant' => $K,
-            'pourcentage_consommateurs_consultant_medecin' => $L,
-            'nombre_de_consommateurs_consultant_medecin' => $M,
-            'pourcentage_patients_recevant_prescription' => $N,
-            'nombre_de_patients_incrementaux' => $O,
+            'nombre de consommateurs cibles' => $G,
+            'pourcentage audience cible atteinte' => $H,
+            'nombre de consommateurs atteints' => $I,
+            'pourcentage consommateurs se rappelant' => $J,
+            'nombre de consommateurs se rappelant' => $K,
+            'pourcentage consommateurs consultant medecin' => $L,
+            'nombre de consommateurs consultant medecin' => $M,
+            'pourcentage patients recevant prescription' => $N,
+            'nombre de_patients_incrementaux' => $O,
             'valeur_revenu_par_patient' => $P,
             'ventes_incrementales' => $Q,
             'depenses_medias' => $R1,
@@ -1925,6 +1924,7 @@ class Activity1_12 extends Controller
             'ROI' => $ROI,
         ], 200);
     }
+
 
 
 
@@ -2180,8 +2180,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_8(Request $request)
-    {
+    public function calculateROIAct_8(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -2211,33 +2210,33 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'population_totale' => $A,
-            'taux_incidence_maladie' => $B,
-            'nombre_patients_souffrant_maladie' => $C,
-            'pourcentage_patients_traites_satisfaits' => $D,
-            'nombre_patients_non_traites_insatisfaits' => $E,
-            'pourcentage_patients_vises_campagne' => $F,
-            'nombre_patients_cibles_campagne' => $G,
-            'nombre_visites_uniques_site' => $H,
-            'taux_efficacite_atteinte_patients' => $I,
-            'pourcentage_visiteurs_interesses' => $J,
-            'nombre_visiteurs_interesses_sensibilises' => $K,
-            'pourcentage_visiteurs_consultant_medecin' => $L,
-            'nombre_visiteurs_consultant_medecin' => $M,
-            'pourcentage_patients_recevant_prescription' => $N,
-            'nombre_patients_avec_prescription' => $O,
-            'valeur_revenu_par_patient' => $P,
-            'ventes_incrementales' => $Q,
-            'cout_total_campagne' => $R,
-            'ROI' => $ROI,
+            'Population totale' => $A,
+            'Taux incidence maladie' => $B,
+            'Nombre patients souffrant maladie' => $C,
+            'Pourcentage patients traités satisfaits' => $D,
+            'Nombre patients non traités insatisfaits' => $E,
+            'Pourcentage patients visés campagne' => $F,
+            'Nombre patients ciblés campagne' => $G,
+            'Nombre visites uniques site' => $H,
+            'Taux efficacité atteinte patients' => $I,
+            'Pourcentage visiteurs intéressés' => $J,
+            'Nombre visiteurs intéressés sensibilisés' => $K,
+            'Pourcentage visiteurs consultant médecin' => $L,
+            'Nombre visiteurs consultant médecin' => $M,
+            'Pourcentage patients recevant prescription' => $N,
+            'Nombre patients avec prescription' => $O,
+            'Valeur revenu par patient incrémental' => $P,
+            'Ventes incrémentales' => $Q,
+            'Coût total campagne' => $R,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
 
 
 
+
     //Activite 9
-    public function insertIntoTable9(Request $request)
-    {
+    public function insertIntoTable9(Request $request){
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -2379,9 +2378,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_9(Request $request)
-
-    {
+    public function calculateROIAct_9(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -2406,22 +2403,24 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_medecins_lecteurs' => $A,
-            'nombre_insertions_publicitaires' => $B,
-            'pourcentage_medecins_memoire_marque' => $C,
-            'nombre_medecins_identifie_produit' => $D,
-            'pourcentage_medecins_commencant_prescription' => $E,
-            'nombre_medecins_prescripteurs' => $F,
-            'nombre_moyen_patients_par_medecin' => $G,
-            'nombre_total_nouveaux_patients' => $H,
-            'revenu_moyen_par_patient' => $I,
-            'ventes_additionnelles' => $J,
-            'couts_achat_media' => $K,
-            'couts_production_agence' => $L,
-            'cout_global_campagne' => $M,
-            'ROI' => $ROI,
+            'Nombre médecins lecteurs' => $A,
+            'Nombre insertions publicitaires' => $B,
+            'Pourcentage médecins mémoire marque' => $C,
+            'Nombre médecins identifié produit' => $D,
+            'Pourcentage médecins commençant prescription' => $E,
+            'Nombre médecins prescripteurs' => $F,
+            'Nombre moyen patients par médecin' => $G,
+            'Nombre total nouveaux patients' => $H,
+            'Revenu moyen par patient' => $I,
+            'Ventes additionnelles' => $J,
+            'Coûts achat média' => $K,
+            'Coûts production agence' => $L,
+            'Coût global campagne' => $M,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
+
+
 
 
 
@@ -2640,8 +2639,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_10(Request $request)
-    {
+    public function calculateROIAct_10(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -2665,21 +2663,23 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_medecins_exposes' => $A,
-            'pourcentage_medecins_souvenant_message' => $B,
-            'nombre_medecins_retenu_message' => $C,
-            'pourcentage_medecins_ameliore_perception' => $D,
-            'nombre_medecins_ameliore_perception' => $E,
-            'pourcentage_prescripteurs_change_perception' => $F,
-            'nombre_prescripteurs_supplementaires' => $G,
-            'nombre_moyen_patients_par_prescripteur' => $H,
-            'nombre_patients_incrementaux' => $I,
-            'valeur_moyenne_revenu_par_patient' => $J,
-            'ventes_incrementales' => $K,
-            'cout_fixe_total_activite' => $L,
-            'ROI' => $ROI,
+            'Nombre médecins exposés' => $A,
+            'Pourcentage médecins souvenant message' => $B,
+            'Nombre médecins retenu message' => $C,
+            'Pourcentage médecins amélioré perception' => $D,
+            'Nombre médecins amélioré perception' => $E,
+            'Pourcentage prescripteurs changé perception' => $F,
+            'Nombre prescripteurs supplémentaires' => $G,
+            'Nombre moyen patients par prescripteur' => $H,
+            'Nombre patients incrémentaux' => $I,
+            'Valeur moyenne revenu par patient' => $J,
+            'Ventes incrémentales' => $K,
+            'Coût fixe total activité' => $L,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
+
+
 
 
     //Activite 11
@@ -2884,8 +2884,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_11(Request $request)
-    {
+    public function calculateROIAct_11(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -2907,25 +2906,26 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'nombre_consommateurs_exposes' => $A,
-            'pourcentage_consommateurs_memorisant_message' => $B,
-            'nombre_consommateurs_memorisant_message' => $C,
-            'pourcentage_consommateurs_consultant_apres_exposition' => $D,
-            'nombre_consultations_generees' => $E,
-            'pourcentage_consultations_aboutissant_prescription' => $F,
-            'nombre_patients_incrementaux' => $G,
-            'revenu_moyen_par_patient' => $H,
-            'ventes_incrementales' => $I,
-            'cout_fixe_total_activite' => $J,
-            'ROI' => $ROI,
+            'Nombre consommateurs exposés' => $A,
+            'Pourcentage consommateurs mémorisant message' => $B,
+            'Nombre consommateurs mémorisant message' => $C,
+            'Pourcentage consommateurs consultant après exposition' => $D,
+            'Nombre consultations générées' => $E,
+            'Pourcentage consultations aboutissant prescription' => $F,
+            'Nombre patients incrémentaux' => $G,
+            'Revenu moyen par patient' => $H,
+            'Ventes incrémentales' => $I,
+            'Coût fixe total activité' => $J,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
 
 
+    
+
 
     //Activite 12
-    public function insertIntoTable12(Request $request)
-    {
+    public function insertIntoTable12(Request $request){
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -3023,8 +3023,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct12(Request $request)
-    {
+    public function calculateROIAct12(Request $request){
         try {
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0',  // Nombre de médecins susceptibles de prescrire
@@ -3080,9 +3079,8 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_12(Request $request)
+    public function calculateROIAct_12(Request $request){
 
-    {
         $activityByLaboId = $request->cookie('activityId');
         $values = ActivityItemValue::where("ActivityByLaboId", $activityByLaboId)->select("value")->get();
 
@@ -3112,26 +3110,30 @@ class Activity1_12 extends Controller
 
         // Retourner la réponse avec les données d'entrée et les données calculées
         return response()->json([
-            'Nombre de médecins susceptibles de prescrire le produit' => $A,
-            'Pourcentage des médecins utilisant internet pour des informations professionnelles' => $B,
-            'Nombre de médecins cibles pouvant être atteints via internet' => $C,
+            'Nombre médecins susceptibles de prescrire le produit' => $A,
+            'Pourcentage médecins utilisant internet pour informations professionnelles' => $B,
+            'Nombre médecins cibles pouvant être atteints via internet' => $C,
             'Nombre total de visites uniques sur le site' => $D,
-            'Taux d’efficacité sur les médecins cibles' => $E,
-            'Pourcentage de visiteurs uniques ayant interagi davantage avec le contenu du produit ou complété un programme e-detailing' => $F,
-            'Nombre de médecins ayant passé suffisamment de temps sur le site pour être informés' => $G,
-            'Pourcentage des médecins informés ayant changé positivement leur perception du produit' => $H,
-            'Nombre de médecins ayant changé positivement leur perception' => $I,
-            'Pourcentage des médecins ayant changé leur perception et qui sont susceptibles de prescrire le produit' => $J,
-            'Nombre total de médecins prescrivant le produit suite à l’activité' => $K,
-            'Nombre moyen de nouveaux patients par médecin ayant prescrit le produit' => $L,
-            'Nombre total de patients incrémentaux gagnés via le site' => $M,
-            'Valeur moyenne de revenu par patient incrémental (MAD k)' => $N,
-            'valeur_O' => $O,
-            'valeur_P' => $P,
-            'valeur_Q' => $Q,
-            'ROI' => $ROI,
+            'Taux efficacité sur médecins cibles' => $E,
+            'Pourcentage visiteurs uniques ayant interagi davantage avec contenu produit ou complété programme e-detailing' => $F,
+            'Nombre médecins ayant passé suffisamment de temps sur site pour être informés' => $G,
+            'Pourcentage médecins informés ayant changé positivement perception produit' => $H,
+            'Nombre médecins ayant changé positivement perception' => $I,
+            'Pourcentage médecins ayant changé perception et susceptibles de prescrire produit' => $J,
+            'Nombre total médecins prescrivant produit suite à activité' => $K,
+            'Nombre moyen nouveaux patients par médecin ayant prescrit produit' => $L,
+            'Nombre total patients incrémentaux gagnés via site' => $M,
+            'Valeur moyenne revenu par patient incrémental (MAD k)' => $N,
+            'Profit net estimé' => $O,
+            'Coût fixe campagne digitale (MAD k)' => $P,
+            'Coût total programme' => $Q,
+            'Retour sur investissement (ROI)' => $ROI,
         ], 200);
     }
+
+
+
+
 
     //Activite Costum 
     public function insertCustomActivity(Request $request)
@@ -3192,7 +3194,8 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function insertCustomActivity1(Request $request){
+    public function insertCustomActivity1(Request $request)
+    {
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -3387,8 +3390,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_Costum(Request $request)
-    {
+    public function calculateROIAct_Costum(Request $request){
         try {
             // Retrieve the activity ID from the cookie
             $activityByLaboId = $request->cookie('activityId');
@@ -3446,5 +3448,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
+
 
 }

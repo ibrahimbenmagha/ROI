@@ -7,15 +7,16 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "antd/dist/reset.css";
 
 import NotFound from "./pages/NotFound";
-import LoginForm from "./pages/LoginForm/LoginForm";
 import CreateActivity from "./pages/Create/Create";
-import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
+import LoginForm from "./pages/LoginForm/LoginForm";
+import AddActivity from "./pages/BackOffice/AddActivity/AddActivity";
 import RoiResultCardAdmin from "./pages/BackOffice/RoiResultCardAdmin/RoiResultCardAdmin";
 
-
 import BackOffice from "./pages/BackOffice/Home/Home";
-import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
 import RealCreate from "./pages/BackOffice/CreateLabo/Creation";
+import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
+import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
+
 
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 import CalculateAct2 from "./pages/calculateAct2/CalculateAct2";
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="Creation" element={<RealCreate />} />
             <Route path="RoiResultCardAdmin" element={<RoiResultCardAdmin />} />
 
+            <Route path="AddActivity" element={<AddActivity />} />
 
             <Route
               path="DisplayCalculatedActivity"
