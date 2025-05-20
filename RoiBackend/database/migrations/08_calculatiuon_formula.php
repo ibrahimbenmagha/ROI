@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('calculationFormula', function (Blueprint $table) {
             $table->bigIncrements("id");
+            $table->text("fomulat");
             $table->foreignId('ActivityId')->references("id")->on("activitieslist");
-            // $table->string("Name");
-            $table->text("fomulat");  // Add this line for the 'mode' column
             $table->timestamps();
         });
     }

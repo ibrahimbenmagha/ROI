@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use OpenAI;
+
 class InterpretationController extends Controller
 {
     public function generate(Request $request)
@@ -53,13 +54,15 @@ class InterpretationController extends Controller
 
             // Add instructions for interpretation
             $prompt .= "
-                Fournissez une interprétation concise (150-200 mots) de ces données dans le contexte d'une analyse de ROI pour un programme médical. Incluez :
-                1. Une remarque sur la performance globale (succès ou besoin d'amélioration, basé sur les données disponibles, en supposant un ROI ou des ventes élevées comme indicateur positif).
-                2. Des conseils spécifiques pour améliorer les résultats, en tenant compte des données fournies (par exemple, augmenter les métriques positives, réduire les coûts).
-                3. Une conclusion encourageante ou motivante pour optimiser les futures activités.
+            Fournissez une interprétation concise (250-300 mots) de ces données dans le cadre d'une analyse de ROI pour un programme médical. Votre réponse doit inclure :             
+                1. Une analyse complete du resultat 
+                2. Une évaluation claire de la performance globale (indiquant si le programme est performant ou nécessite des améliorations, selon les données fournies).
+                3. Des recommandations précises, concrètes et chiffrées visant à optimiser les résultats. Par exemple, proposez des objectifs mesurables pour améliorer les indicateurs clés (coûts, volumes, taux de conversion, ventes, etc.) en précisant des seuils ou des réductions à viser, basés sur les données analysées. Soyez spécifique et opérationnel dans chaque conseil donné, en proposant des actions directement exploitables.
+                4. Une conclusion motivante pour encourager l’optimisation continue des activités.
+            Si certaines données importantes manquent, faites des hypothèses raisonnables et basées sur les informations disponibles. Utilisez un ton professionnel, accessible et clair, en français.
+        ";
 
-                Répondez en français et utilisez un ton professionnel mais accessible. Si des données clés (comme le ROI) sont absentes, faites une analyse générale basée sur les informations disponibles.
-            ";
+
 
             // Initialize Open AI client
             $client = OpenAI::client(env('OPENAI_API_KEY'));

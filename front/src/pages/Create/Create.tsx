@@ -19,7 +19,6 @@ interface CalculatedActivity {
   details?: string;
 }
 
-
 const storeActivityIdInCookie = (activityId: string) => {
   if (activityId === "autre") {
     document.cookie = `activityNumber=Autre activité; path=/; max-age=3600;`;

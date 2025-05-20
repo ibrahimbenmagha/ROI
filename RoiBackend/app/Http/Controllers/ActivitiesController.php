@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalculationFormula;
 use Illuminate\Http\Request;
 use App\Helpers\JwtHelper; // Adjust the namespace as needed
 
@@ -306,7 +307,8 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function calculateDynamicROI(Request $request){
+    public function calculateDynamicROI(Request $request)
+    {
         try {
             // Récupère l'identifiant de l'activité depuis le cookie ou la requête
             $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
@@ -351,7 +353,8 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function getAllActivityByLaboName(Request $request, $Name){
+    public function getAllActivityByLaboName(Request $request, $Name)
+    {
         $LaboId = Labo::where('Name', $Name)->select('id')->get();
         $Activities = ActivityByLabo::where('laboId', $LaboId)
             ->select('id', 'laboId')
@@ -363,7 +366,8 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function getActivityRepport(){
+    public function getActivityRepport()
+    {
         // Récupérer toutes les données nécessaires
         $AllInfos = ActivityByLabo::join("labo", "ActivityByLabo.laboId", "=", "labo.id")
             ->join("users", "labo.userId", "=", "users.id")
@@ -430,7 +434,8 @@ class  ActivitiesController extends Controller
         return response()->json(['data' => $formattedData], 200);
     }
 
-    public function getActivityRepportBYActivityId(Request $request, $activityListId){
+    public function getActivityRepportBYActivityId(Request $request, $activityListId)
+    {
         if (!$activityListId) {
             return response()->json(['error' => 'activityListId is required'], 400);
         }
@@ -503,7 +508,8 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deleteActivityValues(Request $request){
+    public function deleteActivityValues(Request $request)
+    {
         $ActivityByLaboId = $request->cookie('activityId');
         try {
             ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
@@ -520,7 +526,8 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deleteLaboData(Request $request){
+    public function deleteLaboData(Request $request)
+    {
         $laboId = JWTHelper::getLaboId($request);
         if (!$laboId) {
             return response()->json(['error' => 'Labo ID not found'], 400);
@@ -538,7 +545,8 @@ class  ActivitiesController extends Controller
     }
 
 
-    public function deletelabovalues(Request $request){
+    public function deletelabovalues(Request $request)
+    {
         $laboId = JWTHelper::getLaboId($request);
         if (empty($laboId)) {
             return response()->json([
@@ -566,7 +574,8 @@ class  ActivitiesController extends Controller
         }
     }
 
-    public function deleteLaboNotCalculatedById(Request $request){
+    public function deleteLaboNotCalculatedById(Request $request)
+    {
         $activityByLaboId = $request->cookie('activityId');
 
         if (empty($activityByLaboId)) {
@@ -598,8 +607,8 @@ class  ActivitiesController extends Controller
         }
     }
 
-    private function findOrCreateActivityByLabo($laboId, $activityName, $year, $otherActivity = null){
-        // Cas "Autre activité"
+    private function findOrCreateActivityByLabo($laboId, $activityName, $year, $otherActivity = null)
+    {
         if ($activityName === "Autre activité" && !empty($otherActivity)) {
             $customName = trim($otherActivity);
 
@@ -658,7 +667,6 @@ class  ActivitiesController extends Controller
             'ActivityId' => $existing->id,
         ]);
     }
-
 
     public function getLaboWithActivities(Request $request)
     {
@@ -757,4 +765,226 @@ class  ActivitiesController extends Controller
 
         return response()->json($result, 200);
     }
+
+
+    public function insertActivityData(Request $request)
+    {
+        try {
+            // Récupération de l'ID du labo depuis le token JWT
+            $laboId = JWTHelper::getLaboId($request) ?? $request["laboId"];
+            if (!$laboId) {
+                return response()->json(['message' => 'Token invalide'], 401);
+            }
+
+            // Récupération de l'ID de l'activité depuis le cookie
+            $activityId = $request->cookie('activityNumber') ?? $request["activitynumber"];
+            if (!$activityId) {
+                return response()->json(['message' => 'Activité non spécifiée'], 400);
+            }
+
+            // Récupération de la formule de calcul depuis la base de données
+            $formula = CalculationFormula::where('ActivityId', $activityId)->first();
+            if (!$formula) {
+                return response()->json(['message' => 'Formule de calcul non trouvée pour cette activité'], 404);
+            }
+
+            // Récupération des items de l'activité
+            $activityItems = ActivityItem::where('ActivityId', $activityId)
+                ->where('Name', '!=', 'ROI')
+                ->get();
+
+            // Validation des données
+            $validationRules = ['year' => 'required|integer'];
+            $itemIds = [];
+
+            foreach ($activityItems as $item) {
+                $rule = 'required|numeric|min:0';
+                if ($item->Type === 'percentage') {
+                    $rule .= '|max:100';
+                }
+                $validationRules[$item->symbole] = $rule;
+                $validationRules['id_' . $item->symbole] = 'required|integer';
+                $itemIds[$item->symbole] = $item->id;
+            }
+
+            $validated = $request->validate($validationRules);
+
+            // Création de l'entrée ActivityByLabo
+            $activityByLabo = ActivityByLabo::create([
+                'ActivityId' => $activityId,
+                'laboId' => $laboId,
+                'year' => $validated['year'],
+            ]);
+
+            // Préparation des valeurs à insérer
+            $values = [];
+            $calculatedValues = [];
+
+            // Conversion des pourcentages et stockage des valeurs
+            foreach ($activityItems as $item) {
+                $value = $validated[$item->symbole];
+                if ($item->Type === 'percentage') {
+                    $value = $value / 100;
+                }
+                $calculatedValues[$item->symbole] = $value;
+
+                $values[] = [
+                    'activityItemId' => $validated['id_' . $item->symbole],
+                    'ActivityByLaboId' => $activityByLabo->id,
+                    'value' => $value
+                ];
+            }
+
+            // Décodage de la formule JSON
+            $formulaSteps = json_decode($formula->fomulat, true);
+            $results = [];
+
+            // Exécution des calculs étape par étape
+            foreach ($formulaSteps as $key => $expression) {
+                if ($key === 'roi') continue; // On traitera le ROI à part
+
+                // Remplacement des variables dans l'expression
+                $expressionToEval = $expression;
+                foreach ($calculatedValues as $var => $val) {
+                    $expressionToEval = str_replace($var, $val, $expressionToEval);
+                }
+
+                // Calcul de l'expression
+                $result = eval("return $expressionToEval;");
+                $calculatedValues[$key] = $result;
+                $results[$key] = $result;
+            }
+
+            // Calcul final du ROI
+            if (isset($formulaSteps['roi'])) {
+                $roiExpression = $formulaSteps['roi'];
+                foreach ($calculatedValues as $var => $val) {
+                    $roiExpression = str_replace($var, $val, $roiExpression);
+                }
+                $roi = eval("return $roiExpression;");
+                $results['ROI'] = $roi;
+
+                // Ajout du ROI aux valeurs à insérer
+                $roiItem = ActivityItem::where('ActivityId', $activityId)
+                    ->where('Name', 'ROI')
+                    ->first();
+
+                if ($roiItem) {
+                    $values[] = [
+                        'activityItemId' => $roiItem->id,
+                        'ActivityByLaboId' => $activityByLabo->id,
+                        'value' => $roi
+                    ];
+                }
+            }
+
+            // Insertion des valeurs en base
+            ActivityItemValue::insert($values);
+
+            return response()->json([
+                'message' => 'Activité créée et calculée avec succès',
+                'results' => $results,
+                'ROI' => $results['ROI'] ?? null
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors du traitement',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function calculateRoi(Request $request)
+    {
+        try {
+            // Récupération de l'ID de l'activité
+            $activityId = $request->cookie('activityNumber') ??  $request->input('activityId');
+            if (!$activityId) {
+                return response()->json(['message' => 'Activité non spécifiée'], 400);
+            }
+
+            // Récupération de la formule de calcul
+            $formula = CalculationFormula::where('ActivityId', $activityId)->first();
+            if (!$formula) {
+                return response()->json(['message' => 'Formule de calcul non trouvée'], 404);
+            }
+
+            // Récupération des items de l'activité (sauf ROI)
+            $activityItems = ActivityItem::where('ActivityId', $activityId)
+                ->where('Name', '!=', 'ROI')
+                ->get();
+
+            // Validation des données
+            $validationRules = ['year' => 'required|integer'];
+            $itemIds = [];
+
+            foreach ($activityItems as $item) {
+                $rule = 'required|numeric|min:0';
+                if ($item->Type === 'percentage') {
+                    $rule .= '|max:100';
+                }
+                $validationRules[$item->symbole] = $rule;
+                $validationRules['id_' . $item->symbole] = 'required|integer';
+                $itemIds[$item->symbole] = $item->id;
+            }
+
+            $validated = $request->validate($validationRules);
+
+            // Décodage de la formule JSON
+            $formulaSteps = json_decode($formula->fomulat, true);
+            $calculatedValues = [];
+            $results = [];
+
+            // Conversion des pourcentages et stockage des valeurs
+            foreach ($activityItems as $item) {
+                $value = $validated[$item->symbole];
+                if ($item->Type === 'percentage') {
+                    $value = $value / 100;
+                }
+                $calculatedValues[$item->symbole] = $value;
+            }
+
+            // Exécution des calculs étape par étape
+            foreach ($formulaSteps as $key => $expression) {
+                if ($key === 'roi') continue; // On traitera le ROI à part
+
+                // Remplacement des variables dans l'expression
+                $expressionToEval = $expression;
+                foreach ($calculatedValues as $var => $val) {
+                    $expressionToEval = str_replace($var, $val, $expressionToEval);
+                }
+
+                // Calcul de l'expression
+                $result = eval("return $expressionToEval;");
+                $calculatedValues[$key] = $result;
+                $results[$key] = $result;
+            }
+
+            // Calcul final du ROI
+            $roi = null;
+            if (isset($formulaSteps['roi'])) {
+                $roiExpression = $formulaSteps['roi'];
+                foreach ($calculatedValues as $var => $val) {
+                    $roiExpression = str_replace($var, $val, $roiExpression);
+                }
+                $roi = eval("return $roiExpression;");
+                $results['ROI'] = $roi;
+            }
+
+            return response()->json([
+                'message' => 'Calcul du ROI effectué avec succès',
+                'formulas' => $formulaSteps,
+                'results' => $results,
+                'ROI' => $roi
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors du calcul du ROI',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
 }

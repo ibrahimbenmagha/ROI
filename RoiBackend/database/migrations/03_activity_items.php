@@ -15,6 +15,8 @@ return new class extends Migration
         Schema::create('activityItems', function (Blueprint $table) {
             $table->id();
             $table->string('Name');
+            $table->string('symbole')->nullable();
+            $table->enum('Type',["percentage", "number"]);
             $table->foreignId('ActivityId')->references("id")->on("activitieslist");
             $table->timestamps();
         });

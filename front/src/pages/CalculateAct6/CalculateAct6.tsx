@@ -176,7 +176,7 @@ const CalculateAct6 = () => {
         id_ROI: items[8]?.id,
       };
 
-      const response = await axiosInstance.post("/insertIntoTable6", payload);
+      const response = await axiosInstance.post("insertActivityData", payload);
       if (response.status === 201) {
         message.success("Données enregistrées avec succès.");
         deleteCookie("activityNumber");

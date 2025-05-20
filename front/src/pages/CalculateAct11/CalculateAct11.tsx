@@ -201,7 +201,7 @@ const CalculateAct11 = () => {
     };
 
     try {
-      const response = await axiosInstance.post("insertIntoTable11", formData);
+      const response = await axiosInstance.post("insertActivityData", formData);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");

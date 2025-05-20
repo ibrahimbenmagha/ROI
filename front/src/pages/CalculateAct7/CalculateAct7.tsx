@@ -216,7 +216,7 @@ const CalculateAct7 = () => {
     };
 
     try {
-      const response = await axiosInstance.post("insertIntoTable7", formData);
+      const response = await axiosInstance.post("insertActivityData", formData);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");

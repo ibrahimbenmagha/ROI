@@ -115,6 +115,7 @@ const App = () => (
               </LaboRoute>
             }
           />
+
           <Route
             path="/CalculateAct1"
             element={
@@ -218,7 +219,7 @@ const App = () => (
                 <CalculateAct12 />
               </LaboRoute>
             }
-          />
+          /> 
 
           <Route path="/Unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />

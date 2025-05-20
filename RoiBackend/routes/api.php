@@ -11,6 +11,11 @@ use App\Http\Controllers\InterpretationController;
 use App\Http\Controllers\Activity1_12;
 
 
+    Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
+
+
+
+
 Route::prefix('auth')->group(function () {
     Route::post('loginadmin', [AuthController::class, 'loginadmin']);
     Route::post('login', [AuthController::class, 'login']);
@@ -47,7 +52,7 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
 
-    Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
+    // Route::post("calculateROIAct1", [Activity1_12::class, "calculateROIAct1"]);
     Route::post("insetrIntoTable1", [Activity1_12::class, "insetrIntoTable1"]);
     Route::post("updateActivity1Values", [Activity1_12::class, "updateActivity1Values"]);
 
@@ -98,6 +103,12 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post("insertCustomActivity", [Activity1_12::class, "insertCustomActivity"]);
     
     Route::post("insertCustomActivity1", [Activity1_12::class, "insertCustomActivity1"]);
+
+    Route::post('insertActivityData', [ActivitiesController::class, 'insertActivityData']);
+
+    Route::post('calculateRoi', [ActivitiesController::class, 'calculateRoi']);
+
+
 
     Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 

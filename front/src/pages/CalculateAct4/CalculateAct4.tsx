@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Layout,
@@ -204,57 +203,111 @@ const CalculateAct4 = () => {
     setCalculated(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (items.length < 10) {
-      return message.error("Les items de l'activité ne sont pas prêts.");
-    }
-    if (!activityNumber) {
-      return message.error("Aucune activité détectée.");
-    }
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (items.length < 10) {
+  //     return message.error("Les items de l'activité ne sont pas prêts.");
+  //   }
+  //   if (!activityNumber) {
+  //     return message.error("Aucune activité détectée.");
+  //   }
 
-    const formData = {
-      year: year,
-      A: numDoctors,
-      B: percentRemember,
-      D: percentPositive,
-      F: percentPrescribing,
-      H: patientsPerDoctor,
-      KOL: kolAdjustment,
-      J: valuePerPatient,
-      L: costPerDoctor,
-      M: fixedCosts,
+  //   const formData = {
+  //     year: year,
+  //     A: numDoctors,
+  //     B: percentRemember,
+  //     D: percentPositive,
+  //     F: percentPrescribing,
+  //     H: patientsPerDoctor,
+  //     KOL: kolAdjustment,
+  //     J: valuePerPatient,
+  //     L: costPerDoctor,
+  //     M: fixedCosts,
 
-      id_A: items[0]?.id,
-      id_B: items[1]?.id,
-      id_D: items[2]?.id,
-      id_F: items[3]?.id,
-      id_H: items[4]?.id,
-      id_KOL: items[5]?.id,
-      id_J: items[6]?.id,
-      id_L: items[7]?.id,
-      id_M: items[8]?.id,
-      id_ROI: items[9]?.id,
-    };
+  //     id_A: items[0]?.id,
+  //     id_B: items[1]?.id,
+  //     id_D: items[2]?.id,
+  //     id_F: items[3]?.id,
+  //     id_H: items[4]?.id,
+  //     id_KOL: items[5]?.id,
+  //     id_J: items[6]?.id,
+  //     id_L: items[7]?.id,
+  //     id_M: items[8]?.id,
+  //     id_ROI: items[9]?.id,
+  //   };
 
-    try {
-      const response = await axiosInstance.post("insertIntoTable4", formData);
-      if (response.status === 201) {
-        message.success("Les données ont été insérées avec succès.");
-        deleteCookie("activityNumber");
-        deleteCookie("activityId");
-        navigate("/DisplayActivity");
-      } else {
-        message.error("Une erreur est survenue lors de l'insertion.");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l’envoi du formulaire :", error);
-      message.error(
-        error.response?.data?.message ||
-          "Une erreur est survenue lors de la communication avec le serveur."
-      );
-    }
+  //   try {
+  //     const response = await axiosInstance.post("insertActivityData", formData);
+  //     if (response.status === 201) {
+  //       message.success("Les données ont été insérées avec succès.");
+  //       deleteCookie("activityNumber");
+  //       deleteCookie("activityId");
+  //       navigate("/DisplayActivity");
+  //     } else {
+  //       message.error("Une erreur est survenue lors de l'insertion.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Erreur lors de l’envoi du formulaire :", error);
+  //     message.error(
+  //       error.response?.data?.message ||
+  //         "Une erreur est survenue lors de la communication avec le serveur."
+  //     );
+  //   }
+  // };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (items.length < 10) {
+    return message.error("Les items de l'activité ne sont pas prêts.");
+  }
+  if (!activityNumber) {
+    return message.error("Aucune activité détectée.");
+  }
+
+  const formData = {
+    year: year,
+    A: numDoctors,
+    B: percentRemember,
+    D: percentPositive,
+    F: percentPrescribing,
+    H: patientsPerDoctor,
+    I: kolAdjustment, // Changed from KOL to I
+    J: valuePerPatient,
+    L: costPerDoctor,
+    M: fixedCosts,
+
+    id_A: items[0]?.id,
+    id_B: items[1]?.id,
+    id_D: items[2]?.id,
+    id_F: items[3]?.id,
+    id_H: items[4]?.id,
+    id_I: items[5]?.id, // Changed from id_KOL to id_I
+    id_J: items[6]?.id,
+    id_L: items[7]?.id,
+    id_M: items[8]?.id,
+    id_ROI: items[9]?.id,
   };
+
+  try {
+    const response = await axiosInstance.post("insertActivityData", formData);
+    if (response.status === 201) {
+      message.success("Les données ont été insérées avec succès.");
+      deleteCookie("activityNumber");
+      deleteCookie("activityId");
+      navigate("/DisplayActivity");
+    } else {
+      message.error("Une erreur est survenue lors de l'insertion.");
+    }
+  } catch (error) {
+    console.error("Erreur lors de l’envoi du formulaire :", error);
+    message.error(
+      error.response?.data?.message ||
+        "Une erreur est survenue lors de la communication avec le serveur."
+    );
+  }
+};
+
+
 
   return (
     <Layout className="min-h-screen">
@@ -447,7 +500,7 @@ const CalculateAct4 = () => {
                     type="number"
                     min="0"
                     value={fixedCosts}
-                    onChange={(e) => setFixedCosts(Number(e.target.value))}
+                    onChange={(e) => setFixedCosts(Number(e.target.value))}   
                   />
                 </div>
                 <div>
@@ -505,3 +558,4 @@ const CalculateAct4 = () => {
 };
 
 export default CalculateAct4;
+

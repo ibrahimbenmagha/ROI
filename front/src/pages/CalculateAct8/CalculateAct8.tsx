@@ -223,7 +223,7 @@ const CalculateAct8 = () => {
     };
 
     try {
-      const response = await axiosInstance.post("/insertIntoTable8", formData);
+      const response = await axiosInstance.post("insertActivityData", formData);
 
       if (response.status === 201) {
         message.success("Données enregistrées avec succès");
@@ -521,4 +521,5 @@ const CalculateAct8 = () => {
     </Layout>
   );
 };
+
 export default CalculateAct8;

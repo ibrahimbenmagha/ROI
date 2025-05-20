@@ -42,6 +42,7 @@ const CalculateAct3 = () => {
   const [calculationResult, setCalculationResult] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [items, setItems] = useState([]);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +59,7 @@ const CalculateAct3 = () => {
       .catch((error) => {
         console.error("Erreur lors du chargement des items :", error);
         message.error("Impossible de charger les données de l'activité.");
+        setError("Erreur lors du chargement des données.");
       });
   }, [location.pathname]);
 
@@ -85,12 +87,12 @@ const CalculateAct3 = () => {
     try {
       const response = await axiosInstance.post("/generate-interpretation", {
         roi: result.roi,
-        doctorsRememberEmail: result.doctorsRememberEmail,
-        doctorsRememberBrand: result.doctorsRememberBrand,
-        doctorsPrescribing: result.doctorsPrescribing,
-        incrementalPatients: result.incrementalPatients,
-        incrementalSales: result.incrementalSales,
-        totalCost: result.totalCost,
+        doctorsRememberEmail: result.doctors_remembering_email,
+        doctorsRememberBrand: result.doctors_remembering_brand,
+        doctorsPrescribing: result.doctors_prescribing,
+        incrementalPatients: result.incremental_patients,
+        incrementalSales: result.incremental_sales,
+        totalCost: result.total_cost,
         totalDoctors,
         emailsPerDoctor,
         percentRememberEmail,
@@ -131,35 +133,50 @@ const CalculateAct3 = () => {
       return message.error("Coût par email invalide");
     if (!validateNumeric(fixedCosts, 0))
       return message.error("Coût fixe invalide");
+    if (!year)
+      return message.error("Année d'activité manquante.");
+    if (!activityNumber)
+      return message.error("Le numéro d’activité est manquant.");
+    if (!items || items.length < 9)
+      return message.error("Les données des items d'activité ne sont pas disponibles.");
 
     setLoading(true);
-    try {
-      const A = totalDoctors;
-      const B = emailsPerDoctor;
-      const C = percentRememberEmail / 100;
-      const E = percentRememberBrand / 100;
-      const G = percentPrescribing / 100;
-      const I = newPatientsPerDoctor;
-      const K = valuePerPatient;
-      const M = costPerEmail;
-      const N = fixedCosts;
+    setError(null);
 
-      const D = A * C;
-      const F = D * E;
-      const H = F * G;
-      const J = H * I;
-      const L = J * K;
-      const O = M * A * B + N;
-      const ROI = O > 0 ? (L / O) * 100 : 0;
+    try {
+      const formData = {
+        activityId: activityNumber,
+        year,
+        A: totalDoctors,
+        B: emailsPerDoctor,
+        C: percentRememberEmail,
+        E: percentRememberBrand,
+        G: percentPrescribing,
+        I: newPatientsPerDoctor,
+        K: valuePerPatient,
+        M: costPerEmail,
+        N: fixedCosts,
+        id_A: items[0]?.id,
+        id_B: items[1]?.id,
+        id_C: items[2]?.id,
+        id_E: items[3]?.id,
+        id_G: items[4]?.id,
+        id_I: items[5]?.id,
+        id_K: items[6]?.id,
+        id_M: items[7]?.id,
+        id_N: items[8]?.id,
+      };
+
+      const response = await axiosInstance.post("calculateRoi", formData);
 
       const result = {
-        roi: ROI,
-        doctorsRememberEmail: D,
-        doctorsRememberBrand: F,
-        doctorsPrescribing: H,
-        incrementalPatients: J,
-        incrementalSales: L,
-        totalCost: O,
+        roi: response.data.ROI * 100, // Convert to percentage for consistency
+        doctors_remembering_email: response.data.results.doctors_remembering_email,
+        doctors_remembering_brand: response.data.results.doctors_remembering_brand,
+        doctors_prescribing: response.data.results.doctors_prescribing,
+        incremental_patients: response.data.results.incremental_patients,
+        incremental_sales: response.data.results.incremental_sales,
+        total_cost: response.data.results.total_cost,
       };
 
       setCalculationResult(result);
@@ -172,8 +189,8 @@ const CalculateAct3 = () => {
         message.error("L'interprétation n'est pas disponible pour le moment.");
       }
     } catch (error) {
-      message.error("Erreur lors du calcul du ROI.");
-      console.error(error);
+      console.error("Erreur lors du calcul du ROI :", error);
+      setError(error.response?.data?.message || "Erreur lors du calcul du ROI. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -193,6 +210,7 @@ const CalculateAct3 = () => {
     setCalculationResult(null);
     setInterpretation(null);
     setCalculated(false);
+    setError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -208,30 +226,6 @@ const CalculateAct3 = () => {
     if (!activityNumber) {
       return message.error("Aucune activité détectée.");
     }
-
-    // const formData = {
-    //   year,
-    //   activityId: activityNumber,
-    //   A: parseFloat(totalDoctors),
-    //   B: parseFloat(emailsPerDoctor),
-    //   C: parseFloat(percentRememberEmail),
-    //   E: parseFloat(percentRememberBrand),
-    //   G: parseFloat(percentPrescribing),
-    //   I: parseFloat(newPatientsPerDoctor),
-    //   K: parseFloat(valuePerPatient),
-    //   M: parseFloat(costPerEmail),
-    //   N: parseFloat(fixedCosts),
-    //   id_A: items[0]?.id,
-    //   id_B: items[1]?.id,
-    //   id_C: items[2]?.id,
-    //   id_E: items[3]?.id,
-    //   id_G: items[4]?.id,
-    //   id_I: items[5]?.id,
-    //   id_K: items[6]?.id,
-    //   id_M: items[7]?.id,
-    //   id_N: items[8]?.id,
-    //   id_ROI: items[9]?.id,
-    // };
 
     const formData = {
       year,
@@ -258,7 +252,7 @@ const CalculateAct3 = () => {
     };
 
     try {
-      const response = await axiosInstance.post("insertIntoTable3", formData);
+      const response = await axiosInstance.post("insertActivityData", formData);
       if (response.status === 201) {
         message.success("Les données ont été insérées avec succès.");
         deleteCookie("activityNumber");
@@ -275,6 +269,23 @@ const CalculateAct3 = () => {
       );
     }
   };
+
+  if (error) {
+    return (
+      <Layout className="min-h-screen">
+        <TheHeader />
+        <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
+          <Alert
+            message="Erreur"
+            description={error}
+            type="error"
+            showIcon
+            style={{ maxWidth: 800, margin: "0 auto" }}
+          />
+        </Content>
+      </Layout>
+    );
+  }
 
   return (
     <Layout className="min-h-screen">
@@ -300,7 +311,7 @@ const CalculateAct3 = () => {
                 <Card>
                   <Statistic
                     title="Ventes Incrémentales"
-                    value={calculationResult.incrementalSales}
+                    value={calculationResult.incremental_sales}
                     precision={2}
                     suffix=" MAD"
                   />
@@ -308,7 +319,7 @@ const CalculateAct3 = () => {
                 <Card>
                   <Statistic
                     title="Coût Total"
-                    value={calculationResult.totalCost}
+                    value={calculationResult.total_cost}
                     precision={2}
                     suffix=" MAD"
                   />
@@ -319,28 +330,28 @@ const CalculateAct3 = () => {
                 <Card>
                   <Statistic
                     title="Médecins se rappelant l'email"
-                    value={calculationResult.doctorsRememberEmail}
+                    value={calculationResult.doctors_remembering_email}
                     precision={0}
                   />
                 </Card>
                 <Card>
                   <Statistic
                     title="Médecins se souvenant de la marque"
-                    value={calculationResult.doctorsRememberBrand}
+                    value={calculationResult.doctors_remembering_brand}
                     precision={0}
                   />
                 </Card>
                 <Card>
                   <Statistic
                     title="Médecins prescrivant"
-                    value={calculationResult.doctorsPrescribing}
+                    value={calculationResult.doctors_prescribing}
                     precision={0}
                   />
                 </Card>
                 <Card>
                   <Statistic
                     title="Patients incrémentaux"
-                    value={calculationResult.incrementalPatients}
+                    value={calculationResult.incremental_patients}
                     precision={0}
                   />
                 </Card>

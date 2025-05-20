@@ -1,16 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Helpers\JwtHelper; // Adjust the namespace as needed
+
+use App\Models\CalculationFormula;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityByLabo;
 use App\Models\ActivitiesList;
-use App\Helpers\JwtHelper; // Adjust the namespace as needed
-
 use App\Models\ActivityItem;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Models\Labo;
 
 class Activity1_12 extends Controller
@@ -792,8 +792,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct_3(Request $request)
-    {
+    public function calculateROIAct_3(Request $request){
         $activityByLaboId = $request->cookie('activityId');
         // $activityByLaboId = $request['activityId'];
 
@@ -841,8 +840,7 @@ class Activity1_12 extends Controller
 
 
     //Activite 4
-    public function insertIntoTable4(Request $request)
-    {
+    public function insertIntoTable4(Request $request){
         try {
             $laboId = JWTHelper::getLaboId($request);
             if (!$laboId) {
@@ -938,8 +936,7 @@ class Activity1_12 extends Controller
         }
     }
 
-    public function calculateROIAct4(Request $request)
-    {
+    public function calculateROIAct4(Request $request){
         $validated = $request->validate([
             'A' => 'required|numeric|min:0', // Nombre de médecins participants à la conférence
             'B' => 'required|numeric|min:0|max:100', // Pourcentage de médecins ayant retenu le message
@@ -993,8 +990,7 @@ class Activity1_12 extends Controller
         ], 200);
     }
 
-    public function updateActivity4Values(Request $request)
-    {
+    public function updateActivity4Values(Request $request){
         try {
             $validated = $request->validate([
                 'A' => 'required|numeric|min:0', // Nombre de médecins participants à la conférence
@@ -1753,7 +1749,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
-
     public function calculateROIAct7(Request $request)
     {
         try {
@@ -1807,7 +1802,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
-
     public function updateActivity7Values(Request $request)
     {
         try {
@@ -1924,7 +1918,6 @@ class Activity1_12 extends Controller
             'ROI' => $ROI,
         ], 200);
     }
-
 
 
 
@@ -2921,7 +2914,6 @@ class Activity1_12 extends Controller
     }
 
 
-    
 
 
     //Activite 12
@@ -3078,7 +3070,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
-
     public function calculateROIAct_12(Request $request){
 
         $activityByLaboId = $request->cookie('activityId');
@@ -3448,6 +3439,5 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
-
 
 }

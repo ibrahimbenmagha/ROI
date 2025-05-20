@@ -45,7 +45,8 @@ const CreateActivity = () => {
   const [roiResult, setRoiResult] = useState(null);
   const [roiFinal, setRoiFinal] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
-  const [isCalculatorModalVisible, setIsCalculatorModalVisible] = useState(false);
+  const [isCalculatorModalVisible, setIsCalculatorModalVisible] =
+    useState(false);
   const [newCalculatedItem, setNewCalculatedItem] = useState({
     name: "",
     expression: [],
@@ -69,7 +70,9 @@ const CreateActivity = () => {
     setItems(items.filter((item) => item.id !== id));
     const updatedCalculatedItems = calculatedItems.filter(
       (calcItem) =>
-        !calcItem.expression.some((expr) => expr.type === "item" && expr.value === id)
+        !calcItem.expression.some(
+          (expr) => expr.type === "item" && expr.value === id
+        )
     );
     setCalculatedItems(updatedCalculatedItems);
   };
@@ -90,7 +93,9 @@ const CreateActivity = () => {
         return;
       }
     }
-    setItems(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+    setItems(
+      items.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+    );
     setRoiResult(null);
     setRoiFinal(null);
     setInterpretation(null);
@@ -110,13 +115,21 @@ const CreateActivity = () => {
     if (!activityName.trim() || !year) return false;
     return (
       items.length > 0 &&
-      items.every((item) => item.name.trim() && item.value !== "" && !isNaN(item.value) && item.type)
+      items.every(
+        (item) =>
+          item.name.trim() &&
+          item.value !== "" &&
+          !isNaN(item.value) &&
+          item.type
+      )
     );
   };
 
   const openCalculatorModal = () => {
     if (!isFormValid()) {
-      message.error("Veuillez remplir tous les champs avant de définir des calculs.");
+      message.error(
+        "Veuillez remplir tous les champs avant de définir des calculs."
+      );
       return;
     }
     setNewCalculatedItem({ name: "", expression: [] });
@@ -126,18 +139,25 @@ const CreateActivity = () => {
   const addExpressionElement = (type, value) => {
     const canAddItemOrConstant =
       newCalculatedItem.expression.length === 0 ||
-      newCalculatedItem.expression[newCalculatedItem.expression.length - 1].type === "operator";
+      newCalculatedItem.expression[newCalculatedItem.expression.length - 1]
+        .type === "operator";
     const canAddOperator =
       newCalculatedItem.expression.length > 0 &&
-      (newCalculatedItem.expression[newCalculatedItem.expression.length - 1].type === "item" ||
-        newCalculatedItem.expression[newCalculatedItem.expression.length - 1].type === "constant");
+      (newCalculatedItem.expression[newCalculatedItem.expression.length - 1]
+        .type === "item" ||
+        newCalculatedItem.expression[newCalculatedItem.expression.length - 1]
+          .type === "constant");
 
     if ((type === "item" || type === "constant") && !canAddItemOrConstant) {
-      message.error("Veuillez ajouter un opérateur avant d'ajouter un autre élément.");
+      message.error(
+        "Veuillez ajouter un opérateur avant d'ajouter un autre élément."
+      );
       return;
     }
     if (type === "operator" && !canAddOperator) {
-      message.error("Veuillez ajouter un élément avant d'ajouter un opérateur.");
+      message.error(
+        "Veuillez ajouter un élément avant d'ajouter un opérateur."
+      );
       return;
     }
 
@@ -196,7 +216,9 @@ const CreateActivity = () => {
       if (elem.type === "item") {
         const itemValue = valueMap[elem.value];
         if (itemValue === undefined || isNaN(itemValue)) {
-          console.error(`Erreur: Valeur manquante ou invalide pour l'item ${elem.value}`);
+          console.error(
+            `Erreur: Valeur manquante ou invalide pour l'item ${elem.value}`
+          );
           hasError = true;
           return;
         }
@@ -231,7 +253,9 @@ const CreateActivity = () => {
     });
 
     if (hasError) {
-      console.error("Erreur dans l'évaluation de l'expression: Données invalides");
+      console.error(
+        "Erreur dans l'évaluation de l'expression: Données invalides"
+      );
       return 0;
     }
 
@@ -254,7 +278,11 @@ const CreateActivity = () => {
   const performCalculations = () => {
     const valueMap = {};
     items.forEach((item) => {
-      valueMap[item.id] = parseFloat(item.value);
+      let value = parseFloat(item.value);
+      if (item.type === "percentage") {
+        value = value / 100; // Convertir le pourcentage en décimal
+      }
+      valueMap[item.id] = value;
     });
 
     console.log("Value map for calculations:", valueMap);
@@ -269,7 +297,9 @@ const CreateActivity = () => {
       const initialLength = remainingItems.length;
 
       const itemsToProcess = remainingItems.filter((item) =>
-        item.expression.every((expr) => expr.type !== "item" || valueMap[expr.value] !== undefined)
+        item.expression.every(
+          (expr) => expr.type !== "item" || valueMap[expr.value] !== undefined
+        )
       );
 
       console.log("Items to process:", itemsToProcess);
@@ -281,10 +311,14 @@ const CreateActivity = () => {
       });
 
       remainingItems = remainingItems.filter(
-        (item) => !itemsToProcess.some((processedItem) => processedItem.id === item.id)
+        (item) =>
+          !itemsToProcess.some((processedItem) => processedItem.id === item.id)
       );
 
-      if (initialLength === remainingItems.length && remainingItems.length > 0) {
+      if (
+        initialLength === remainingItems.length &&
+        remainingItems.length > 0
+      ) {
         console.error("Dépendance circulaire détectée dans les calculs.");
         message.error("Dépendance circulaire détectée dans les calculs.");
         break;
@@ -299,7 +333,9 @@ const CreateActivity = () => {
     try {
       const inputs = {};
       items.forEach((item) => {
-        inputs[item.name.toLowerCase().replace(/\s+/g, "_")] = parseFloat(item.value);
+        inputs[item.name.toLowerCase().replace(/\s+/g, "_")] = parseFloat(
+          item.value
+        );
       });
       calculatedItems.forEach((item) => {
         inputs[item.name.toLowerCase().replace(/\s+/g, "_")] = item.value;
@@ -310,23 +346,35 @@ const CreateActivity = () => {
         inputs,
       };
       console.log("Interpretation payload:", payload);
-      const response = await axiosInstance.post("/generate-interpretation", payload);
+      const response = await axiosInstance.post(
+        "/generate-interpretation",
+        payload
+      );
       return response.data.interpretation;
     } catch (error) {
-      console.error("Erreur lors de la génération de l'interprétation :", error);
+      console.error(
+        "Erreur lors de la génération de l'interprétation :",
+        error
+      );
       return null;
     }
   };
 
   const calculateRoi = async () => {
     if (!isFormValid()) {
-      message.error("Veuillez remplir tous les champs avant de calculer le ROI.");
+      message.error(
+        "Veuillez remplir tous les champs avant de calculer le ROI."
+      );
       return;
     }
 
-    const hasRoiItem = calculatedItems.some((item) => item.name.toLowerCase().includes("roi"));
+    const hasRoiItem = calculatedItems.some((item) =>
+      item.name.toLowerCase().includes("roi")
+    );
     if (!hasRoiItem) {
-      message.error("Vous devez définir un calcul nommé 'ROI' avant de calculer.");
+      message.error(
+        "Vous devez définir un calcul nommé 'ROI' avant de calculer."
+      );
       return;
     }
 
@@ -341,14 +389,19 @@ const CreateActivity = () => {
         calculatedMap[item.id] = item.value;
       });
 
-      const roiItem = updatedCalculatedItems.find((item) => item.name === "ROI");
-      const revenueItem = updatedCalculatedItems.find((item) =>
-        item.name.toLowerCase().includes("revenu") || item.name.toLowerCase().includes("revenue")
+      const roiItem = updatedCalculatedItems.find(
+        (item) => item.name === "ROI"
       );
-      const costItem = updatedCalculatedItems.find((item) =>
-        item.name.toLowerCase().includes("coût") ||
-        item.name.toLowerCase().includes("cout") ||
-        item.name.toLowerCase().includes("cost")
+      const revenueItem = updatedCalculatedItems.find(
+        (item) =>
+          item.name.toLowerCase().includes("revenu") ||
+          item.name.toLowerCase().includes("revenue")
+      );
+      const costItem = updatedCalculatedItems.find(
+        (item) =>
+          item.name.toLowerCase().includes("coût") ||
+          item.name.toLowerCase().includes("cout") ||
+          item.name.toLowerCase().includes("cost")
       );
 
       const result = {
@@ -360,8 +413,12 @@ const CreateActivity = () => {
       // Store ROI value in roiFinal
       if (roiItem) {
         if (roiItem.value === 0) {
-          console.warn("ROI calculé est 0, vérifiez l'expression et les données d'entrée.");
-          message.warning("La valeur du ROI est 0. Veuillez vérifier votre calcul.");
+          console.warn(
+            "ROI calculé est 0, vérifiez l'expression et les données d'entrée."
+          );
+          message.warning(
+            "La valeur du ROI est 0. Veuillez vérifier votre calcul."
+          );
         }
         setRoiFinal(roiItem.value);
         console.log("ROI Final set to:", roiItem.value);
@@ -386,7 +443,9 @@ const CreateActivity = () => {
       message.success("Calcul terminé avec succès.");
       setIsCalculatorModalVisible(false);
     } catch (error) {
-      message.error("Erreur lors du calcul du ROI. Veuillez vérifier vos données.");
+      message.error(
+        "Erreur lors du calcul du ROI. Veuillez vérifier vos données."
+      );
       console.error("Erreur dans calculateRoi:", error);
     } finally {
       setCalculating(false);
@@ -460,7 +519,9 @@ const CreateActivity = () => {
     try {
       const hasRoiItem = calculatedItems.some((item) => item.name === "ROI");
       if (!hasRoiItem) {
-        message.error("Vous devez définir un calcul nommé 'ROI' avant de soumettre.");
+        message.error(
+          "Vous devez définir un calcul nommé 'ROI' avant de soumettre."
+        );
         setSubmitting(false);
         return;
       }
@@ -480,7 +541,7 @@ const CreateActivity = () => {
         year: year,
         items: items.map((item) => ({
           name: item.name,
-          value: parseFloat(item.value),
+          value: parseFloat(item.value), // Pas de division ici, le backend gère la conversion
           type: item.type,
         })),
         calculatedItems: calculatedItems.map((item) => ({
@@ -489,16 +550,24 @@ const CreateActivity = () => {
         })),
       };
 
-      console.log("Payload envoyé au backend:", JSON.stringify(payload, null, 2));
+      console.log(
+        "Payload envoyé au backend:",
+        JSON.stringify(payload, null, 2)
+      );
 
-      const response = await axiosInstance.post("insertCustomActivity1", payload);
+      const response = await axiosInstance.post(
+        "insertCustomActivity1",
+        payload
+      );
       message.success("Activité personnalisée créée avec succès");
       handleReset();
       navigate("/Activities");
     } catch (error) {
       if (error.response) {
         console.error("Erreur serveur:", error.response.data);
-        message.error(error.response.data.message || "Erreur lors de la création");
+        message.error(
+          error.response.data.message || "Erreur lors de la création"
+        );
       } else {
         console.error("Erreur réseau:", error);
         message.error("Erreur de communication avec le serveur.");
@@ -521,7 +590,9 @@ const CreateActivity = () => {
                   <Typography.Text strong>ROI</Typography.Text>
                   <Typography.Title
                     level={2}
-                    style={{ color: roiResult.roi >= 1 ? "#3f8600" : "#cf1322" }}
+                    style={{
+                      color: roiResult.roi >= 1 ? "#3f8600" : "#cf1322",
+                    }}
                   >
                     {(roiResult.roi * 100).toFixed(2)}%
                   </Typography.Title>
@@ -598,26 +669,35 @@ const CreateActivity = () => {
               <Divider>Items de base</Divider>
 
               {items.map((item) => (
-                <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"
+                >
                   <div className="md:col-span-1">
                     <AntInput
                       placeholder="Nom de l'item"
                       value={item.name}
-                      onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(item.id, "name", e.target.value)
+                      }
                     />
                   </div>
                   <div className="md:col-span-1">
                     <AntInput
                       placeholder="Valeur"
                       value={item.value}
-                      onChange={(e) => handleItemChange(item.id, "value", e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(item.id, "value", e.target.value)
+                      }
                     />
                   </div>
                   <div className="md:col-span-1">
                     <Select
                       style={{ width: "100%" }}
                       value={item.type}
-                      onChange={(value) => handleItemChange(item.id, "type", value)}
+                      onChange={(value) =>
+                        handleItemChange(item.id, "type", value)
+                      }
                     >
                       <Option value="number">Nombre</Option>
                       <Option value="percentage">Pourcentage</Option>
@@ -654,17 +734,24 @@ const CreateActivity = () => {
                         <div>
                           <Text strong>{item.name}</Text>
                           <Text> = </Text>
-                          <span className="ml-1">{renderExpression(item.expression)}</span>
+                          <span className="ml-1">
+                            {renderExpression(item.expression)}
+                          </span>
                           <Text type="secondary">
                             {" "}
-                            = {item.value !== undefined ? item.value.toFixed(2) : "N/A"}
+                            ={" "}
+                            {item.value !== undefined
+                              ? item.value.toFixed(2)
+                              : "N/A"}
                           </Text>
                         </div>
                         <Button
                           size="small"
                           danger
                           onClick={() => {
-                            setCalculatedItems(calculatedItems.filter((ci) => ci.id !== item.id));
+                            setCalculatedItems(
+                              calculatedItems.filter((ci) => ci.id !== item.id)
+                            );
                           }}
                         >
                           <DeleteOutlined />
@@ -692,7 +779,12 @@ const CreateActivity = () => {
                   type="submit"
                   disabled={submitting || !isFormValid() || !roiResult}
                 >
-                  {submitting ? <Spin size="small" /> : <SaveOutlined className="mr-2" />} Enregistrer
+                  {submitting ? (
+                    <Spin size="small" />
+                  ) : (
+                    <SaveOutlined className="mr-2" />
+                  )}{" "}
+                  Enregistrer
                 </Button>
 
                 <div className="flex gap-4">
@@ -716,16 +808,27 @@ const CreateActivity = () => {
         open={isCalculatorModalVisible}
         onCancel={() => setIsCalculatorModalVisible(false)}
         footer={[
-          <Button key="cancel" onClick={() => setIsCalculatorModalVisible(false)}>
+          <Button
+            key="cancel"
+            onClick={() => setIsCalculatorModalVisible(false)}
+          >
             Annuler
           </Button>,
           <Button
             key="calculate"
             type="primary"
             onClick={calculateRoi}
-            disabled={!calculatedItems.some((item) => item.name.toLowerCase().includes("roi"))}
+            disabled={
+              !calculatedItems.some((item) =>
+                item.name.toLowerCase().includes("roi")
+              )
+            }
           >
-            {calculating ? <Spin size="small" /> : "Calculer et afficher les résultats"}
+            {calculating ? (
+              <Spin size="small" />
+            ) : (
+              "Calculer et afficher les résultats"
+            )}
           </Button>,
         ]}
         width={800}
@@ -734,12 +837,13 @@ const CreateActivity = () => {
           <div>
             <Title level={5}>Instructions</Title>
             <Text>
-              Pour calculer le ROI, vous devez obligatoirement créer un calcul nommé "ROI". Vous
-              pouvez également ajouter d'autres calculs comme "Revenu Total" ou "Coût Total".
+              Pour calculer le ROI, vous devez obligatoirement créer un calcul
+              nommé "ROI". Vous pouvez également ajouter d'autres calculs comme
+              "Revenu Total" ou "Coût Total".
             </Text>
             <Text type="secondary" className="block mt-1">
-              Un calcul nommé "ROI" est requis pour soumettre l'activité. Exemple: (Revenu Total -
-              Coût Total) / Coût Total
+              Un calcul nommé "ROI" est requis pour soumettre l'activité.
+              Exemple: (Revenu Total - Coût Total) / Coût Total
             </Text>
           </div>
 
@@ -751,7 +855,10 @@ const CreateActivity = () => {
               placeholder="ex: ROI, Revenu Total, Coût Total"
               value={newCalculatedItem.name}
               onChange={(e) =>
-                setNewCalculatedItem({ ...newCalculatedItem, name: e.target.value })
+                setNewCalculatedItem({
+                  ...newCalculatedItem,
+                  name: e.target.value,
+                })
               }
             />
             <Text type="secondary" className="block mt-1">
@@ -766,7 +873,8 @@ const CreateActivity = () => {
                 renderExpression(newCalculatedItem.expression)
               ) : (
                 <Text type="secondary">
-                  Construisez votre expression en utilisant les boutons ci-dessous
+                  Construisez votre expression en utilisant les boutons
+                  ci-dessous
                 </Text>
               )}
             </div>
@@ -799,9 +907,10 @@ const CreateActivity = () => {
                   <AntButton
                     icon={<NumberOutlined />}
                     onClick={() => {
-                      const value = document.getElementById("constantValue").value;
+                      const value =
+                        document.getElementById("constantValue").value;
                       if (value && !isNaN(value)) {
-                        addExpressionElement("constant", parseFloat(value));
+                        addExpressionElement("constant", parseFloat(value)); // Removed erroneous 'adda'
                         document.getElementById("constantValue").value = "";
                       } else {
                         message.error("Veuillez entrer un nombre valide");
@@ -849,7 +958,10 @@ const CreateActivity = () => {
             <Button
               type="primary"
               onClick={handleAddCalculatedItem}
-              disabled={!newCalculatedItem.name || newCalculatedItem.expression.length < 3}
+              disabled={
+                !newCalculatedItem.name ||
+                newCalculatedItem.expression.length < 3
+              }
             >
               Ajouter ce calcul
             </Button>
@@ -868,14 +980,19 @@ const CreateActivity = () => {
                         {renderExpression(item.expression)}
                         <Text type="secondary">
                           {" "}
-                          = {item.value !== undefined ? item.value.toFixed(2) : "N/A"}
+                          ={" "}
+                          {item.value !== undefined
+                            ? item.value.toFixed(2)
+                            : "N/A"}
                         </Text>
                       </div>
                       <Button
                         size="small"
                         danger
                         onClick={() => {
-                          setCalculatedItems(calculatedItems.filter((ci) => ci.id !== item.id));
+                          setCalculatedItems(
+                            calculatedItems.filter((ci) => ci.id !== item.id)
+                          );
                         }}
                       >
                         <DeleteOutlined />
