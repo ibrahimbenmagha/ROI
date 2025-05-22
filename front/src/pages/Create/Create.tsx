@@ -121,7 +121,7 @@ const ActivityPage: React.FC = () => {
                         to={
                           act.id === "autre"
                             ? "/CustomActivityPage"
-                            : `/CalculateAct${act.id}`
+                            : `/CalculateAct1`
                         }
                       >
                         <button

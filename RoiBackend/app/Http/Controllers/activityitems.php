@@ -7,6 +7,7 @@ use App\Http\Requests;
 use App\Models\activitieslist;
 use App\Models\ActivityItem;
 
+
 class activityitems extends Controller
 {
     public function getActivityItems()
@@ -36,15 +37,38 @@ class activityitems extends Controller
     }
 
 
-
-    
-
-    public function getActivityItemsByActivityIdall($activityId)
+    public function getActivityItemsByActivityIdall(Request $request)
     {
-        $activityItem = ActivityItem::where('ActivityId', $activityId)->get();
-        if (!$activityItem) {
-            return response()->json(['error' => 'L\'item n\'exist pas'], 404);
+        $activityId = $request->cookie('activityNumber') ?? $request["activityNumber"];
+
+        if (empty($activityId) || $activityId === "undefined") {
+            return response()->json(['error' => 'Activity ID not found'], 400);
         }
-        return response()->json($activityItem);
+
+        $activityItems = ActivityItem::where('activityitems.ActivityId', $activityId)
+            ->join('activitieslist', 'activityitems.ActivityId', '=', 'activitieslist.id')
+            ->select(
+                'activityitems.id',
+                'activityitems.Name as itemName',
+                'activityitems.symbole',
+                'activityitems.Type',
+                'activityitems.ActivityId',
+                'activitieslist.Name as activityName',
+                'activityitems.created_at',
+                'activityitems.updated_at'
+            )
+            ->get();
+
+        if ($activityItems->isEmpty()) {
+            return response()->json(['error' => 'Les items n\'existent pas'], 404);
+        }
+
+        return response()->json([
+            'items' => $activityItems,
+            'activityName' => $activityItems->isNotEmpty() ? $activityItems->first()->activityName : null
+        ]);
     }
+
+
+
 }

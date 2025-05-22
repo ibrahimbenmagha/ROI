@@ -13,6 +13,8 @@ class ActivityItem extends Model
     protected $fillable = [
         'Name',
         'ActivityId',
+        'Type',
+        'symbole'
     ];
 
     public function activity()

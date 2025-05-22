@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : lun. 19 mai 2025 à 15:56
+-- Généré le : mar. 20 mai 2025 à 16:33
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -51,7 +51,8 @@ INSERT INTO `activitieslist` (`id`, `Name`, `is_custom`, `created_at`, `updated_
 (9, 'Publicité dans les revues', 0, NULL, NULL),
 (10, 'Générique (Médecins)', 0, NULL, NULL),
 (11, 'Générique (Patients)', 0, NULL, NULL),
-(12, 'Promotion numérique pour les médecins', 0, NULL, NULL);
+(12, 'Promotion numérique pour les médecins', 0, NULL, NULL),
+(13, 'Campagne de Formation Médicale', 0, '2025-05-20 13:16:36', '2025-05-20 13:16:36');
 
 -- --------------------------------------------------------
 
@@ -145,7 +146,16 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (54, 'Valeur du revenu par patient incrémental', 'K', 'number', 6, NULL, NULL),
 (55, 'Coût variable par représentant', 'M1', 'number', 6, NULL, NULL),
 (56, 'Nombre total de représentants', 'M2', 'number', 6, NULL, NULL),
-(57, 'Roi', NULL, 'number', 6, NULL, NULL);
+(57, 'Roi', NULL, 'number', 6, NULL, NULL),
+(58, 'Nombre de médecins participant aux formations', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(59, 'Nombre de sessions de formation par médecin', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(60, '% de médecins adoptant le médicament après formation', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(61, 'Nombre moyen de prescriptions par médecin adoptant', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(62, '% de prescriptions sans formation', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(63, 'Revenu par prescription MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(64, 'Coût par session de formation MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(65, 'Coûts fixes organisationnels MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
+(66, 'Roi', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36');
 
 -- --------------------------------------------------------
 
@@ -207,7 +217,7 @@ CREATE TABLE `cache_locks` (
 
 CREATE TABLE `calculationformula` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `fomulat` text NOT NULL,
+  `formulat` text NOT NULL,
   `ActivityId` bigint(20) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -217,7 +227,7 @@ CREATE TABLE `calculationformula` (
 -- Déchargement des données de la table `calculationformula`
 --
 
-INSERT INTO `calculationformula` (`id`, `fomulat`, `ActivityId`, `created_at`, `updated_at`) VALUES
+INSERT INTO `calculationformula` (`id`, `formulat`, `ActivityId`, `created_at`, `updated_at`) VALUES
 (1, '{\"total_samples_distributed\":\"A * B\",\"total_patients_received_samples\":\"total_samples_distributed * D \\/ E\",\"patients_prescribed_after_sample\":\"total_patients_received_samples * G\",\"patients_prescribed_without_sample\":\"patients_prescribed_after_sample * I\",\"incremental_patients\":\"patients_prescribed_after_sample * (1 - I)\",\"incremental_sales\":\"incremental_patients * K\",\"variable_cost\":\"M * total_samples_distributed\",\"total_cost\":\"variable_cost + N\",\"roi\":\"incremental_sales \\/ total_cost\"}', 1, NULL, NULL),
 (2, '{\"total_patients_enrolled\":\"A * B\",\"patients_continuing_treatment\":\"B * D\",\"incremental_patients\":\"A * (patients_continuing_treatment + F)\",\"incremental_sales\":\"incremental_patients * H\",\"total_cost\":\"(J * A) + K\",\"roi\":\"incremental_sales \\/ total_cost\"}', 2, NULL, NULL),
 (3, '{\"doctors_recalled_email\":\"A * C\",\"doctors_recalled_brand\":\"doctors_recalled_email * E\",\"doctors_prescribing\":\"doctors_recalled_brand * G\",\"incremental_patients\":\"doctors_prescribing * I\",\"incremental_sales\":\"incremental_patients * K\",\"total_cost\":\"(M * A * B) + N\",\"roi\":\"incremental_sales \\/ total_cost\"}', 3, NULL, NULL),
@@ -302,8 +312,8 @@ CREATE TABLE `labo` (
 --
 
 INSERT INTO `labo` (`id`, `Name`, `userId`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-19 12:55:45', '2025-05-19 12:55:45'),
-(2, 'Labo Example 2', 6, 'Activated', '2025-05-19 12:55:45', '2025-05-19 12:55:45');
+(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-20 13:15:10', '2025-05-20 13:15:10'),
+(2, 'Labo Example 2', 6, 'Activated', '2025-05-20 13:15:10', '2025-05-20 13:15:10');
 
 -- --------------------------------------------------------
 
@@ -424,12 +434,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `FirstName`, `LastName`, `email`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `Role`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$tB7E1UJWdZC4yMpNAEDH7.7CXY34D9M8vxlscPH.sY.iAwKEUdoNW', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$W4TRR1QNkJQMe8zYRihdRuq7V5wmiuLW73Enw34N0YV08MmGn3KPC', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$MQxo9LtOIV4XIk6uPBnR.ubxCpOLTlfyovPHnwAK1rOmVUTOz3iTi', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$4pc5KrUhZxbCxCRcgWMsnu6h4Owfj1.Gw7AWQaZk9hxGEHtONBjTu', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$NrhnY8KUE0.i4wZF1GrND.5gpoijD6VzuwFqxFtUkHvqLJ66v0O7O', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-19 12:55:45', '2025-05-19 12:55:45'),
-(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$n1iRE0YxuJSEje8lklUiVuRwIhmQv1ccjkhgR4qUnyX28Yz6yUkZG', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-19 12:55:45', '2025-05-19 12:55:45');
+(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$ZaGyObs38gMfJvx3Bfe3de92P4gSRcluWXXGSIX1t4dJBypHbBd4a', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$d8kXEKcFsUASBgovu8IrYOGCK35uYSRPEFWUx/yWykl3EpFIuMCNa', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$lGASSyOgyGxfHJjXvi7d0.Ori70xIfFaBzyrjfVhkl29WuPcGNTNS', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$pbMg34c506amHB4qj0ixH.RkEfAu96cRD05pDPapPd/U3CZKL/WCm', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$eQXcDLe/tjtVHp7QMnRkpOhzXyU87.mjg4.z2N2Eo/sDltxmc8N7K', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-20 13:15:10', '2025-05-20 13:15:10'),
+(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$94xDfIhc8tFEAK4uv3vleuFX5UKkBTZ8B0Yo172Fr.qXfsnNb24dq', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-20 13:15:10', '2025-05-20 13:15:10');
 
 --
 -- Index pour les tables déchargées
@@ -568,7 +578,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `activitieslist`
 --
 ALTER TABLE `activitieslist`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `activitybylabo`
@@ -580,7 +590,7 @@ ALTER TABLE `activitybylabo`
 -- AUTO_INCREMENT pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT pour la table `activityitemvalues`
