@@ -1271,7 +1271,7 @@ const CalculateAct1 = () => {
                   .filter((item) => item.itemName !== "Roi")
                   .map((item) => (
                     <div key={item.id}>
-                      <label>{item.itemName} ({item.symbole})</label>
+                      <label>{item.itemName} </label>
                       <Input
                         type="number"
                         min={item.Type === "percentage" ? "0" : item.symbole === "E" ? "0.1" : "0"}
