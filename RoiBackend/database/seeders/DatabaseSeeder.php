@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur moyenne d’un patient incrémental en MAD", "type" => "number", "ActivityId" => 1, "symbole" => "K"],
             ["Name" => "Coût unitaire d’un échantillon", "type" => "number", "ActivityId" => 1, "symbole" => "M"],
             ["Name" => "Coûts fixes du programme", "type" => "number", "ActivityId" => 1, "symbole" => "N"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 1, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 1, "symbole" => "ROI"],
         ]);
 
         // Activité 2: Essai clinique
@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "type" => "number", "ActivityId" => 2, "symbole" => "H"],
             ["Name" => "Coût variable par médecin", "type" => "number", "ActivityId" => 2, "symbole" => "J"],
             ["Name" => "Coût fixe total de l’étude", "type" => "number", "ActivityId" => 2, "symbole" => "K"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 2, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 2, "symbole" => "ROI"],
         ]);
 
         // Activité 3: Mailing
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Coût variable par email envoyé", "type" => "number", "ActivityId" => 3, "symbole" => "M"],
             ["Name" => "Nombre moyen d’emails envoyés par médecin", "type" => "number", "ActivityId" => 3, "symbole" => "B"],
             ["Name" => "Coût fixe total du programme", "type" => "number", "ActivityId" => 3, "symbole" => "N"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 3, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 3, "symbole" => "ROI"],
         ]);
 
         // Activité 4: Conférences
@@ -80,7 +80,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur de revenu générée par patient incrémental", "type" => "number", "ActivityId" => 4, "symbole" => "J"],
             ["Name" => "Coût variable par médecin", "type" => "number", "ActivityId" => 4, "symbole" => "L"],
             ["Name" => "Coût fixe du programme", "type" => "number", "ActivityId" => 4, "symbole" => "M"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 4, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 4, "symbole" => "ROI"],
         ]);
 
         // Activité 5: Tables rondes
@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "type" => "number", "ActivityId" => 5, "symbole" => "L"],
             ["Name" => "Coût variable par table ronde", "type" => "number", "ActivityId" => 5, "symbole" => "N"],
             ["Name" => "Coût fixe total du programme", "type" => "number", "ActivityId" => 5, "symbole" => "O"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 5, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 5, "symbole" => "ROI"],
         ]);
 
         // Activité 6: Visites médicales
@@ -107,7 +107,7 @@ class DatabaseSeeder extends Seeder
             ["Name" => "Valeur du revenu par patient incrémental", "type" => "number", "ActivityId" => 6, "symbole" => "K"],
             ["Name" => "Coût variable par représentant", "type" => "number", "ActivityId" => 6, "symbole" => "M1"],
             ["Name" => "Nombre total de représentants", "type" => "number", "ActivityId" => 6, "symbole" => "M2"],
-            ["Name" => "Roi", "type" => "number", "ActivityId" => 6, "symbole" => null],
+            ["Name" => "Roi", "type" => "number", "ActivityId" => 6, "symbole" => "ROI"],
         ]);
 
         // Activité 7: Publicité directe au consommateur
@@ -190,169 +190,337 @@ class DatabaseSeeder extends Seeder
 
 
 
-        DB::table('calculationformula')->insert([
-            // Activité 1: Distribution des échantillons
-            [
-                "ActivityId" => 1,
-                "formulat" => json_encode([
-                    "total_samples_distributed" => "A * B",
-                    "total_patients_received_samples" => "total_samples_distributed * D / E",
-                    "patients_prescribed_after_sample" => "total_patients_received_samples * G",
-                    "patients_prescribed_without_sample" => "patients_prescribed_after_sample * I",
-                    "incremental_patients" => "patients_prescribed_after_sample * (1 - I)",
-                    "incremental_sales" => "incremental_patients * K",
-                    "variable_cost" => "M * total_samples_distributed",
-                    "total_cost" => "variable_cost + N",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 2: Essai clinique
-            [
-                "ActivityId" => 2,
-                "formulat" => json_encode([
-                    "total_patients_enrolled" => "A * B",
-                    "patients_continuing_treatment" => "B * D",
-                    "incremental_patients" => "A * (patients_continuing_treatment + F)",
-                    "incremental_sales" => "incremental_patients * H",
-                    "total_cost" => "(J * A) + K",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 3: Mailing
-            [
-                "ActivityId" => 3,
-                "formulat" => json_encode([
-                    "doctors_recalled_email" => "A * C",
-                    "doctors_recalled_brand" => "doctors_recalled_email * E",
-                    "doctors_prescribing" => "doctors_recalled_brand * G",
-                    "incremental_patients" => "doctors_prescribing * I",
-                    "incremental_sales" => "incremental_patients * K",
-                    "total_cost" => "(M * A * B) + N",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 4: Conférences
-            [
-                "ActivityId" => 4,
-                "formulat" => json_encode([
-                    "doctors_retained_message" => "A * B",
-                    "doctors_positive_perception" => "doctors_retained_message * D",
-                    "doctors_prescribing" => "doctors_positive_perception * F",
-                    "incremental_patients" => "(doctors_prescribing * H) + I",
-                    "incremental_sales" => "incremental_patients * J",
-                    "total_cost" => "(L * A) + M",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 5: Tables rondes
-            [
-                "ActivityId" => 5,
-                "formulat" => json_encode([
-                    "total_doctor_contacts" => "A * B",
-                    "total_roundtables" => "total_doctor_contacts / D",
-                    "doctors_positive_perception" => "A * F",
-                    "doctors_prescribing" => "doctors_positive_perception * H",
-                    "incremental_patients" => "doctors_prescribing * J",
-                    "incremental_sales" => "incremental_patients * L",
-                    "total_cost" => "(N * total_roundtables) + O",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 6: Visites médicales
-            [
-                "ActivityId" => 6,
-                "formulat" => json_encode([
-                    "total_visits" => "A * B",
-                    "doctors_recalled_message" => "A * E",
-                    "doctors_prescribing" => "doctors_recalled_message * G",
-                    "incremental_patients" => "doctors_prescribing * I",
-                    "incremental_sales" => "incremental_patients * K",
-                    "total_cost" => "M1 * M2",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 7: Publicité directe au consommateur
-            [
-                "ActivityId" => 7,
-                "formulat" => json_encode([
-                    "consumers_reached" => "G * H",
-                    "consumers_recalled_campaign" => "consumers_reached * J",
-                    "consumers_consulted_doctor" => "consumers_recalled_campaign * L",
-                    "incremental_patients" => "consumers_consulted_doctor * N",
-                    "incremental_sales" => "incremental_patients * P",
-                    "total_cost" => "R1 + S",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 8: Publicité directe au consommateur en ligne
-            [
-                "ActivityId" => 8,
-                "formulat" => json_encode([
-                    "total_patients_affected" => "A * B",
-                    "potential_patients" => "total_patients_affected * (1 - D)",
-                    "targeted_patients" => "potential_patients * F",
-                    "reach_efficiency" => "H / targeted_patients",
-                    "interested_visitors" => "H * J",
-                    "visitors_consulted_doctor" => "interested_visitors * L",
-                    "incremental_patients" => "visitors_consulted_doctor * N",
-                    "incremental_sales" => "incremental_patients * P",
-                    "total_cost" => "R",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 9: Publicité dans les revues
-            [
-                "ActivityId" => 9,
-                "formulat" => json_encode([
-                    "doctors_recalled_ad" => "A * C",
-                    "doctors_prescribing" => "doctors_recalled_ad * E",
-                    "incremental_patients" => "doctors_prescribing * G",
-                    "incremental_sales" => "incremental_patients * I",
-                    "total_cost" => "K + L",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 10: Générique (Médecins)
-            [
-                "ActivityId" => 10,
-                "formulat" => json_encode([
-                    "doctors_recalled_message" => "A * B",
-                    "doctors_positive_perception" => "doctors_recalled_message * D",
-                    "doctors_prescribing" => "doctors_positive_perception * F",
-                    "incremental_patients" => "doctors_prescribing * H",
-                    "incremental_sales" => "incremental_patients * J",
-                    "total_cost" => "L",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 11: Générique (Patients)
-            [
-                "ActivityId" => 11,
-                "formulat" => json_encode([
-                    "consumers_recalled_message" => "A * B",
-                    "consumers_consulted_doctor" => "consumers_recalled_message * D",
-                    "incremental_patients" => "consumers_consulted_doctor * F",
-                    "incremental_sales" => "incremental_patients * H",
-                    "total_cost" => "J",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-            // Activité 12: Promotion numérique pour les médecins
-            [
-                "ActivityId" => 12,
-                "formulat" => json_encode([
-                    "doctors_reachable_online" => "A * B",
-                    "reach_efficiency" => "D / doctors_reachable_online",
-                    "doctors_engaged" => "D * F",
-                    "doctors_positive_perception" => "doctors_engaged * H",
-                    "doctors_prescribing" => "doctors_positive_perception * J",
-                    "incremental_patients" => "doctors_prescribing * L",
-                    "incremental_sales" => "incremental_patients * N",
-                    "total_cost" => "P",
-                    "roi" => "incremental_sales / total_cost"
-                ]),
-            ],
-        ]);
+        // DB::table('calculationformula')->insert([
+        //     // Activité 1: Distribution des échantillons
+        //     [
+        //         "ActivityId" => 1,
+        //         "formulat" => json_encode([
+        //             "total_samples_distributed" => "A * B",
+        //             "total_patients_received_samples" => "total_samples_distributed * D / E",
+        //             "patients_prescribed_after_sample" => "total_patients_received_samples * G",
+        //             "patients_prescribed_without_sample" => "patients_prescribed_after_sample * I",
+        //             "incremental_patients" => "patients_prescribed_after_sample * (1 - I)",
+        //             "incremental_sales" => "incremental_patients * K",
+        //             "variable_cost" => "M * total_samples_distributed",
+        //             "total_cost" => "variable_cost + N",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 2: Essai clinique
+        //     [
+        //         "ActivityId" => 2,
+        //         "formulat" => json_encode([
+        //             "total_patients_enrolled" => "A * B",
+        //             "patients_continuing_treatment" => "B * D",
+        //             "incremental_patients" => "A * (patients_continuing_treatment + F)",
+        //             "incremental_sales" => "incremental_patients * H",
+        //             "total_cost" => "(J * A) + K",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 3: Mailing
+        //     [
+        //         "ActivityId" => 3,
+        //         "formulat" => json_encode([
+        //             "doctors_recalled_email" => "A * C",
+        //             "doctors_recalled_brand" => "doctors_recalled_email * E",
+        //             "doctors_prescribing" => "doctors_recalled_brand * G",
+        //             "incremental_patients" => "doctors_prescribing * I",
+        //             "incremental_sales" => "incremental_patients * K",
+        //             "total_cost" => "(M * A * B) + N",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 4: Conférences
+        //     [
+        //         "ActivityId" => 4,
+        //         "formulat" => json_encode([
+        //             "doctors_retained_message" => "A * B",
+        //             "doctors_positive_perception" => "doctors_retained_message * D",
+        //             "doctors_prescribing" => "doctors_positive_perception * F",
+        //             "incremental_patients" => "(doctors_prescribing * H) + I",
+        //             "incremental_sales" => "incremental_patients * J",
+        //             "total_cost" => "(L * A) + M",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 5: Tables rondes
+        //     [
+        //         "ActivityId" => 5,
+        //         "formulat" => json_encode([
+        //             "total_doctor_contacts" => "A * B",
+        //             "total_roundtables" => "total_doctor_contacts / D",
+        //             "doctors_positive_perception" => "A * F",
+        //             "doctors_prescribing" => "doctors_positive_perception * H",
+        //             "incremental_patients" => "doctors_prescribing * J",
+        //             "incremental_sales" => "incremental_patients * L",
+        //             "total_cost" => "(N * total_roundtables) + O",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 6: Visites médicales
+        //     [
+        //         "ActivityId" => 6,
+        //         "formulat" => json_encode([
+        //             "total_visits" => "A * B",
+        //             "doctors_recalled_message" => "A * E",
+        //             "doctors_prescribing" => "doctors_recalled_message * G",
+        //             "incremental_patients" => "doctors_prescribing * I",
+        //             "incremental_sales" => "incremental_patients * K",
+        //             "total_cost" => "M1 * M2",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 7: Publicité directe au consommateur
+        //     [
+        //         "ActivityId" => 7,
+        //         "formulat" => json_encode([
+        //             "consumers_reached" => "G * H",
+        //             "consumers_recalled_campaign" => "consumers_reached * J",
+        //             "consumers_consulted_doctor" => "consumers_recalled_campaign * L",
+        //             "incremental_patients" => "consumers_consulted_doctor * N",
+        //             "incremental_sales" => "incremental_patients * P",
+        //             "total_cost" => "R1 + S",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 8: Publicité directe au consommateur en ligne
+        //     [
+        //         "ActivityId" => 8,
+        //         "formulat" => json_encode([
+        //             "total_patients_affected" => "A * B",
+        //             "potential_patients" => "total_patients_affected * (1 - D)",
+        //             "targeted_patients" => "potential_patients * F",
+        //             "reach_efficiency" => "H / targeted_patients",
+        //             "interested_visitors" => "H * J",
+        //             "visitors_consulted_doctor" => "interested_visitors * L",
+        //             "incremental_patients" => "visitors_consulted_doctor * N",
+        //             "incremental_sales" => "incremental_patients * P",
+        //             "total_cost" => "R",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 9: Publicité dans les revues
+        //     [
+        //         "ActivityId" => 9,
+        //         "formulat" => json_encode([
+        //             "doctors_recalled_ad" => "A * C",
+        //             "doctors_prescribing" => "doctors_recalled_ad * E",
+        //             "incremental_patients" => "doctors_prescribing * G",
+        //             "incremental_sales" => "incremental_patients * I",
+        //             "total_cost" => "K + L",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 10: Générique (Médecins)
+        //     [
+        //         "ActivityId" => 10,
+        //         "formulat" => json_encode([
+        //             "doctors_recalled_message" => "A * B",
+        //             "doctors_positive_perception" => "doctors_recalled_message * D",
+        //             "doctors_prescribing" => "doctors_positive_perception * F",
+        //             "incremental_patients" => "doctors_prescribing * H",
+        //             "incremental_sales" => "incremental_patients * J",
+        //             "total_cost" => "L",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 11: Générique (Patients)
+        //     [
+        //         "ActivityId" => 11,
+        //         "formulat" => json_encode([
+        //             "consumers_recalled_message" => "A * B",
+        //             "consumers_consulted_doctor" => "consumers_recalled_message * D",
+        //             "incremental_patients" => "consumers_consulted_doctor * F",
+        //             "incremental_sales" => "incremental_patients * H",
+        //             "total_cost" => "J",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        //     // Activité 12: Promotion numérique pour les médecins
+        //     [
+        //         "ActivityId" => 12,
+        //         "formulat" => json_encode([
+        //             "doctors_reachable_online" => "A * B",
+        //             "reach_efficiency" => "D / doctors_reachable_online",
+        //             "doctors_engaged" => "D * F",
+        //             "doctors_positive_perception" => "doctors_engaged * H",
+        //             "doctors_prescribing" => "doctors_positive_perception * J",
+        //             "incremental_patients" => "doctors_prescribing * L",
+        //             "incremental_sales" => "incremental_patients * N",
+        //             "total_cost" => "P",
+        //             "roi" => "incremental_sales / total_cost"
+        //         ]),
+        //     ],
+        // ]);
+
+        /** */
+
+
+DB::table('calculationformula')->insert([
+    // Activité 1: Distribution des échantillons
+    [
+        "ActivityId" => 1,
+        "formulat" => json_encode([
+            "nombre_total_echantillons_distribues" => "A * B",
+            "nombre_total_patients_recu_echantillon" => "nombre_total_echantillons_distribues * D / E",
+            "patients_ordonnes_apres_echantillon" => "nombre_total_patients_recu_echantillon * G",
+            "patients_ordonnes_sans_echantillon" => "patients_ordonnes_apres_echantillon * I",
+            "patients_incrementaux" => "patients_ordonnes_apres_echantillon * (1 - I)",
+            "ventes_incrementales" => "patients_incrementaux * K",
+            "cout_variable" => "M * nombre_total_echantillons_distribues",
+            "cout_total" => "cout_variable + N",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 2: Essai clinique
+    [
+        "ActivityId" => 2,
+        "formulat" => json_encode([
+            "nombre_total_patients_inscrits" => "A * B",
+            "patients_continuant_traitement" => "B * D",
+            "patients_incrementaux" => "A * (patients_continuant_traitement + F)",
+            "ventes_incrementales" => "patients_incrementaux * H",
+            "cout_total" => "(J * A) + K",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 3: Mailing
+    [
+        "ActivityId" => 3,
+        "formulat" => json_encode([
+            "medecins_rappeles_email" => "A * C",
+            "medecins_rappeles_marque" => "medecins_rappeles_email * E",
+            "medecins_prescrivant" => "medecins_rappeles_marque * G",
+            "patients_incrementaux" => "medecins_prescrivant * I",
+            "ventes_incrementales" => "patients_incrementaux * K",
+            "cout_total" => "(M * A * B) + N",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 4: Conférences
+    [
+        "ActivityId" => 4,
+        "formulat" => json_encode([
+            "medecins_rappeles_message" => "A * B",
+            "medecins_perception_positive" => "medecins_rappeles_message * D",
+            "medecins_prescrivant" => "medecins_perception_positive * F",
+            "patients_incrementaux" => "(medecins_prescrivant * H) + I",
+            "ventes_incrementales" => "patients_incrementaux * J",
+            "cout_total" => "(L * A) + M",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 5: Tables rondes
+    [
+        "ActivityId" => 5,
+        "formulat" => json_encode([
+            "nombre_total_contacts_medecins" => "A * B",
+            "nombre_total_tables_rondes" => "nombre_total_contacts_medecins / D",
+            "medecins_perception_positive" => "A * F",
+            "medecins_prescrivant" => "medecins_perception_positive * H",
+            "patients_incrementaux" => "medecins_prescrivant * J",
+            "ventes_incrementales" => "patients_incrementaux * L",
+            "cout_total" => "(N * nombre_total_tables_rondes) + O",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 6: Visites médicales
+    [
+        "ActivityId" => 6,
+        "formulat" => json_encode([
+            "nombre_total_visites" => "A * B",
+            "medecins_rappeles_message" => "A * E",
+            "medecins_prescrivant" => "medecins_rappeles_message * G",
+            "patients_incrementaux" => "medecins_prescrivant * I",
+            "ventes_incrementales" => "patients_incrementaux * K",
+            "cout_total" => "M1 * M2",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 7: Publicité directe au consommateur
+    [
+        "ActivityId" => 7,
+        "formulat" => json_encode([
+            "consommateurs_atteints" => "G * H",
+            "consommateurs_rappeles_campagne" => "consommateurs_atteints * J",
+            "consommateurs_consulte_medecin" => "consommateurs_rappeles_campagne * L",
+            "patients_incrementaux" => "consommateurs_consulte_medecin * N",
+            "ventes_incrementales" => "patients_incrementaux * P",
+            "cout_total" => "R1 + S",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 8: Publicité directe au consommateur en ligne
+    [
+        "ActivityId" => 8,
+        "formulat" => json_encode([
+            "nombre_total_patients_maladie" => "A * B",
+            "patients_potentiels" => "nombre_total_patients_maladie * (1 - D)",
+            "patients_cibles" => "patients_potentiels * F",
+            "efficacite_atteinte" => "H / patients_cibles",
+            "visiteurs_interesses" => "H * J",
+            "visiteurs_consulte_medecin" => "visiteurs_interesses * L",
+            "patients_incrementaux" => "visiteurs_consulte_medecin * N",
+            "ventes_incrementales" => "patients_incrementaux * P",
+            "cout_total" => "R",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 9: Publicité dans les revues
+    [
+        "ActivityId" => 9,
+        "formulat" => json_encode([
+            "medecins_rappeles_annonce" => "A * C",
+            "medecins_prescrivant" => "medecins_rappeles_annonce * E",
+            "patients_incrementaux" => "medecins_prescrivant * G",
+            "ventes_incrementales" => "patients_incrementaux * I",
+            "cout_total" => "K + L",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 10: Générique (Médecins)
+    [
+        "ActivityId" => 10,
+        "formulat" => json_encode([
+            "medecins_rappeles_message" => "A * B",
+            "medecins_perception_positive" => "medecins_rappeles_message * D",
+            "medecins_prescrivant" => "medecins_perception_positive * F",
+            "patients_incrementaux" => "medecins_prescrivant * H",
+            "ventes_incrementales" => "patients_incrementaux * J",
+            "cout_total" => "L",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 11: Générique (Patients)
+    [
+        "ActivityId" => 11,
+        "formulat" => json_encode([
+            "consommateurs_rappeles_message" => "A * B",
+            "consommateurs_consulte_medecin" => "consommateurs_rappeles_message * D",
+            "patients_incrementaux" => "consommateurs_consulte_medecin * F",
+            "ventes_incrementales" => "patients_incrementaux * H",
+            "cout_total" => "J",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+    // Activité 12: Promotion numérique pour les médecins
+    [
+        "ActivityId" => 12,
+        "formulat" => json_encode([
+            "medecins_joignables_en_ligne" => "A * B",
+            "efficacite_atteinte" => "D / medecins_joignables_en_ligne",
+            "medecins_engages" => "D * F",
+            "medecins_perception_positive" => "medecins_engages * H",
+            "medecins_prescrivant" => "medecins_perception_positive * J",
+            "patients_incrementaux" => "medecins_prescrivant * L",
+            "ventes_incrementales" => "patients_incrementaux * N",
+            "cout_total" => "P",
+            "roi" => "ventes_incrementales / cout_total"
+        ]),
+    ],
+]);
+
 
 
         // Insertion des utilisateurs
@@ -399,3 +567,16 @@ class DatabaseSeeder extends Seeder
         }
     }
 }
+//{"medecins_joignables_en_ligne":"A * B",
+//"efficacite_atteinte":"D \/ medecins_joignables_en_ligne",
+//"medecins_engages":"D * F",
+//"medecins_perception_positive":"medecins_engages * H",
+//"medecins_prescrivant":"medecins_perception_positive * J",
+//"patients_incrementaux":"medecins_prescrivant * L",
+//"ventes_incrementales":"patients_incrementaux * N",
+//"cout_total":"P",
+//"roi":"ventes_incrementales \/ cout_total"}
+
+//{"Revenu_Total":"A + B",
+//"Cout_Total":"C + D",
+//"roi":"Revenu_Total \/ Cout_Total"}

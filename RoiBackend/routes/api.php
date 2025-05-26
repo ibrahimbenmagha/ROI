@@ -38,9 +38,8 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);
     Route::delete('deleteLaboWithData', [LaboController::class, 'deleteLaboWithData']);
 
-    Route::post('createActivity2', [ActivitiesController::class, 'createActivity2']);
-    Route::get('getLaboWithActivities', [ActivitiesController::class, 'getLaboWithActivities']);
     Route::post('createActivity', [ActivitiesController::class, 'createActivity']);
+    Route::get('getLaboWithActivities', [ActivitiesController::class, 'getLaboWithActivities']);
     Route::get('getAllActivity', [ActivitiesController::class, 'getAllActivity']);
     Route::get('getAllActivitiesByLaboInfos', [ActivitiesController::class, 'getAllActivitiesByLaboInfos']);
     Route::get('getActivitiesByLaboInfosById/{id}', [ActivitiesController::class, 'getActivitiesByLaboInfosById']);
@@ -48,7 +47,6 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('getAllActivitiesByLabo', [ActivitiesController::class, 'getAllActivitiesByLabo']);
 });
 
-Route::get('getActivitiesWithItemsAndFormulas', [ActivitiesController::class, 'getActivitiesWithItemsAndFormulas']);
 
 
 Route::middleware(['check.role:Laboratoire'])->group(function () {
@@ -67,7 +65,6 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
-    Route::get('getCalculatedActivityData', [ActivitiesController::class, 'getCalculatedActivityData']);
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
@@ -83,9 +80,12 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityByName/{Name}', [ActivitiesController::class, 'getActivityByName']);
     Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
+    Route::get('getActivityByLaboData', [ActivitiesController::class, 'getActivityByLaboData']);
 
     Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
     Route::get('getActivityItemsByActivityIdall', [activityitems::class, 'getActivityItemsByActivityIdall']);
 });
+
+

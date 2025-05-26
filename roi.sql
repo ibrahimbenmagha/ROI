@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 20 mai 2025 à 16:33
+-- Généré le : lun. 26 mai 2025 à 14:20
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -52,7 +52,7 @@ INSERT INTO `activitieslist` (`id`, `Name`, `is_custom`, `created_at`, `updated_
 (10, 'Générique (Médecins)', 0, NULL, NULL),
 (11, 'Générique (Patients)', 0, NULL, NULL),
 (12, 'Promotion numérique pour les médecins', 0, NULL, NULL),
-(13, 'Campagne de Formation Médicale', 0, '2025-05-20 13:16:36', '2025-05-20 13:16:36');
+(13, 'IHGJ', 0, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
 
 -- --------------------------------------------------------
 
@@ -68,6 +68,13 @@ CREATE TABLE `activitybylabo` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `activitybylabo`
+--
+
+INSERT INTO `activitybylabo` (`id`, `laboId`, `ActivityId`, `year`, `created_at`, `updated_at`) VALUES
+(1, 2, 13, '2023', '2025-05-26 10:50:42', '2025-05-26 10:50:42');
 
 -- --------------------------------------------------------
 
@@ -99,7 +106,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (7, 'Valeur moyenne d’un patient incrémental en MAD', 'K', 'number', 1, NULL, NULL),
 (8, 'Coût unitaire d’un échantillon', 'M', 'number', 1, NULL, NULL),
 (9, 'Coûts fixes du programme', 'N', 'number', 1, NULL, NULL),
-(10, 'Roi', NULL, 'number', 1, NULL, NULL),
+(10, 'Roi', 'ROI', 'number', 1, NULL, NULL),
 (11, 'Nombre de médecins participant à l\'étude', 'A', 'number', 2, NULL, NULL),
 (12, 'Nombre moyen de patients inscrits par médecin', 'B', 'number', 2, NULL, NULL),
 (13, 'Pourcentage moyen de patients qui continuent le traitement après l\'étude', 'D', 'percentage', 2, NULL, NULL),
@@ -107,7 +114,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (15, 'Valeur du revenu par patient incrémental', 'H', 'number', 2, NULL, NULL),
 (16, 'Coût variable par médecin', 'J', 'number', 2, NULL, NULL),
 (17, 'Coût fixe total de l’étude', 'K', 'number', 2, NULL, NULL),
-(18, 'Roi', NULL, 'number', 2, NULL, NULL),
+(18, 'Roi', 'ROI', 'number', 2, NULL, NULL),
 (19, 'Nombre total de médecins ciblés par l’email', 'A', 'number', 3, NULL, NULL),
 (20, 'Pourcentage de médecins se rappelant avoir reçu l’email', 'C', 'percentage', 3, NULL, NULL),
 (21, 'Pourcentage de médecins se rappelant de la marque et du message', 'E', 'percentage', 3, NULL, NULL),
@@ -117,7 +124,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (25, 'Coût variable par email envoyé', 'M', 'number', 3, NULL, NULL),
 (26, 'Nombre moyen d’emails envoyés par médecin', 'B', 'number', 3, NULL, NULL),
 (27, 'Coût fixe total du programme', 'N', 'number', 3, NULL, NULL),
-(28, 'Roi', NULL, 'number', 3, NULL, NULL),
+(28, 'Roi', 'ROI', 'number', 3, NULL, NULL),
 (29, 'Nombre de médecins participants à la conférence', 'A', 'number', 4, NULL, NULL),
 (30, 'Pourcentage de médecins ayant retenu le message', 'B', 'percentage', 4, NULL, NULL),
 (31, 'Pourcentage de médecins ayant changé positivement leur perception après la conférence', 'D', 'percentage', 4, NULL, NULL),
@@ -127,7 +134,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (35, 'Valeur de revenu générée par patient incrémental', 'J', 'number', 4, NULL, NULL),
 (36, 'Coût variable par médecin', 'L', 'number', 4, NULL, NULL),
 (37, 'Coût fixe du programme', 'M', 'number', 4, NULL, NULL),
-(38, 'Roi', NULL, 'number', 4, NULL, NULL),
+(38, 'Roi', 'ROI', 'number', 4, NULL, NULL),
 (39, 'Nombre total de médecins participant', 'A', 'number', 5, NULL, NULL),
 (40, 'Nombre moyen de tables rondes assistées par médecin par an', 'B', 'number', 5, NULL, NULL),
 (41, 'Nombre moyen de médecins par table ronde', 'D', 'number', 5, NULL, NULL),
@@ -137,7 +144,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (45, 'Valeur du revenu par patient incrémental', 'L', 'number', 5, NULL, NULL),
 (46, 'Coût variable par table ronde', 'N', 'number', 5, NULL, NULL),
 (47, 'Coût fixe total du programme', 'O', 'number', 5, NULL, NULL),
-(48, 'Roi', NULL, 'number', 5, NULL, NULL),
+(48, 'Roi', 'ROI', 'number', 5, NULL, NULL),
 (49, 'Nombre total de médecins ciblés par le représentant', 'A', 'number', 6, NULL, NULL),
 (50, 'Nombre moyen de visites (détails) par médecin', 'B', 'number', 6, NULL, NULL),
 (51, '% de médecins se rappelant du message délivré lors de la visite', 'E', 'percentage', 6, NULL, NULL),
@@ -146,16 +153,66 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (54, 'Valeur du revenu par patient incrémental', 'K', 'number', 6, NULL, NULL),
 (55, 'Coût variable par représentant', 'M1', 'number', 6, NULL, NULL),
 (56, 'Nombre total de représentants', 'M2', 'number', 6, NULL, NULL),
-(57, 'Roi', NULL, 'number', 6, NULL, NULL),
-(58, 'Nombre de médecins participant aux formations', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(59, 'Nombre de sessions de formation par médecin', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(60, '% de médecins adoptant le médicament après formation', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(61, 'Nombre moyen de prescriptions par médecin adoptant', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(62, '% de prescriptions sans formation', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(63, 'Revenu par prescription MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(64, 'Coût par session de formation MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(65, 'Coûts fixes organisationnels MAD', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36'),
-(66, 'Roi', NULL, 'percentage', 13, '2025-05-20 13:16:36', '2025-05-20 13:16:36');
+(57, 'Roi', 'ROI', 'number', 6, NULL, NULL),
+(58, 'Nombre de consommateurs cibles pour la campagne', 'G', 'number', 7, NULL, NULL),
+(59, '% d\'audience cible atteinte par le plan média', 'H', 'percentage', 7, NULL, NULL),
+(60, '% de consommateurs atteints se rappelant de la campagne (taux de mémorisation)', 'J', 'percentage', 7, NULL, NULL),
+(61, '% de consommateurs se rappelant de la campagne DTC ayant consulté un médecin suite à l\'exposition', 'L', 'percentage', 7, NULL, NULL),
+(62, '% de patients ayant consulté et recevant une prescription Prexige', 'N', 'percentage', 7, NULL, NULL),
+(63, 'Valeur du revenu par patient incrémental', 'P', 'number', 7, NULL, NULL),
+(64, 'Dépenses médias (en MAD k)', 'R1', 'number', 7, NULL, NULL),
+(65, 'Coûts de production, frais d\'agence et autres (en MAD k)', 'S', 'number', 7, NULL, NULL),
+(66, 'Roi', 'ROI', 'number', 7, NULL, NULL),
+(67, 'Population totale', 'A', 'number', 8, NULL, NULL),
+(68, 'Taux d\'incidence de la maladie dans la population', 'B', 'percentage', 8, NULL, NULL),
+(69, '% de patients déjà traités et satisfaits', 'D', 'percentage', 8, NULL, NULL),
+(70, '% de patients potentiels visés par la campagne en ligne', 'F', 'percentage', 8, NULL, NULL),
+(71, 'Nombre total de visites uniques sur le site', 'H', 'number', 8, NULL, NULL),
+(72, '% des visiteurs uniques qui passent un temps significatif sur le site', 'J', 'percentage', 8, NULL, NULL),
+(73, '% des visiteurs uniques ayant consulté un médecin suite au message du site', 'L', 'percentage', 8, NULL, NULL),
+(74, '% des patients ayant reçu une prescription Prexige', 'N', 'percentage', 8, NULL, NULL),
+(75, 'Valeur du revenu généré par patient incrémental', 'P', 'number', 8, NULL, NULL),
+(76, 'Coût total du programme e-campagne', 'R', 'number', 8, NULL, NULL),
+(77, 'Roi', 'ROI', 'number', 8, NULL, NULL),
+(78, 'Nombre de médecins ayant lu au moins une publication contenant une annonce produit', 'A', 'number', 9, NULL, NULL),
+(79, 'Nombre total d\'insertions prévues sur l\'année', 'B', 'number', 9, NULL, NULL),
+(80, 'Pourcentage des médecins lecteurs capables de se souvenir de la marque et du message après exposition', 'C', 'percentage', 9, NULL, NULL),
+(81, 'Pourcentage des médecins ayant mémorisé la publicité qui commencent à prescrire le produit', 'E', 'percentage', 9, NULL, NULL),
+(82, 'Nombre moyen de nouveaux patients mis sous traitement par chaque médecin prescripteur', 'G', 'number', 9, NULL, NULL),
+(83, 'Revenu moyen généré par chaque nouveau patient traité', 'I', 'number', 9, NULL, NULL),
+(84, 'Coûts d\'achat d\'espace publicitaire pour la campagne presse', 'K', 'number', 9, NULL, NULL),
+(85, 'Frais de création et de gestion de la campagne', 'L', 'number', 9, NULL, NULL),
+(86, 'Roi', 'ROI', 'number', 9, NULL, NULL),
+(87, 'Nombre de médecins exposés à l\'activité', 'A', 'number', 10, NULL, NULL),
+(88, 'Pourcentage des médecins capables de se souvenir de la marque et du message', 'B', 'percentage', 10, NULL, NULL),
+(89, 'Pourcentage des médecins ayant amélioré leur perception du produit', 'D', 'percentage', 10, NULL, NULL),
+(90, 'Pourcentage des médecins ayant changé de perception et prescrit à de nouveaux patients', 'F', 'percentage', 10, NULL, NULL),
+(91, 'Nombre moyen de nouveaux patients traités par chaque médecin prescripteur', 'H', 'number', 10, NULL, NULL),
+(92, 'Revenu moyen généré par chaque nouveau patient traité', 'J', 'number', 10, NULL, NULL),
+(93, 'Coût global de l\'organisation et de la mise en œuvre de l\'activité', 'L', 'number', 10, NULL, NULL),
+(94, 'Roi', 'ROI', 'number', 10, NULL, NULL),
+(95, 'Nombre de consommateurs exposés à l\'activité', 'A', 'number', 11, NULL, NULL),
+(96, 'Pourcentage des consommateurs capables de se souvenir du message', 'B', 'percentage', 11, NULL, NULL),
+(97, 'Pourcentage des consommateurs ayant consulté un médecin', 'D', 'percentage', 11, NULL, NULL),
+(98, 'Pourcentage des consultations aboutissant à une prescription', 'F', 'percentage', 11, NULL, NULL),
+(99, 'Revenu moyen généré par chaque nouveau patient', 'H', 'number', 11, NULL, NULL),
+(100, 'Coût global de l\'organisation et de la mise en œuvre de l\'activité', 'J', 'number', 11, NULL, NULL),
+(101, 'Roi', 'ROI', 'number', 11, NULL, NULL),
+(102, 'Nombre de médecins susceptibles de prescrire le produit', 'A', 'number', 12, NULL, NULL),
+(103, 'Pourcentage des médecins utilisant internet pour des informations professionnelles', 'B', 'percentage', 12, NULL, NULL),
+(104, 'Nombre total de visites uniques sur le site', 'D', 'number', 12, NULL, NULL),
+(105, 'Pourcentage de visiteurs uniques ayant interagi davantage avec le contenu', 'F', 'percentage', 12, NULL, NULL),
+(106, 'Pourcentage des médecins informés ayant changé positivement leur perception du produit', 'H', 'percentage', 12, NULL, NULL),
+(107, 'Pourcentage des médecins ayant changé leur perception et qui sont susceptibles de prescrire le produit', 'J', 'percentage', 12, NULL, NULL),
+(108, 'Nombre moyen de nouveaux patients par médecin ayant prescrit le produit', 'L', 'number', 12, NULL, NULL),
+(109, 'Valeur moyenne de revenu par patient incrémental', 'N', 'number', 12, NULL, NULL),
+(110, 'Coût total du programme e-digital', 'P', 'number', 12, NULL, NULL),
+(111, 'Roi', 'ROI', 'number', 12, NULL, NULL),
+(112, 'iTEM 1', 'B', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
+(113, 'iuyh', 'A', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
+(114, 'ih', 'C', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
+(115, '0iujo', 'D', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
+(116, 'Roi', 'ROI', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
 
 -- --------------------------------------------------------
 
@@ -171,6 +228,17 @@ CREATE TABLE `activityitemvalues` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `activityitemvalues`
+--
+
+INSERT INTO `activityitemvalues` (`id`, `activityItemId`, `ActivityByLaboId`, `value`, `created_at`, `updated_at`) VALUES
+(1, 112, 1, 78, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
+(2, 113, 1, 87, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
+(3, 114, 1, 78, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
+(4, 115, 1, 87, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
+(5, 116, 1, 1, '2025-05-26 10:50:42', '2025-05-26 10:50:42');
 
 -- --------------------------------------------------------
 
@@ -228,18 +296,19 @@ CREATE TABLE `calculationformula` (
 --
 
 INSERT INTO `calculationformula` (`id`, `formulat`, `ActivityId`, `created_at`, `updated_at`) VALUES
-(1, '{\"total_samples_distributed\":\"A * B\",\"total_patients_received_samples\":\"total_samples_distributed * D \\/ E\",\"patients_prescribed_after_sample\":\"total_patients_received_samples * G\",\"patients_prescribed_without_sample\":\"patients_prescribed_after_sample * I\",\"incremental_patients\":\"patients_prescribed_after_sample * (1 - I)\",\"incremental_sales\":\"incremental_patients * K\",\"variable_cost\":\"M * total_samples_distributed\",\"total_cost\":\"variable_cost + N\",\"roi\":\"incremental_sales \\/ total_cost\"}', 1, NULL, NULL),
-(2, '{\"total_patients_enrolled\":\"A * B\",\"patients_continuing_treatment\":\"B * D\",\"incremental_patients\":\"A * (patients_continuing_treatment + F)\",\"incremental_sales\":\"incremental_patients * H\",\"total_cost\":\"(J * A) + K\",\"roi\":\"incremental_sales \\/ total_cost\"}', 2, NULL, NULL),
-(3, '{\"doctors_recalled_email\":\"A * C\",\"doctors_recalled_brand\":\"doctors_recalled_email * E\",\"doctors_prescribing\":\"doctors_recalled_brand * G\",\"incremental_patients\":\"doctors_prescribing * I\",\"incremental_sales\":\"incremental_patients * K\",\"total_cost\":\"(M * A * B) + N\",\"roi\":\"incremental_sales \\/ total_cost\"}', 3, NULL, NULL),
-(4, '{\"doctors_retained_message\":\"A * B\",\"doctors_positive_perception\":\"doctors_retained_message * D\",\"doctors_prescribing\":\"doctors_positive_perception * F\",\"incremental_patients\":\"(doctors_prescribing * H) + I\",\"incremental_sales\":\"incremental_patients * J\",\"total_cost\":\"(L * A) + M\",\"roi\":\"incremental_sales \\/ total_cost\"}', 4, NULL, NULL),
-(5, '{\"total_doctor_contacts\":\"A * B\",\"total_roundtables\":\"total_doctor_contacts \\/ D\",\"doctors_positive_perception\":\"A * F\",\"doctors_prescribing\":\"doctors_positive_perception * H\",\"incremental_patients\":\"doctors_prescribing * J\",\"incremental_sales\":\"incremental_patients * L\",\"total_cost\":\"(N * total_roundtables) + O\",\"roi\":\"incremental_sales \\/ total_cost\"}', 5, NULL, NULL),
-(6, '{\"total_visits\":\"A * B\",\"doctors_recalled_message\":\"A * E\",\"doctors_prescribing\":\"doctors_recalled_message * G\",\"incremental_patients\":\"doctors_prescribing * I\",\"incremental_sales\":\"incremental_patients * K\",\"total_cost\":\"M1 * M2\",\"roi\":\"incremental_sales \\/ total_cost\"}', 6, NULL, NULL),
-(7, '{\"consumers_reached\":\"G * H\",\"consumers_recalled_campaign\":\"consumers_reached * J\",\"consumers_consulted_doctor\":\"consumers_recalled_campaign * L\",\"incremental_patients\":\"consumers_consulted_doctor * N\",\"incremental_sales\":\"incremental_patients * P\",\"total_cost\":\"R1 + S\",\"roi\":\"incremental_sales \\/ total_cost\"}', 7, NULL, NULL),
-(8, '{\"total_patients_affected\":\"A * B\",\"potential_patients\":\"total_patients_affected * (1 - D)\",\"targeted_patients\":\"potential_patients * F\",\"reach_efficiency\":\"H \\/ targeted_patients\",\"interested_visitors\":\"H * J\",\"visitors_consulted_doctor\":\"interested_visitors * L\",\"incremental_patients\":\"visitors_consulted_doctor * N\",\"incremental_sales\":\"incremental_patients * P\",\"total_cost\":\"R\",\"roi\":\"incremental_sales \\/ total_cost\"}', 8, NULL, NULL),
-(9, '{\"doctors_recalled_ad\":\"A * C\",\"doctors_prescribing\":\"doctors_recalled_ad * E\",\"incremental_patients\":\"doctors_prescribing * G\",\"incremental_sales\":\"incremental_patients * I\",\"total_cost\":\"K + L\",\"roi\":\"incremental_sales \\/ total_cost\"}', 9, NULL, NULL),
-(10, '{\"doctors_recalled_message\":\"A * B\",\"doctors_positive_perception\":\"doctors_recalled_message * D\",\"doctors_prescribing\":\"doctors_positive_perception * F\",\"incremental_patients\":\"doctors_prescribing * H\",\"incremental_sales\":\"incremental_patients * J\",\"total_cost\":\"L\",\"roi\":\"incremental_sales \\/ total_cost\"}', 10, NULL, NULL),
-(11, '{\"consumers_recalled_message\":\"A * B\",\"consumers_consulted_doctor\":\"consumers_recalled_message * D\",\"incremental_patients\":\"consumers_consulted_doctor * F\",\"incremental_sales\":\"incremental_patients * H\",\"total_cost\":\"J\",\"roi\":\"incremental_sales \\/ total_cost\"}', 11, NULL, NULL),
-(12, '{\"doctors_reachable_online\":\"A * B\",\"reach_efficiency\":\"D \\/ doctors_reachable_online\",\"doctors_engaged\":\"D * F\",\"doctors_positive_perception\":\"doctors_engaged * H\",\"doctors_prescribing\":\"doctors_positive_perception * J\",\"incremental_patients\":\"doctors_prescribing * L\",\"incremental_sales\":\"incremental_patients * N\",\"total_cost\":\"P\",\"roi\":\"incremental_sales \\/ total_cost\"}', 12, NULL, NULL);
+(1, '{\"nombre_total_echantillons_distribues\":\"A * B\",\"nombre_total_patients_recu_echantillon\":\"nombre_total_echantillons_distribues * D \\/ E\",\"patients_ordonnes_apres_echantillon\":\"nombre_total_patients_recu_echantillon * G\",\"patients_ordonnes_sans_echantillon\":\"patients_ordonnes_apres_echantillon * I\",\"patients_incrementaux\":\"patients_ordonnes_apres_echantillon * (1 - I)\",\"ventes_incrementales\":\"patients_incrementaux * K\",\"cout_variable\":\"M * nombre_total_echantillons_distribues\",\"cout_total\":\"cout_variable + N\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 1, NULL, NULL),
+(2, '{\"nombre_total_patients_inscrits\":\"A * B\",\"patients_continuant_traitement\":\"B * D\",\"patients_incrementaux\":\"A * (patients_continuant_traitement + F)\",\"ventes_incrementales\":\"patients_incrementaux * H\",\"cout_total\":\"(J * A) + K\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 2, NULL, NULL),
+(3, '{\"medecins_rappeles_email\":\"A * C\",\"medecins_rappeles_marque\":\"medecins_rappeles_email * E\",\"medecins_prescrivant\":\"medecins_rappeles_marque * G\",\"patients_incrementaux\":\"medecins_prescrivant * I\",\"ventes_incrementales\":\"patients_incrementaux * K\",\"cout_total\":\"(M * A * B) + N\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 3, NULL, NULL),
+(4, '{\"medecins_rappeles_message\":\"A * B\",\"medecins_perception_positive\":\"medecins_rappeles_message * D\",\"medecins_prescrivant\":\"medecins_perception_positive * F\",\"patients_incrementaux\":\"(medecins_prescrivant * H) + I\",\"ventes_incrementales\":\"patients_incrementaux * J\",\"cout_total\":\"(L * A) + M\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 4, NULL, NULL),
+(5, '{\"nombre_total_contacts_medecins\":\"A * B\",\"nombre_total_tables_rondes\":\"nombre_total_contacts_medecins \\/ D\",\"medecins_perception_positive\":\"A * F\",\"medecins_prescrivant\":\"medecins_perception_positive * H\",\"patients_incrementaux\":\"medecins_prescrivant * J\",\"ventes_incrementales\":\"patients_incrementaux * L\",\"cout_total\":\"(N * nombre_total_tables_rondes) + O\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 5, NULL, NULL),
+(6, '{\"nombre_total_visites\":\"A * B\",\"medecins_rappeles_message\":\"A * E\",\"medecins_prescrivant\":\"medecins_rappeles_message * G\",\"patients_incrementaux\":\"medecins_prescrivant * I\",\"ventes_incrementales\":\"patients_incrementaux * K\",\"cout_total\":\"M1 * M2\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 6, NULL, NULL),
+(7, '{\"consommateurs_atteints\":\"G * H\",\"consommateurs_rappeles_campagne\":\"consommateurs_atteints * J\",\"consommateurs_consulte_medecin\":\"consommateurs_rappeles_campagne * L\",\"patients_incrementaux\":\"consommateurs_consulte_medecin * N\",\"ventes_incrementales\":\"patients_incrementaux * P\",\"cout_total\":\"R1 + S\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 7, NULL, NULL),
+(8, '{\"nombre_total_patients_maladie\":\"A * B\",\"patients_potentiels\":\"nombre_total_patients_maladie * (1 - D)\",\"patients_cibles\":\"patients_potentiels * F\",\"efficacite_atteinte\":\"H \\/ patients_cibles\",\"visiteurs_interesses\":\"H * J\",\"visiteurs_consulte_medecin\":\"visiteurs_interesses * L\",\"patients_incrementaux\":\"visiteurs_consulte_medecin * N\",\"ventes_incrementales\":\"patients_incrementaux * P\",\"cout_total\":\"R\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 8, NULL, NULL),
+(9, '{\"medecins_rappeles_annonce\":\"A * C\",\"medecins_prescrivant\":\"medecins_rappeles_annonce * E\",\"patients_incrementaux\":\"medecins_prescrivant * G\",\"ventes_incrementales\":\"patients_incrementaux * I\",\"cout_total\":\"K + L\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 9, NULL, NULL),
+(10, '{\"medecins_rappeles_message\":\"A * B\",\"medecins_perception_positive\":\"medecins_rappeles_message * D\",\"medecins_prescrivant\":\"medecins_perception_positive * F\",\"patients_incrementaux\":\"medecins_prescrivant * H\",\"ventes_incrementales\":\"patients_incrementaux * J\",\"cout_total\":\"L\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 10, NULL, NULL),
+(11, '{\"consommateurs_rappeles_message\":\"A * B\",\"consommateurs_consulte_medecin\":\"consommateurs_rappeles_message * D\",\"patients_incrementaux\":\"consommateurs_consulte_medecin * F\",\"ventes_incrementales\":\"patients_incrementaux * H\",\"cout_total\":\"J\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 11, NULL, NULL),
+(12, '{\"medecins_joignables_en_ligne\":\"A * B\",\"efficacite_atteinte\":\"D \\/ medecins_joignables_en_ligne\",\"medecins_engages\":\"D * F\",\"medecins_perception_positive\":\"medecins_engages * H\",\"medecins_prescrivant\":\"medecins_perception_positive * J\",\"patients_incrementaux\":\"medecins_prescrivant * L\",\"ventes_incrementales\":\"patients_incrementaux * N\",\"cout_total\":\"P\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 12, NULL, NULL),
+(13, '{\"Revenu Total\":\"B + A\",\"cout total\":\"C + D\",\"roi\":\"Revenu Total \\/ cout total\"}', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
 
 -- --------------------------------------------------------
 
@@ -312,8 +381,8 @@ CREATE TABLE `labo` (
 --
 
 INSERT INTO `labo` (`id`, `Name`, `userId`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-20 13:15:10', '2025-05-20 13:15:10'),
-(2, 'Labo Example 2', 6, 'Activated', '2025-05-20 13:15:10', '2025-05-20 13:15:10');
+(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-26 10:48:33', '2025-05-26 10:48:33'),
+(2, 'Labo Example 2', 6, 'Activated', '2025-05-26 10:48:33', '2025-05-26 10:48:33');
 
 -- --------------------------------------------------------
 
@@ -434,12 +503,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `FirstName`, `LastName`, `email`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `Role`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$ZaGyObs38gMfJvx3Bfe3de92P4gSRcluWXXGSIX1t4dJBypHbBd4a', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$d8kXEKcFsUASBgovu8IrYOGCK35uYSRPEFWUx/yWykl3EpFIuMCNa', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$lGASSyOgyGxfHJjXvi7d0.Ori70xIfFaBzyrjfVhkl29WuPcGNTNS', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$pbMg34c506amHB4qj0ixH.RkEfAu96cRD05pDPapPd/U3CZKL/WCm', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$eQXcDLe/tjtVHp7QMnRkpOhzXyU87.mjg4.z2N2Eo/sDltxmc8N7K', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-20 13:15:10', '2025-05-20 13:15:10'),
-(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$94xDfIhc8tFEAK4uv3vleuFX5UKkBTZ8B0Yo172Fr.qXfsnNb24dq', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-20 13:15:10', '2025-05-20 13:15:10');
+(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$ESaQ/1CLEYOOOZSngyR4H.bk7ee4qSEdVTdU2Yct/lDIvqcd0qdZK', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$rVbn0wtWtUji3T/2EOAcA.UwTELmIxXyXZwZVfxixWo192gzO1JKu', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$Fw4w8d.qlb.skm0mapVN7uHMdiVBkgSEyAvshCu33fKkY9jTjvjda', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$7KEifYCUqDVZnCPsMqO2ceQkQKvGAkkCYwZ.wWaiYsuzmOwNbDjs6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$pcfMTf5to6.GhfEDD81K9.T.dsWAxq5kE3bMhkAiedWvRJZPKcHTG', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-26 10:48:33', '2025-05-26 10:48:33'),
+(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$A4V2EBQTGDAz96ylLcU8bu8cRBCkekqCIq06/Yl9lbB3n8e6MNW0C', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-26 10:48:33', '2025-05-26 10:48:33');
 
 --
 -- Index pour les tables déchargées
@@ -584,19 +653,19 @@ ALTER TABLE `activitieslist`
 -- AUTO_INCREMENT pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT pour la table `activityitemvalues`
 --
 ALTER TABLE `activityitemvalues`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `admins`
@@ -608,7 +677,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT pour la table `calculationformula`
 --
 ALTER TABLE `calculationformula`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `failed_jobs`
