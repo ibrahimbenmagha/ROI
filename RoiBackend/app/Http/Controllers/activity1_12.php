@@ -17,328 +17,95 @@ use App\Models\Labo;
 
 class Activity1_12 extends Controller
 {
-    //Activite 1
 
-
-    //Activite Costum 
+    //Insertion d'une activite costume (Roi manuellement definie)
     public function insertCustomActivity(Request $request)
     {
         try {
-            $laboId = JWTHelper::getLaboId($request);
-            if (!$laboId) {
-                return response()->json(['message' => 'Token invalide'], 401);
-            }
-
+            // Validate input
             $validated = $request->validate([
                 'activityName' => 'required|string|max:255',
-                'year' => 'required|string',
+                'year' => 'required|integer|min:1900|max:9999',
                 'roi' => 'required|numeric|min:0',
             ]);
 
-            // 1. Créer d'abord une activité personnalisée dans ActivitiesList
-            $newActivity = ActivitiesList::create([
-                'Name' => $validated['activityName'],
-                'is_custom' => true
-            ]);
-
-            // Récupérer l'ID de l'activité nouvellement créée
-            $activityId = $newActivity->id;
-
-            // 2. Créer un élément ROI dans ActivityItem
-            $roiItem = ActivityItem::create([
-                'Name' => 'ROI',
-                'ActivityId' => $activityId
-            ]);
-
-            // 3. Créer l'entrée dans ActivityByLabo
-            $activityByLabo = ActivityByLabo::create([
-                'ActivityId' => $activityId,
-                'laboId' => $laboId,
-                'year' => $validated['year'],
-                // 'is_calculated' => true
-            ]);
-
-            // 4. Insérer la valeur du ROI
-            ActivityItemValue::create([
-                'activityItemId' => $roiItem->id,
-                'ActivityByLaboId' => $activityByLabo->id,
-                'value' => $validated['roi']
-            ]);
-
-            return response()->json([
-                'message' => 'Activité personnalisée créée avec succès.',
-                'activityId' => $activityId,
-                'roiItemId' => $roiItem->id,
-                'roi' => $validated['roi']
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur côté serveur.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function insertCustomActivity1(Request $request)
-    {
-        try {
-            $laboId = JWTHelper::getLaboId($request);
+            // Get laboId from JWT
+            $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
             if (!$laboId) {
                 return response()->json(['message' => 'Token invalide'], 401);
             }
 
-            // Validate the request
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'year' => 'required|integer',
-                'items' => 'required|array|min:1',
-                'items.*.name' => 'required|string',
-                'items.*.value' => 'required|numeric',
-                'items.*.type' => 'required|in:number,percentage',
-                'calculatedItems' => 'required|array|min:1',
-                'calculatedItems.*.name' => 'required|string',
-                'calculatedItems.*.value' => 'required|numeric',
-            ]);
+            // Check if activity exists
+            $activity = ActivitiesList::where('Name', $validated['activityName'])->first();
 
-            $activityNameLower = strtolower($validated['name']);
-
-            // Check if the activity already exists
-            $existingActivity = ActivitiesList::whereRaw('LOWER(Name) = ?', [$activityNameLower])
-                ->where('is_custom', true)
-                ->first();
-
-            if ($existingActivity) {
-                // Check if the activity exists for the given lab and year
-                $existingByLabo = ActivityByLabo::where('ActivityId', $existingActivity->id)
-                    ->where('laboId', $laboId)
-                    ->where('year', $validated['year'])
-                    ->first();
-
-                if ($existingByLabo) {
-                    return response()->json([
-                        'message' => 'Cette activité personnalisée existe déjà pour cette année.'
-                    ], 409);
-                }
-
-                // Create a new ActivityByLabo entry for the existing activity
-                $activityByLabo = ActivityByLabo::create([
-                    'ActivityId' => $existingActivity->id,
-                    'laboId' => $laboId,
-                    'year' => $validated['year'],
-                ]);
-
-                // Get existing activity items
-                $baseItems = ActivityItem::where('ActivityId', $existingActivity->id)->get();
-
-                // Prepare values for insertion
-                $baseValues = [];
-                foreach ($validated['items'] as $item) {
-                    $matchingItem = $baseItems->firstWhere('Name', $item['name']);
-                    if ($matchingItem) {
-                        $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
-                        $baseValues[] = [
-                            'activityItemId' => $matchingItem->id,
-                            'ActivityByLaboId' => $activityByLabo->id,
-                            'value' => $value,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-                }
-
-                // Handle ROI from calculatedItems
-                $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
-                if ($roiItemData) {
-                    $roiItem = $baseItems->firstWhere('Name', 'ROI');
-                    if ($roiItem) {
-                        $baseValues[] = [
-                            'activityItemId' => $roiItem->id,
-                            'ActivityByLaboId' => $activityByLabo->id,
-                            'value' => $roiItemData['value'],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    } else {
-                        // Create ROI item if it doesn't exist
-                        $roiItem = ActivityItem::create([
-                            'ActivityId' => $existingActivity->id,
-                            'Name' => 'ROI',
-                            'Type' => 'calculated',
-                            'is_custom' => true,
-                            'calculation_expression' => null,
-                        ]);
-                        $baseValues[] = [
-                            'activityItemId' => $roiItem->id,
-                            'ActivityByLaboId' => $activityByLabo->id,
-                            'value' => $roiItemData['value'],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-                }
-
-                // Insert values into activityitemvalues
-                ActivityItemValue::insert($baseValues);
-
-                return response()->json([
-                    'message' => 'Activité existante, mais ajoutée pour une nouvelle année.',
-                    'activityId' => $activityByLabo->id,
-                    'activityName' => $validated['name'],
-                    'year' => $validated['year'],
-                    'ROI' => $roiItemData['value'] ?? null,
-                ], 201);
-            }
-
-            // Create a new custom activity
-            $customActivity = ActivitiesList::create([
-                'Name' => $validated['name'],
-                'is_custom' => true,
-                'created_by' => $laboId,
-            ]);
-
-            // Create base items
-            $baseItems = [];
-            foreach ($validated['items'] as $item) {
-                $baseItems[] = ActivityItem::create([
-                    'ActivityId' => $customActivity->id,
-                    'Name' => $item['name'],
-                    'Type' => $item['type'],
+            if (!$activity) {
+                // Create new activity with is_custom = true
+                $activity = ActivitiesList::create([
+                    'Name' => $validated['activityName'],
                     'is_custom' => true,
                 ]);
+
+                // Create default Roi item
+                $roiItem = ActivityItem::create([
+                    'ActivityId' => $activity->id,
+                    'Name' => 'Roi',
+                    'symbole' => 'ROI',
+                    'Type' => 'number',
+                ]);
+
+                // Create a simple formula for the activity
+                $formula = CalculationFormulat::create([
+                    'ActivityId' => $activity->id,
+                    'formulat' => json_encode(['roi' => 'ROI'], JSON_UNESCAPED_UNICODE),
+                ]);
             }
 
-            // Always create an ROI item
-            $roiItemData = collect($validated['calculatedItems'])->firstWhere('name', 'ROI');
-            $roiItem = ActivityItem::create([
-                'ActivityId' => $customActivity->id,
-                'Name' => 'ROI',
-                'Type' => 'calculated',
-                'is_custom' => true,
-                'calculation_expression' => null,
-            ]);
-
-            // Create ActivityByLabo entry
+            // Create entry in activitybylabo
             $activityByLabo = ActivityByLabo::create([
-                'ActivityId' => $customActivity->id,
+                'ActivityId' => $activity->id,
                 'laboId' => $laboId,
                 'year' => $validated['year'],
             ]);
 
-            // Prepare values for insertion
-            $baseValues = [];
-            foreach ($validated['items'] as $index => $item) {
-                $value = ($item['type'] === 'percentage') ? $item['value'] / 100 : $item['value'];
-                $baseValues[] = [
-                    'activityItemId' => $baseItems[$index]->id,
-                    'ActivityByLaboId' => $activityByLabo->id,
-                    'value' => $value,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
+            // Find the Roi item for the activity
+            $roiItem = ActivityItem::where('ActivityId', $activity->id)
+                ->where('Name', 'Roi')
+                ->first();
 
-            // Add ROI value
-            if ($roiItemData && isset($roiItemData['value'])) {
-                $baseValues[] = [
+            if ($roiItem) {
+                // Insert ROI value
+                ActivityItemValue::create([
                     'activityItemId' => $roiItem->id,
                     'ActivityByLaboId' => $activityByLabo->id,
-                    'value' => $roiItemData['value'],
+                    'value' => $validated['roi'],
                     'created_at' => now(),
                     'updated_at' => now(),
-                ];
+                ]);
             } else {
-                // Default ROI value if not provided
-                $baseValues[] = [
-                    'activityItemId' => $roiItem->id,
-                    'ActivityByLaboId' => $activityByLabo->id,
-                    'value' => 0, // Default value
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                // This should not happen if activity creation includes Roi item
+                return response()->json([
+                    'message' => 'Erreur : Item ROI non trouvé pour cette activité',
+                ], 500);
             }
-
-            // Insert values into activityitemvalues
-            ActivityItemValue::insert($baseValues);
 
             return response()->json([
                 'message' => 'Activité personnalisée créée avec succès',
-                'activityId' => $activityByLabo->id,
-                'ROI' => $roiItemData['value'] ?? 0,
-                'activityName' => $validated['name'],
-                'year' => $validated['year'],
+                'activity' => [
+                    'id' => $activity->id,
+                    'name' => $activity->Name,
+                    'year' => $activityByLabo->year,
+                    'roi' => $validated['roi'],
+                ],
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Erreur lors de la création de l\'activité personnalisée',
+                'message' => 'Erreur lors de la création de l\'activité',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function calculateROIAct_Costum(Request $request)
-    {
-        try {
-            // Retrieve the activity ID from the cookie
-            $activityByLaboId = $request->cookie('activityId');
-
-            if (!$activityByLaboId) {
-                return response()->json(['message' => 'ID d\'activité non trouvé'], 400);
-            }
-
-            // Fetch the activity by labo
-            $activityByLabo = ActivityByLabo::find($activityByLaboId);
-            if (!$activityByLabo) {
-                return response()->json(['message' => 'Activité non trouvée'], 404);
-            }
-
-            // Verify that the activity is custom
-            $activity = ActivitiesList::find($activityByLabo->ActivityId);
-            if (!$activity || !$activity->is_custom) {
-                return response()->json(['message' => 'Cette activité n\'est pas une activité personnalisée'], 400);
-            }
-
-            // Fetch all items for the activity
-            $items = ActivityItem::where('ActivityId', $activity->id)
-                ->get();
-
-            if ($items->isEmpty()) {
-                return response()->json(['message' => 'Aucun élément trouvé pour cette activité'], 404);
-            }
-
-            // Fetch values for all items
-            $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
-                ->whereIn('activityItemId', $items->pluck('id'))
-                ->get()
-                ->keyBy('activityItemId');
-
-            // Build a flat object with item names as keys and values as values
-            $data = [];
-            foreach ($items as $item) {
-                $value = isset($itemValues[$item->id]) ? $itemValues[$item->id]->value : null;
-                if ($value !== null) {
-                    $data[$item->Name] = $value;
-                }
-            }
-
-            // Ensure ROI is included, even if null
-            if (!isset($data['ROI'])) {
-                return response()->json(['message' => 'Élément ROI non trouvé pour cette activité'], 404);
-            }
-
-            // Return the response as a flat object
-            return response()->json($data, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors du calcul du ROI pour l\'activité personnalisée.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
-
-    
-    //Insertion de toutes le activities (Dynamique) 
+    //Insertuion de toutes le activities (Dynamique) 
     public function insertActivityData(Request $request)
     {
         try {
@@ -609,8 +376,167 @@ class Activity1_12 extends Controller
         }
     }
 
+    //Modification de toutes kes activites (Dynamique)
+    public function updateActivityByLaboData(Request $request)
+    {
+        try {
+            // Validate input
+            $validated = $request->validate([
+                'year' => 'required|integer|min:1900|max:9999',
+                'items' => 'required|array|min:1',
+                'items.*.activityItemId' => 'required|integer|exists:activityitems,id',
+                'items.*.value' => 'required|numeric|min:0',
+            ]);
 
+            // Get laboId from JWT
+            $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+            if (!$laboId) {
+                return response()->json(['error' => 'Token invalide'], 401);
+            }
 
+            $activityByLaboId = $request->cookie('activityId');
+            // Find the activityByLabo record
+            $activityByLabo = ActivityByLabo::where('id', $activityByLaboId)
+                ->where('laboId', $laboId)
+                ->first();
 
+            if (!$activityByLabo) {
+                return response()->json(['error' => 'Activité non trouvée ou accès non autorisé'], 404);
+            }
 
+            // Update year in activitybylabo
+            $activityByLabo->update([
+                'year' => $validated['year'],
+                'updated_at' => now(),
+            ]);
+
+            // Update or create item values
+            foreach ($validated['items'] as $item) {
+                $activityItem = ActivityItem::where('id', $item['activityItemId'])
+                    ->where('ActivityId', $activityByLabo->ActivityId)
+                    ->first();
+
+                if (!$activityItem) {
+                    return response()->json([
+                        'error' => "Item {$item['activityItemId']} non trouvé pour cette activité",
+                    ], 404);
+                }
+
+                // Adjust value for percentage type if necessary
+                $value = $item['value'];
+                if ($activityItem->Type === 'percentage' && $value > 1) {
+                    $value = $value / 100; // Convert percentage to decimal for storage
+                }
+
+                ActivityItemValue::updateOrCreate(
+                    [
+                        'activityItemId' => $item['activityItemId'],
+                        'ActivityByLaboId' => $activityByLaboId,
+                    ],
+                    [
+                        'value' => $value,
+                        'updated_at' => now(),
+                        'created_at' => now(), // Ensure created_at is set for new records
+                    ]
+                );
+            }
+
+            // Recalculate results based on updated values
+            $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+                ->with('activityItem')
+                ->get()
+                ->mapWithKeys(function ($itemValue) {
+                    $value = $itemValue->value;
+                    if ($itemValue->activityItem->Type === 'percentage' && $value > 1) {
+                        $value = $itemValue->value / 100;
+                    }
+                    return [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $value];
+                })->toArray();
+
+            $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+            $calculatedResults = [];
+
+            if ($formula) {
+                $formulaData = json_decode($formula->formulat, true);
+                $intermediateResults = [];
+
+                foreach ($formulaData as $key => $expression) {
+                    try {
+                        $parsedExpression = $expression;
+
+                        // Replace item symbols
+                        foreach ($itemValues as $symbol => $value) {
+                            if ($symbol) {
+                                $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+                            }
+                        }
+
+                        // Replace intermediate results
+                        foreach ($intermediateResults as $resultKey => $resultValue) {
+                            $parsedExpression = str_replace($resultKey, $resultValue, $parsedExpression);
+                        }
+
+                        // Check for unresolved variables
+                        if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression, $matches)) {
+                            $calculatedResults[$key] = "Erreur : variable non définie '$matches[0]'";
+                            continue;
+                        }
+
+                        // Evaluate expression
+                        $result = eval("return $parsedExpression;");
+
+                        // Check for invalid results
+                        if (is_infinite($result) || is_nan($result)) {
+                            $calculatedResults[$key] = 'Erreur : résultat invalide (division par zéro ou NaN)';
+                            continue;
+                        }
+
+                        // Convert ROI to percentage
+                        if ($key === 'roi') {
+                            $result *= 100; // Convert to percentage
+                        }
+
+                        $calculatedResults[$key] = $result;
+                        $intermediateResults[$key] = $result;
+                    } catch (\Exception $e) {
+                        $calculatedResults[$key] = 'Erreur de calcul : ' . $e->getMessage();
+                    }
+                }
+            } else {
+                $calculatedResults['error'] = 'Aucune formule définie pour cette activité';
+            }
+
+            // Prepare response
+            $response = [
+                'activityByLabo' => [
+                    'id' => $activityByLabo->id,
+                    'labo' => $activityByLabo->labo->Name,
+                    'activity' => $activityByLabo->activity->Name,
+                    'year' => $activityByLabo->year,
+                ],
+                'items' => ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
+                    ->get()
+                    ->map(function ($item) use ($itemValues) {
+                        return [
+                            'id' => $item->id,
+                            'name' => $item->Name,
+                            'symbole' => $item->symbole,
+                            'type' => $item->Type,
+                            'value' => $itemValues[$item->symbole ?? 'item_' . $item->id] ?? null,
+                        ];
+                    })->values()->toArray(),
+                'calculated_results' => $calculatedResults,
+            ];
+
+            return response()->json([
+                'message' => 'Données modifiées avec succès',
+                'data' => $response,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erreur lors de la modification des données',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

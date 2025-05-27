@@ -55,6 +55,8 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::get('GetLaboInfosByLaboId/{id}', [LaboController::class, 'GetLaboInfosByLaboId']);
 
+    Route::patch("updateActivityByLaboData", [Activity1_12::class, "updateActivityByLaboData"]);
+
     Route::post("insertCustomActivity", [Activity1_12::class, "insertCustomActivity"]);
     Route::post("insertCustomActivity1", [Activity1_12::class, "insertCustomActivity1"]);
     Route::post('insertActivityData', [Activity1_12::class, 'insertActivityData']);
@@ -88,4 +90,5 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemsByActivityIdall', [activityitems::class, 'getActivityItemsByActivityIdall']);
 });
 
+    Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
 

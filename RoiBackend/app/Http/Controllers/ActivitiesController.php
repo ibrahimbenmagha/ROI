@@ -15,11 +15,11 @@ use App\Models\ActivityItem;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Activity1_12;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 class  ActivitiesController extends Controller
 {
-
-
 
     public function getAllActivity()
     {
@@ -391,6 +391,7 @@ class  ActivitiesController extends Controller
         return response()->json(['data' => $formattedData], 200);
     }
 
+
     public function deleteActivityValues(Request $request)
     {
         $ActivityByLaboId = $request->cookie('activityId');
@@ -652,6 +653,7 @@ class  ActivitiesController extends Controller
         return response()->json($result, 200);
     }
 
+
     public function getActivityByLaboData(Request $request)
     {
         // Récupérer l'activityByLaboId depuis le cookie ou la requête
@@ -668,9 +670,8 @@ class  ActivitiesController extends Controller
             return response()->json(['error' => 'Activité non trouvée'], 404);
         }
 
-        // Récupérer les items associés à l'activité, sauf le ROI
+        // Récupérer tous les items associés à l'activité (y compris Roi)
         $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
-            ->where('Name', '!=', 'Roi') // Exclure l'item ROI
             ->get()
             ->keyBy(function ($item) {
                 return $item->symbole ?? 'item_' . $item->id; // Fallback pour symboles NULL
@@ -682,10 +683,6 @@ class  ActivitiesController extends Controller
             ->get()
             ->mapWithKeys(function ($itemValue) {
                 $value = $itemValue->value;
-                // Convertir les pourcentages en décimal si nécessaire pour les calculs
-                if ($itemValue->activityItem->Type === 'percentage' && $itemValue->value > 1) {
-                    $value = $itemValue->value / 100;
-                }
                 return [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $value];
             })->toArray();
 
@@ -701,8 +698,13 @@ class  ActivitiesController extends Controller
                 try {
                     $parsedExpression = $expression;
 
-                    // Remplacer les symboles des items
-                    foreach ($itemValues as $symbol => $value) {
+                    // Remplacer les symboles des items (valeurs en décimal pour calcul)
+                    foreach ($activityItems as $symbol => $item) {
+                        $value = $itemValues[$symbol] ?? 0;
+                        // Utiliser la valeur en décimal pour les calculs (diviser par 100 pour percentage)
+                        if ($item->Type === 'percentage') {
+                            $value /= 100;
+                        }
                         if ($symbol) {
                             $parsedExpression = str_replace($symbol, $value, $parsedExpression);
                         }
@@ -750,6 +752,7 @@ class  ActivitiesController extends Controller
                 'labo' => $activityByLabo->labo->Name,
                 'activity' => $activityByLabo->activity->Name,
                 'year' => $activityByLabo->year,
+                'is_custom' => $activityByLabo->activity->is_custom, // Ajouter is_custom
             ],
             'items' => $activityItems->map(function ($item) use ($itemValues) {
                 return [
@@ -765,7 +768,8 @@ class  ActivitiesController extends Controller
 
         return response()->json($response);
     }
-    
+
+
     public function createActivity(Request $request)
     {
         // Manual validation
@@ -891,4 +895,208 @@ class  ActivitiesController extends Controller
             ], 500);
         }
     }
+
+    // public function exportActivityCsv(Request $request)
+    // {
+    //     $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
+
+    //     if (!$activityByLaboId) {
+    //         return response()->json(['error' => 'Aucun ID d\'activité fourni'], 400);
+    //     }
+
+    //     // On réutilise la logique de getActivityByLaboData()
+    //     $activityByLabo = ActivityByLabo::with(['activity', 'labo'])->find($activityByLaboId);
+    //     if (!$activityByLabo) {
+    //         return response()->json(['error' => 'Activité non trouvée'], 404);
+    //     }
+
+    //     $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
+    //         ->get()
+    //         ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+    //     $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+    //         ->with('activityItem')
+    //         ->get()
+    //         ->mapWithKeys(
+    //             fn($itemValue) =>
+    //             [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+    //         )->toArray();
+
+    //     $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+    //     $calculatedResults = [];
+
+    //     if ($formula) {
+    //         $formulaData = json_decode($formula->formulat, true);
+    //         $intermediateResults = [];
+
+    //         foreach ($formulaData as $key => $expression) {
+    //             try {
+    //                 $parsedExpression = $expression;
+
+    //                 foreach ($activityItems as $symbol => $item) {
+    //                     $value = $itemValues[$symbol] ?? 0;
+    //                     if ($item->Type === 'percentage') $value /= 100;
+    //                     $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+    //                 }
+
+    //                 foreach ($intermediateResults as $k => $v) {
+    //                     $parsedExpression = str_replace($k, $v, $parsedExpression);
+    //                 }
+
+    //                 if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+    //                     $calculatedResults[$key] = 'Variable non définie';
+    //                     continue;
+    //                 }
+
+    //                 $result = eval("return $parsedExpression;");
+    //                 if (is_infinite($result) || is_nan($result)) {
+    //                     $calculatedResults[$key] = 'Résultat invalide';
+    //                     continue;
+    //                 }
+
+    //                 if ($key === 'roi') $result *= 100;
+    //                 $calculatedResults[$key] = $result;
+    //                 $intermediateResults[$key] = $result;
+    //             } catch (\Throwable $e) {
+    //                 $calculatedResults[$key] = 'Erreur';
+    //             }
+    //         }
+    //     }
+
+    //     // Préparation CSV
+    //     $lines = [];
+    //     $lines[] = ['Section', 'Clé', 'Valeur'];
+
+    //     foreach ($activityByLabo->toArray() as $key => $value) {
+    //         if (in_array($key, ['id', 'year']) || is_scalar($value)) {
+    //             $lines[] = ['activityByLabo', $key, $value];
+    //         }
+    //     }
+
+    //     foreach ($activityItems as $symbol => $item) {
+    //         $lines[] = ['items', $item->Name, $itemValues[$symbol] ?? ''];
+    //     }
+
+    //     foreach ($calculatedResults as $key => $value) {
+    //         $lines[] = ['calculated_results', $key, $value];
+    //     }
+
+    //     $handle = fopen('php://temp', 'r+');
+    //     foreach ($lines as $line) {
+    //         fputcsv($handle, $line);
+    //     }
+
+    //     rewind($handle);
+    //     $csv = stream_get_contents($handle);
+    //     fclose($handle);
+
+    //     return response($csv)
+    //         ->header('Content-Type', 'text/csv; charset=UTF-8')
+    //         ->header('Content-Disposition', 'attachment; filename="export_activity_' . $activityByLaboId . '.csv"');
+    // }
+
+
+    public function exportActivityCsv(Request $request)
+    {
+        $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
+
+        if (!$activityByLaboId) {
+            return response()->json(['error' => 'Aucun ID d\'activité fourni'], 400);
+        }
+
+        $activityByLabo = ActivityByLabo::with(['activity', 'labo'])->find($activityByLaboId);
+        if (!$activityByLabo) {
+            return response()->json(['error' => 'Activité non trouvée'], 404);
+        }
+
+        $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
+            ->get()
+            ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+        $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+            ->with('activityItem')
+            ->get()
+            ->mapWithKeys(
+                fn($itemValue) =>
+                [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+            )->toArray();
+
+        $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+        $calculatedResults = [];
+
+        if ($formula) {
+            $formulaData = json_decode($formula->formulat, true);
+            $intermediateResults = [];
+
+            foreach ($formulaData as $key => $expression) {
+                try {
+                    $parsedExpression = $expression;
+
+                    foreach ($activityItems as $symbol => $item) {
+                        $value = $itemValues[$symbol] ?? 0;
+                        if ($item->Type === 'percentage') $value /= 100;
+                        $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+                    }
+
+                    foreach ($intermediateResults as $k => $v) {
+                        $parsedExpression = str_replace($k, $v, $parsedExpression);
+                    }
+
+                    if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+                        $calculatedResults[$key] = 'Variable non définie';
+                        continue;
+                    }
+
+                    $result = eval("return $parsedExpression;");
+                    if (is_infinite($result) || is_nan($result)) {
+                        $calculatedResults[$key] = 'Résultat invalide';
+                        continue;
+                    }
+
+                    if ($key === 'roi') $result *= 100;
+                    $calculatedResults[$key] = $result;
+                    $intermediateResults[$key] = $result;
+                } catch (\Throwable $e) {
+                    $calculatedResults[$key] = 'Erreur';
+                }
+            }
+        }
+
+        // Construire les lignes du CSV
+        $lines = [];
+        $lines[] = ['Section', 'Clé', 'Valeur'];
+
+        foreach ($activityByLabo->toArray() as $key => $value) {
+            if (!in_array($key, ['id', 'created_at', 'updated_at', 'ActivityId', 'LaboId']) && is_scalar($value)) {
+                $lines[] = ['activityByLabo', $key, $value];
+            }
+        }
+
+        foreach ($activityItems as $symbol => $item) {
+            $lines[] = ['items', $item->Name, $itemValues[$symbol] ?? ''];
+        }
+
+        foreach ($calculatedResults as $key => $value) {
+            $lines[] = ['calculated_results', $key, $value];
+        }
+
+        // Écrire le CSV dans un flux mémoire
+        $handle = fopen('php://temp', 'r+');
+
+        // Ajouter BOM UTF-8 pour corriger les accents dans Excel
+        fwrite($handle, "\xEF\xBB\xBF");
+
+        foreach ($lines as $line) {
+            fputcsv($handle, $line);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="export_activity_' . $activityByLaboId . '.csv"');
+    }
+
 }

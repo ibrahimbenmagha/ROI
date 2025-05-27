@@ -18,7 +18,6 @@ import RealCreate from "./pages/BackOffice/CreateLabo/Creation";
 import RoiResultCard from "./pages/RoiResultCard/RoiResultCard";
 import DislayLabos from "./pages/BackOffice/DisplayLabo/DislayLabos";
 
-
 import CalculateAct1 from "./pages/CalculateAct1/CalculateAct1";
 
 import CustomActivityPage from "./pages/CalcutaleCustumAct/CalcutaleCustumAct";
@@ -33,11 +32,13 @@ import {
   ActRoute,
   CalcRoute,
 } from "./components/AuthRoute";
+
 import CreateRegularActivity from "./pages/BackOffice/AddActivity/AddActivity";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -73,8 +74,6 @@ const App = () => (
             />
             <Route path="CreateRegularActivity" element={<CreateRegularActivity/>}/>
           </Route>
-
-
 
 
           <Route
@@ -129,6 +128,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+
 );
 
 export default App;

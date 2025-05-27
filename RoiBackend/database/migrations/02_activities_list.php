@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('Name')->unique();
             $table->boolean('is_custom');
+
             $table->timestamps();
         });
     }
