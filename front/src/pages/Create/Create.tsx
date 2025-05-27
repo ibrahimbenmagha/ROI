@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance, { deleteCookie } from "../../axiosConfig";
 import { Link } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Modal, Input, message, Upload } from "antd";
+import {
+  UploadOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 
 import Head from "../Header/Header";
 
@@ -17,6 +23,7 @@ interface CalculatedActivity {
   date: string;
   actName?: string;
   details?: string;
+  year?: number;
 }
 
 const storeActivityIdInCookie = (activityId: string) => {
@@ -28,17 +35,16 @@ const storeActivityIdInCookie = (activityId: string) => {
   }
 };
 
-
-const storeActivityIdInCookie2 = (activityId: number) => {
-  document.cookie = `activityId=${activityId}; path=/; max-age=3600;`;
-};
-
 const ActivityPage: React.FC = () => {
   const [acts, setActs] = useState<Activity[]>([]);
   const [activities, setActivities] = useState<CalculatedActivity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   useEffect(() => {
     deleteCookie("activityNumber");
@@ -89,6 +95,33 @@ const ActivityPage: React.FC = () => {
     }).format(date);
   };
 
+  const showResetModal = () => {
+    setIsModalVisible(true);
+    setPassword("");
+  };
+
+  const handleReset = async (e) => {
+    e.preventDefault();
+    setConfirmLoading(true);
+    try {
+      const res = await axiosInstance.post("/verify-password", { password });
+
+      if (res.data.success) {
+        await axiosInstance.delete("/deleteLaboData");
+        message.success("Données du laboratoire réinitialisées avec succès !");
+        setIsModalVisible(false);
+        setPassword("");
+        window.location.reload();
+      } else {
+        message.error(res.data.error || "Échec de la vérification.");
+      }
+    } catch (err: any) {
+      message.error(err.response?.data?.error || "Erreur lors de la vérification.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   return (
     <div>
       <Head />
@@ -105,17 +138,13 @@ const ActivityPage: React.FC = () => {
                 <div
                   key={act.id}
                   className={`border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${
-                    selectedActivity?.id === act.id
-                      ? "ring-2 ring-blue-500"
-                      : ""
+                    selectedActivity?.id === act.id ? "ring-2 ring-blue-500" : ""
                   }`}
                   onClick={() => handleActivityClick(act)}
                 >
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2"></div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg text-gray-800 mb-3">
-                      {act.Name}
-                    </h3>
+                    <h3 className="font-semibold text-lg text-gray-800 mb-3">{act.Name}</h3>
                     <div className="flex justify-end mt-4">
                       <Link
                         to={
@@ -177,7 +206,6 @@ const ActivityPage: React.FC = () => {
               Historique
             </h1>
 
-            {/* Partie Historique avec défilement */}
             <div className="max-h-[80vh] overflow-y-auto">
               {loading ? (
                 <div className="flex justify-center py-8">
@@ -200,10 +228,10 @@ const ActivityPage: React.FC = () => {
                     >
                       <div className="flex justify-between items-start">
                         <p className="font-medium text-gray-800">
-                          {(activity as any).actName || "Activité sans nom"}
+                          {activity.actName || "Activité sans nom"}
                         </p>
                         <span className="text-xs text-gray-500">
-                          {`Année: ${(activity as any).year}`}
+                          {`Année: ${activity.year || "N/A"}`}
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 mt-2">
@@ -231,8 +259,51 @@ const ActivityPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Boutons d'action */}
+      <div className="w-full px-4 md:px-10 pb-6 mt-8">
+        <div className="flex flex-wrap justify-end gap-4">
+          <Button icon={<FileExcelOutlined />} type="default" onClick={() => message.info("Fonction Export CSV à implémenter")}>
+            Exporter CSV
+          </Button>
+          <Button icon={<FilePdfOutlined />} type="default" onClick={() => message.info("Fonction Export PDF à implémenter")}>
+            Exporter PDF
+          </Button>
+          <Upload
+            showUploadList={false}
+            beforeUpload={(file) => {
+              message.success(`Fichier ${file.name} importé avec succès (à implémenter).`);
+              return false;
+            }}
+          >
+            <Button icon={<UploadOutlined />}>Importer</Button>
+          </Upload>
+          <Button danger icon={<ReloadOutlined />} onClick={showResetModal}>
+            Réinitialiser
+          </Button>
+        </div>
+      </div>
+
+      {/* Modal mot de passe */}
+      <Modal
+        title="Confirmation de la réinitialisation"
+        open={isModalVisible}
+        onOk={handleReset}
+        confirmLoading={confirmLoading}
+        onCancel={() => setIsModalVisible(false)}
+        okText="Confirmer"
+        cancelText="Annuler"
+      >
+        <p>Veuillez entrer le mot de passe du laboratoire pour confirmer la réinitialisation :</p>
+        <Input.Password
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </Modal>
     </div>
   );
 };
 
 export default ActivityPage;
+//apres la supresion afficher un message.succes supression valide sans reload page

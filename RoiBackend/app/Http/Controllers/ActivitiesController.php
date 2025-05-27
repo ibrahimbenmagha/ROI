@@ -412,7 +412,7 @@ class  ActivitiesController extends Controller
 
     public function deleteLaboData(Request $request)
     {
-        $laboId = JWTHelper::getLaboId($request);
+        $laboId = JWTHelper::getLaboId($request) ?? $request["laboId"];
         if (!$laboId) {
             return response()->json(['error' => 'Labo ID not found'], 400);
         }

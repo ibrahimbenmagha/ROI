@@ -64,13 +64,15 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 
+    Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
 
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
-    Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
 });
+
+    Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
 
 
 
@@ -90,5 +92,4 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemsByActivityIdall', [activityitems::class, 'getActivityItemsByActivityIdall']);
 });
 
-    Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
 
