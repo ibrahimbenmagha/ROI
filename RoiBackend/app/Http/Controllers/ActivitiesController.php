@@ -14,9 +14,7 @@ use App\Models\ActivityItem;
 
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Activity1_12;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
+
 
 class  ActivitiesController extends Controller
 {
@@ -896,105 +894,193 @@ class  ActivitiesController extends Controller
         }
     }
 
-    // public function exportActivityCsv(Request $request)
-    // {
-    //     $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
+    public function updateActivity(Request $request, $id)
+    {
+        // Manual validation
+        $errors = [];
 
-    //     if (!$activityByLaboId) {
-    //         return response()->json(['error' => 'Aucun ID d\'activité fourni'], 400);
-    //     }
+        // Check if activity exists
+        $activity = ActivitiesList::find($id);
+        if (!$activity) {
+            return response()->json([
+                'error' => 'Activity not found',
+            ], 404);
+        }
 
-    //     // On réutilise la logique de getActivityByLaboData()
-    //     $activityByLabo = ActivityByLabo::with(['activity', 'labo'])->find($activityByLaboId);
-    //     if (!$activityByLabo) {
-    //         return response()->json(['error' => 'Activité non trouvée'], 404);
-    //     }
+        // Check for required fields
+        if (!$request->has('name') || empty($request->name) || !is_string($request->name) || strlen($request->name) > 255) {
+            $errors['name'] = 'The name field is required, must be a string, and max 255 characters.';
+        } elseif ($request->name !== $activity->Name && ActivitiesList::where('Name', $request->name)->exists()) {
+            $errors['name'] = 'The name must be unique.';
+        }
 
-    //     $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
-    //         ->get()
-    //         ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+        // Description is optional, but must be a string if provided
+        if ($request->has('description') && (!is_string($request->description) || strlen($request->description) > 65535)) {
+            $errors['description'] = 'The description must be a string and not exceed 65535 characters.';
+        }
 
-    //     $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
-    //         ->with('activityItem')
-    //         ->get()
-    //         ->mapWithKeys(
-    //             fn($itemValue) =>
-    //             [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
-    //         )->toArray();
+        // Check items
+        if (!$request->has('items') || !is_array($request->items) || empty($request->items)) {
+            $errors['items'] = 'The items field is required and must be a non-empty array.';
+        } else {
+            $symbols = [];
+            foreach ($request->items as $index => $item) {
+                if (!isset($item['name']) || empty($item['name']) || !is_string($item['name']) || strlen($item['name']) > 255) {
+                    $errors["items.$index.name"] = 'Item name is required, must be a string, and max 255 characters.';
+                }
+                if (!isset($item['symbole']) || empty($item['symbole']) || !is_string($item['symbole']) || strlen($item['symbole']) > 10) {
+                    $errors["items.$index.symbole"] = 'Item symbol is required, must be a string, and max 10 characters.';
+                } elseif (in_array($item['symbole'], $symbols)) {
+                    $errors["items.$index.symbole"] = 'Item symbol must be unique within the activity.';
+                } else {
+                    $symbols[] = $item['symbole'];
+                }
+                if (!isset($item['Type']) || !in_array($item['Type'], ['number', 'percentage'])) {
+                    $errors["items.$index.Type"] = 'Item Type is required and must be either "number" or "percentage".';
+                }
+            }
+            // Ensure ROI symbol is not used in custom items
+            if (in_array('ROI', $symbols)) {
+                $errors['items'] = 'The symbol "ROI" is reserved for the default Roi item.';
+            }
+        }
 
-    //     $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
-    //     $calculatedResults = [];
+        // Check formula
+        if (!$request->has('formula') || empty($request->formula) || !is_array($request->formula)) {
+            $errors['formula'] = 'The formula field is required and must be a valid JSON object.';
+        } else {
+            foreach ($request->formula as $key => $value) {
+                if (!is_string($key) || !is_string($value)) {
+                    $errors["formula.$key"] = 'Each formula key and value must be a string.';
+                }
+            }
+        }
 
-    //     if ($formula) {
-    //         $formulaData = json_decode($formula->formulat, true);
-    //         $intermediateResults = [];
+        // Return errors if any
+        if (!empty($errors)) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $errors
+            ], 422);
+        }
 
-    //         foreach ($formulaData as $key => $expression) {
-    //             try {
-    //                 $parsedExpression = $expression;
+        try {
+            // Start a transaction
+            DB::beginTransaction();
 
-    //                 foreach ($activityItems as $symbol => $item) {
-    //                     $value = $itemValues[$symbol] ?? 0;
-    //                     if ($item->Type === 'percentage') $value /= 100;
-    //                     $parsedExpression = str_replace($symbol, $value, $parsedExpression);
-    //                 }
+            // Update the activity
+            $activity->update([
+                'Name' => $request->name,
+                'description' => $request->description ?? $activity->description,
+                'is_custom' => false,
+                'updated_at' => now(),
+            ]);
 
-    //                 foreach ($intermediateResults as $k => $v) {
-    //                     $parsedExpression = str_replace($k, $v, $parsedExpression);
-    //                 }
+            // Get existing items
+            $existingItems = ActivityItem::where('ActivityId', $activity->id)->get()->keyBy('symbole');
 
-    //                 if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
-    //                     $calculatedResults[$key] = 'Variable non définie';
-    //                     continue;
-    //                 }
+            // Normalize and update/create items
+            $items = [];
+            $newSymbols = [];
+            foreach ($request->items as $item) {
+                // Normalize "Coût Total" (case-insensitive)
+                $itemName = preg_match('/coût\s*total/i', $item['name']) ? 'Coût Total' : $item['name'];
 
-    //                 $result = eval("return $parsedExpression;");
-    //                 if (is_infinite($result) || is_nan($result)) {
-    //                     $calculatedResults[$key] = 'Résultat invalide';
-    //                     continue;
-    //                 }
+                $newSymbols[] = $item['symbole'];
 
-    //                 if ($key === 'roi') $result *= 100;
-    //                 $calculatedResults[$key] = $result;
-    //                 $intermediateResults[$key] = $result;
-    //             } catch (\Throwable $e) {
-    //                 $calculatedResults[$key] = 'Erreur';
-    //             }
-    //         }
-    //     }
+                // Check if item exists by symbol
+                if (isset($existingItems[$item['symbole']])) {
+                    // Update existing item
+                    $activityItem = $existingItems[$item['symbole']];
+                    $activityItem->update([
+                        'Name' => $itemName,
+                        'Type' => $item['Type'],
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    // Create new item
+                    $activityItem = ActivityItem::create([
+                        'ActivityId' => $activity->id,
+                        'Name' => $itemName,
+                        'symbole' => $item['symbole'],
+                        'Type' => $item['Type'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+                $items[] = $activityItem;
+            }
 
-    //     // Préparation CSV
-    //     $lines = [];
-    //     $lines[] = ['Section', 'Clé', 'Valeur'];
+            // Ensure ROI item exists
+            if (!isset($existingItems['ROI'])) {
+                $roiItem = ActivityItem::create([
+                    'ActivityId' => $activity->id,
+                    'Name' => 'Roi',
+                    'symbole' => 'ROI',
+                    'Type' => 'number',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $items[] = $roiItem;
+            } else {
+                $items[] = $existingItems['ROI'];
+            }
 
-    //     foreach ($activityByLabo->toArray() as $key => $value) {
-    //         if (in_array($key, ['id', 'year']) || is_scalar($value)) {
-    //             $lines[] = ['activityByLabo', $key, $value];
-    //         }
-    //     }
+            // Delete items that are no longer in the request
+            $existingSymbols = $existingItems->pluck('symbole')->toArray();
+            $symbolsToDelete = array_diff($existingSymbols, array_merge($newSymbols, ['ROI']));
+            if (!empty($symbolsToDelete)) {
+                ActivityItem::where('ActivityId', $activity->id)
+                    ->whereIn('symbole', $symbolsToDelete)
+                    ->delete();
+            }
 
-    //     foreach ($activityItems as $symbol => $item) {
-    //         $lines[] = ['items', $item->Name, $itemValues[$symbol] ?? ''];
-    //     }
+            // Normalize formula keys for "roi" (case-insensitive)
+            $normalizedFormulat = [];
+            foreach ($request->formula as $key => $value) {
+                $normalizedKey = preg_match('/roi/i', $key) ? 'roi' : $key;
+                $normalizedFormulat[$normalizedKey] = $value;
+            }
 
-    //     foreach ($calculatedResults as $key => $value) {
-    //         $lines[] = ['calculated_results', $key, $value];
-    //     }
+            // Update or create calculation formula
+            $formulat = CalculationFormulat::updateOrCreate(
+                ['ActivityId' => $activity->id],
+                [
+                    'formulat' => json_encode($normalizedFormulat, JSON_UNESCAPED_UNICODE),
+                    'updated_at' => now(),
+                ]
+            );
 
-    //     $handle = fopen('php://temp', 'r+');
-    //     foreach ($lines as $line) {
-    //         fputcsv($handle, $line);
-    //     }
+            // Commit the transaction
+            DB::commit();
 
-    //     rewind($handle);
-    //     $csv = stream_get_contents($handle);
-    //     fclose($handle);
-
-    //     return response($csv)
-    //         ->header('Content-Type', 'text/csv; charset=UTF-8')
-    //         ->header('Content-Disposition', 'attachment; filename="export_activity_' . $activityByLaboId . '.csv"');
-    // }
-
+            // Prepare response
+            return response()->json([
+                'message' => 'Activity updated successfully',
+                'activity' => [
+                    'id' => $activity->id,
+                    'name' => $activity->Name,
+                    'description' => $activity->description,
+                    'items' => array_map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'name' => $item->Name,
+                            'symbole' => $item->symbole,
+                            'Type' => $item->Type,
+                        ];
+                    }, $items),
+                    'formulat' => json_decode($formulat->formulat, true),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Failed to update activity',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function exportActivityCsv(Request $request)
     {
@@ -1099,4 +1185,200 @@ class  ActivitiesController extends Controller
             ->header('Content-Disposition', 'attachment; filename="export_activity_' . $activityByLaboId . '.csv"');
     }
 
+    public function exportAllActivitiesCsv(Request $request)
+    {
+        // Récupérer l'ID du laboratoire depuis le token JWT
+        $laboId = JWTHelper::getLaboId($request);
+        if (!$laboId) {
+            return response()->json([
+                'message' => 'Information du laboratoire non trouvée dans le token.'
+            ], 401);
+        }
+
+        // Récupérer le laboratoire
+        $labo = Labo::find($laboId);
+        if (!$labo) {
+            return response()->json(['error' => 'Laboratoire non trouvé'], 404);
+        }
+
+        // Récupérer toutes les activités associées au laboratoire
+        $activitiesByLabo = ActivityByLabo::with(['activity', 'labo'])
+            ->where('laboId', $laboId)
+            ->get();
+
+        if ($activitiesByLabo->isEmpty()) {
+            return response()->json(['error' => 'Aucune activité trouvée pour ce laboratoire'], 404);
+        }
+
+        // Initialiser les lignes du CSV
+        $lines = [];
+        $lines[] = ['Laboratoire', 'Activité', 'Année', 'Clé', 'Valeur'];
+
+        foreach ($activitiesByLabo as $activityByLabo) {
+            // Récupérer les items de l'activité
+            $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
+                ->get()
+                ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+            // Récupérer les valeurs des items pour cette activité
+            $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)
+                ->with('activityItem')
+                ->get()
+                ->mapWithKeys(
+                    fn($itemValue) =>
+                    [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+                )->toArray();
+
+            // Récupérer la formule de calcul
+            $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+            $calculatedResults = [];
+
+            if ($formula) {
+                $formulaData = json_decode($formula->formulat, true);
+                $intermediateResults = [];
+
+                foreach ($formulaData as $key => $expression) {
+                    try {
+                        $parsedExpression = $expression;
+
+                        foreach ($activityItems as $symbol => $item) {
+                            $value = $itemValues[$symbol] ?? 0;
+                            if ($item->Type === 'percentage') $value /= 100;
+                            $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+                        }
+
+                        foreach ($intermediateResults as $k => $v) {
+                            $parsedExpression = str_replace($k, $v, $parsedExpression);
+                        }
+
+                        if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+                            $calculatedResults[$key] = 'Variable non définie';
+                            continue;
+                        }
+
+                        $result = eval("return $parsedExpression;");
+                        if (is_infinite($result) || is_nan($result)) {
+                            $calculatedResults[$key] = 'Résultat invalide';
+                            continue;
+                        }
+
+                        if ($key === 'roi') $result *= 100;
+                        $calculatedResults[$key] = $result;
+                        $intermediateResults[$key] = $result;
+                    } catch (\Throwable $e) {
+                        $calculatedResults[$key] = 'Erreur';
+                    }
+                }
+            }
+
+            // Ajouter les informations de l'activité
+            foreach ($activityByLabo->toArray() as $key => $value) {
+                if (!in_array($key, ['id', 'created_at', 'updated_at', 'ActivityId', 'laboId']) && is_scalar($value)) {
+                    $lines[] = [
+                        $labo->Name,
+                        $activityByLabo->activity->Name,
+                        $activityByLabo->year,
+                        $key,
+                        $value
+                    ];
+                }
+            }
+
+            // Ajouter les items de l'activité
+            foreach ($activityItems as $symbol => $item) {
+                $lines[] = [
+                    $labo->Name,
+                    $activityByLabo->activity->Name,
+                    $activityByLabo->year,
+                    $item->Name,
+                    $itemValues[$symbol] ?? ''
+                ];
+            }
+
+            // Ajouter les résultats calculés
+            foreach ($calculatedResults as $key => $value) {
+                $lines[] = [
+                    $labo->Name,
+                    $activityByLabo->activity->Name,
+                    $activityByLabo->year,
+                    $key,
+                    $value
+                ];
+            }
+        }
+
+        // Écrire le CSV dans un flux mémoire
+        $handle = fopen('php://temp', 'r+');
+
+        // Ajouter BOM UTF-8 pour corriger les accents dans Excel
+        fwrite($handle, "\xEF\xBB\xBF");
+
+        foreach ($lines as $line) {
+            fputcsv($handle, $line);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="export_activities_labo_' . $laboId . '.csv"');
+    }
+
+    public function getAllActivitiesInfo(Request $request)
+    {
+        try {
+            // Récupérer toutes les activités
+            $activities = ActivitiesList::select('id', 'Name', 'is_custom', 'created_at', 'updated_at')
+                ->get();
+
+            // Initialiser le tableau de résultats
+            $result = [];
+
+            foreach ($activities as $activity) {
+                // Récupérer les items associés à l'activité
+                $items = ActivityItem::where('ActivityId', $activity->id)
+                    ->select('id', 'Name', 'symbole', 'Type', 'created_at', 'updated_at')
+                    ->get()
+                    ->toArray();
+
+                // Récupérer la formule de calcul associée à l'activité
+                $formula = CalculationFormulat::where('ActivityId', $activity->id)
+                    ->select('id', 'formulat', 'created_at', 'updated_at')
+                    ->first();
+
+                // Décoder la formule JSON si elle existe
+                $formulaData = $formula ? json_decode($formula->formulat, true) : null;
+
+                // Ajouter les informations de l'activité au résultat
+                $result[] = [
+                    'activity' => [
+                        'id' => $activity->id,
+                        'name' => $activity->Name,
+                        'is_custom' => $activity->is_custom,
+                        'created_at' => $activity->created_at,
+                        'updated_at' => $activity->updated_at,
+                    ],
+                    'items' => $items,
+                    'formula' => $formula ? [
+                        'id' => $formula->id,
+                        'formulat' => $formulaData,
+                        'created_at' => $formula->created_at,
+                        'updated_at' => $formula->updated_at,
+                    ] : null,
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des informations des activités : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

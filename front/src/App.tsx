@@ -34,11 +34,11 @@ import {
 } from "./components/AuthRoute";
 
 import CreateRegularActivity from "./pages/BackOffice/AddActivity/AddActivity";
+import ActivityDispkay from "./pages/BackOffice/ActivityDisplay/ActivityDisplay";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -72,9 +72,12 @@ const App = () => (
               path="DisplayCalculatedActivity"
               element={<DisplayCalculatedActivity />}
             />
-            <Route path="CreateRegularActivity" element={<CreateRegularActivity/>}/>
+            <Route
+              path="CreateRegularActivity"
+              element={<CreateRegularActivity />}
+            />
+            <Route path="ActivityDispkay" element=<ActivityDispkay /> />
           </Route>
-
 
           <Route
             path="/Login"
@@ -120,7 +123,6 @@ const App = () => (
               </LaboRoute>
             }
           />
-      
 
           <Route path="/Unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
@@ -128,7 +130,6 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-
 );
 
 export default App;

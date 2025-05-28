@@ -173,23 +173,7 @@ const DisplayCalculatedData = () => {
     doc.save(`activity_${activityData.activityByLabo.id}_data.pdf`);
   };
 
-  const deleteActivityValues = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer les données ?"
-    );
-    if (confirmDelete) {
-      try {
-        await axiosInstance.delete(`/api/deleteActivityValues/${activityData?.activityByLabo.id}`);
-        message.success("Les données ont été supprimées avec succès");
-        deleteCookie("activityNumber");
-        navigate("/Home");
-      } catch (error) {
-        console.error("Erreur lors de la suppression des données:", error);
-        message.error("Erreur lors de la suppression des données");
-      }
-    }
-  };
+
 
   return (
     <Layout className="min-h-screen">
@@ -296,15 +280,6 @@ const DisplayCalculatedData = () => {
                 >
                   <ArrowLeftOutlined className="mr-2" />
                   Retour
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={deleteActivityValues}
-                  disabled={loading || !activityData}
-                >
-                  <DeleteOutlined className="mr-2" />
-                  Supprimer
                 </Button>
                 <Button
                   variant="outline"

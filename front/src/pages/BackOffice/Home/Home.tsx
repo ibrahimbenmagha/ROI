@@ -66,8 +66,8 @@ export default function BackOffice() {
             </Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<AppstoreAddOutlined />}>
-            <Link to="./AddActivity">
-              Ajouter activite
+            <Link to="./ActivityDispkay">
+              List des activites
             </Link>
           </Menu.Item>
         </Menu>

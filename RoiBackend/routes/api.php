@@ -37,6 +37,7 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('GetLaboInfoByLabName/{Name}', [LaboController::class, 'GetLaboInfoByLabName']);
     Route::get('GetLaboByLabName/{Name}', [LaboController::class, 'GetLaboByLabName']);
     Route::delete('deleteLaboWithData', [LaboController::class, 'deleteLaboWithData']);
+    Route::get('getAllActivitiesInfo', [ActivitiesController::class, 'getAllActivitiesInfo']);
 
     Route::post('createActivity', [ActivitiesController::class, 'createActivity']);
     Route::get('getLaboWithActivities', [ActivitiesController::class, 'getLaboWithActivities']);
@@ -45,6 +46,7 @@ Route::middleware(['check.role:Admin'])->group(function () {
     Route::get('getActivitiesByLaboInfosById/{id}', [ActivitiesController::class, 'getActivitiesByLaboInfosById']);
     Route::get('getAllActivityByLaboName/{Name}', [ActivitiesController::class, 'getAllActivityByLaboName']);
     Route::get('getAllActivitiesByLabo', [ActivitiesController::class, 'getAllActivitiesByLabo']);
+    Route::put('/activity/{id}', [ActivitiesController::class, 'updateActivity']);
 });
 
 
@@ -65,14 +67,15 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 
     Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
+    Route::get('exportAllActivitiesCsv', [ActivitiesController::class, 'exportAllActivitiesCsv']);
 
+    Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
 });
 
-    Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
 
 
 
@@ -91,5 +94,3 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
     Route::get('getActivityItemsByActivityIdall', [activityitems::class, 'getActivityItemsByActivityIdall']);
 });
-
-
