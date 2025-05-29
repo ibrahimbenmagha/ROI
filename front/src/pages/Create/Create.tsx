@@ -461,6 +461,35 @@ const ActivityPage: React.FC = () => {
     }
   };
 
+  const handleExportExcel = async () => {
+  try {
+    const response = await axiosInstance.get("/exportAllActivitiesExcel", {
+      responseType: "blob", // Important pour les fichiers binaires
+    });
+
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "export_activities_labo.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    message.success("Exportation Excel réussie !");
+  } catch (error: any) {
+    console.error("Erreur lors de l'exportation Excel:", error);
+    message.error(
+      error.response?.data?.message || "Échec de l'exportation Excel."
+    );
+  }
+};
+
+
   return (
     <div>
       <Head />
@@ -605,7 +634,8 @@ const ActivityPage: React.FC = () => {
           <Button
             icon={<FileExcelOutlined />}
             type="default"
-            onClick={handleExportCsv} // Appel de la fonction d'exportation
+            // onClick={handleExportCsv} // Appel de la fonction d'exportation
+            onClick={handleExportExcel}
           >
             Exporter CSV
           </Button>

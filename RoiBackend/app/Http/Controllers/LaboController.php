@@ -155,6 +155,7 @@ class LaboController extends Controller
     //     }
     // }
 
+
     public function deleteLaboWithData(Request $request)
     {
         $laboId = $request->cookie('laboId') ?? $request->input('laboId');

@@ -2,18 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CalculationFormulat;
 use Illuminate\Http\Request;
 use App\Helpers\JwtHelper;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 use App\Models\ActivitiesList;
 use App\Models\ActivityByLabo;
 use App\Models\Labo;
 use App\Models\ActivityItemValue;
 use App\Models\ActivityItem;
-
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Activity1_12;
+use App\Models\CalculationFormulat;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Protection;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Font;
 
 
 class  ActivitiesController extends Controller
@@ -1080,6 +1090,757 @@ class  ActivitiesController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function exportActivityExcel(Request $request)
+    {
+        $activityByLaboId = $request->cookie('activityNumber') ?? $request->input('activityNumber');
+
+        if (!$activityByLaboId) {
+            return response()->json(['error' => 'Aucun ID d\'activité fourni'], 400);
+        }
+
+        $activityByLabo = ActivityByLabo::with(['activity', 'labo'])->find($activityByLaboId);
+        if (!$activityByLabo) {
+            return response()->json(['error' => 'Activité non trouvée'], 404);
+        }
+
+        $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)
+            ->get()
+            ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+        $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLaboId)
+            ->with('activityItem')
+            ->get()
+            ->mapWithKeys(
+                fn($itemValue) =>
+                [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+            )->toArray();
+
+        $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+        $calculatedResults = [];
+
+        if ($formula) {
+            $formulaData = json_decode($formula->formulat, true);
+            $intermediateResults = [];
+
+            foreach ($formulaData as $key => $expression) {
+                try {
+                    $parsedExpression = $expression;
+
+                    foreach ($activityItems as $symbol => $item) {
+                        $value = $itemValues[$symbol] ?? 0;
+                        if ($item->Type === 'percentage') $value /= 100;
+                        $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+                    }
+
+                    foreach ($intermediateResults as $k => $v) {
+                        $parsedExpression = str_replace($k, $v, $parsedExpression);
+                    }
+
+                    if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+                        $calculatedResults[$key] = 'Variable non définie';
+                        continue;
+                    }
+
+                    $result = eval("return $parsedExpression;");
+                    if (is_infinite($result) || is_nan($result)) {
+                        $calculatedResults[$key] = 'Résultat invalide';
+                        continue;
+                    }
+
+                    if ($key === 'roi') $result *= 100;
+                    $calculatedResults[$key] = $result;
+                    $intermediateResults[$key] = $result;
+                } catch (\Throwable $e) {
+                    $calculatedResults[$key] = 'Erreur';
+                }
+            }
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // --- Infos hors tableau ---
+
+        // Ligne 1 : Activity Name (gras, taille plus grande)
+        $sheet->setCellValue('A1', 'Activity Name:');
+        $sheet->setCellValue('B1', $activityByLabo->activity->Name);
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+        $sheet->getStyle('B1')->getFont()->setBold(true)->setSize(14);
+
+        // Ligne 2 : Activity By Labo ID (invisible)
+        $sheet->setCellValue('A2', 'Activity By Labo ID:');
+        $sheet->setCellValue('B2', $activityByLabo->id);
+        $sheet->getRowDimension(2)->setVisible(false);
+
+        // Ligne 3 : Labo ID (invisible)
+        $sheet->setCellValue('A3', 'Labo ID:');
+        $sheet->setCellValue('B3', $activityByLabo->LaboId ?? '');
+        $sheet->getRowDimension(3)->setVisible(false);
+
+        // Ajuste largeur colonnes A et B pour ces infos (optionnel)
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(30);
+
+        // --- Tableau encadré commence ligne 5 ---
+        $row = 5;
+
+        // En-têtes tableau
+        $sheet->setCellValue("A{$row}", 'Section');
+        $sheet->setCellValue("B{$row}", 'Clé');
+        $sheet->setCellValue("C{$row}", 'Valeur');
+
+        // Style en-tête (gras, fond bleu clair, centré)
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'D9E1F2']
+            ],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+        ];
+        $sheet->getStyle("A{$row}:C{$row}")->applyFromArray($headerStyle);
+
+        $row++;
+
+        $applyCellStyle = function ($cellRange) use ($sheet) {
+            $sheet->getStyle($cellRange)->applyFromArray([
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'FFFFFF'],
+                ],
+            ]);
+        };
+
+        // Remplissage activityByLabo (sans id, dates, ActivityId, LaboId)
+        foreach ($activityByLabo->toArray() as $key => $value) {
+            if (!in_array($key, ['id', 'created_at', 'updated_at', 'ActivityId', 'LaboId']) && is_scalar($value)) {
+                $sheet->setCellValue("A{$row}", 'activityByLabo');
+                $sheet->setCellValue("B{$row}", $key);
+                $sheet->setCellValue("C{$row}", $value);
+                $applyCellStyle("A{$row}:C{$row}");
+                $row++;
+            }
+        }
+
+        // Remplissage items
+        foreach ($activityItems as $symbol => $item) {
+            $sheet->setCellValue("A{$row}", 'items');
+            $sheet->setCellValue("B{$row}", $item->Name);
+            $sheet->setCellValue("C{$row}", $itemValues[$symbol] ?? '');
+            $applyCellStyle("A{$row}:C{$row}");
+            $row++;
+        }
+
+        // Remplissage calculated_results avec coloration roi
+        foreach ($calculatedResults as $key => $value) {
+            $sheet->setCellValue("A{$row}", 'calculated_results');
+            $sheet->setCellValue("B{$row}", $key);
+            $sheet->setCellValue("C{$row}", $value);
+            $cellRange = "A{$row}:C{$row}";
+
+            $sheet->getStyle($cellRange)->applyFromArray([
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'FFFFFF'],
+                ],
+            ]);
+
+            if ($key === 'roi' && is_numeric($value)) {
+                $roiValue = $value / 100;
+                $roiValue = max(0, min(2, $roiValue));
+
+                if ($roiValue >= 1) {
+                    $redIntensity = intval(255 - (($roiValue - 1) * 255));
+                    $redIntensity = max(0, $redIntensity);
+                    $colorHex = sprintf("%02X%02X%02X", $redIntensity, 255, 0);
+                } else {
+                    $greenIntensity = intval(255 * $roiValue);
+                    $colorHex = sprintf("FF%02X%02X", $greenIntensity, $greenIntensity);
+                }
+
+                $sheet->getStyle("C{$row}")->getFill()->setFillType(Fill::FILL_SOLID);
+                $sheet->getStyle("C{$row}")->getFill()->getStartColor()->setRGB($colorHex);
+            }
+
+            $row++;
+        }
+
+        // Ajuster largeur colonnes A à C (pour le tableau)
+        foreach (range('A', 'C') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Protection feuille
+        $sheet->getProtection()->setSheet(true);
+        $sheet->getProtection()->setPassword('secret');
+        $sheet->getProtection()->setSort(false);
+        $sheet->getProtection()->setInsertRows(false);
+        $sheet->getProtection()->setFormatCells(false);
+        $sheet->getProtection()->setDeleteRows(false);
+        $sheet->getProtection()->setInsertColumns(false);
+        $sheet->getProtection()->setDeleteColumns(false);
+        $spreadsheet->getSecurity()->setLockWindows(true);   // facultatif : bloque déplacement fenêtres
+        $spreadsheet->getSecurity()->setLockStructure(true); // bloque modification structure (ajout/suppression feuilles)
+        $spreadsheet->getSecurity()->setWorkbookPassword('secret'); // mot de passe de protection
+        $writer = new Xlsx($spreadsheet);
+
+        $filename = 'export_activity_' . $activityByLaboId . '.xlsx';
+
+        if (ob_get_length()) ob_end_clean();
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
+    }
+
+
+    // public function exportAllActivitiesExcel(Request $request)
+    // {
+    //     $laboId = JWTHelper::getLaboId($request);
+    //     if (!$laboId) {
+    //         return response()->json(['message' => 'Information du laboratoire non trouvée.'], 401);
+    //     }
+
+    //     $labo = Labo::find($laboId);
+    //     if (!$labo) {
+    //         return response()->json(['message' => 'Laboratoire non trouvé.'], 404);
+    //     }
+
+    //     $activitiesByLabo = ActivityByLabo::with(['activity'])->where('laboId', $laboId)->get();
+    //     if ($activitiesByLabo->isEmpty()) {
+    //         return response()->json(['message' => 'Aucune activité trouvée.'], 404);
+    //     }
+
+    //     $spreadsheet = new Spreadsheet();
+    //     $spreadsheet->removeSheetByIndex(0);
+
+    //     $annualRois = []; // [year => [ ['name' => ..., 'roi' => ...], ... ] ]
+
+    //     foreach ($activitiesByLabo as $activityByLabo) {
+    //         $sheet = new Worksheet($spreadsheet, substr($activityByLabo->activity->Name, 0, 31));
+    //         $spreadsheet->addSheet($sheet);
+
+    //         $rows = [];
+
+    //         // Titre
+    //         $title = "Activité : " . $activityByLabo->activity->Name;
+    //         $rows[] = [$title, ''];
+    //         $rows[] = ['Clé', 'Valeur'];
+
+    //         $rows[] = ['Laboratoire', $labo->Name];
+    //         $rows[] = ['Année', $activityByLabo->year];
+    //         $rows[] = ['', ''];
+
+    //         // Items
+    //         $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)->get()
+    //             ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+    //         $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)
+    //             ->with('activityItem')
+    //             ->get()
+    //             ->mapWithKeys(
+    //                 fn($itemValue) =>
+    //                 [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+    //             )->toArray();
+
+    //         foreach ($activityItems as $symbol => $item) {
+    //             if (strtolower($symbol) === 'roi') continue;
+
+    //             $value = $itemValues[$symbol] ?? '';
+    //             if ($item->Type === 'percentage' && is_numeric($value)) {
+    //                 $value = $value . '%';
+    //             }
+    //             $rows[] = [$item->Name, $value];
+    //         }
+
+    //         $rows[] = ['', ''];
+
+    //         // Calculs
+    //         $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+    //         $calculatedResults = [];
+
+    //         if ($formula) {
+    //             $formulaData = json_decode($formula->formulat, true);
+    //             $intermediateResults = [];
+
+    //             foreach ($formulaData as $key => $expression) {
+    //                 try {
+    //                     $parsedExpression = $expression;
+
+    //                     foreach ($activityItems as $symbol => $item) {
+    //                         $value = $itemValues[$symbol] ?? 0;
+    //                         if ($item->Type === 'percentage') $value /= 100;
+    //                         $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+    //                     }
+
+    //                     foreach ($intermediateResults as $k => $v) {
+    //                         $parsedExpression = str_replace($k, $v, $parsedExpression);
+    //                     }
+
+    //                     if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+    //                         $calculatedResults[$key] = 'Variable non définie';
+    //                         continue;
+    //                     }
+
+    //                     $result = eval("return $parsedExpression;");
+    //                     if (is_infinite($result) || is_nan($result)) {
+    //                         $calculatedResults[$key] = 'Résultat invalide';
+    //                         continue;
+    //                     }
+
+    //                     if ($key === 'roi') $result *= 100;
+    //                     $calculatedResults[$key] = $result;
+    //                     $intermediateResults[$key] = $result;
+    //                 } catch (\Throwable $e) {
+    //                     $calculatedResults[$key] = 'Erreur';
+    //                 }
+    //             }
+    //         }
+
+    //         foreach ($calculatedResults as $key => $value) {
+    //             if ($key === 'roi' && is_numeric($value)) {
+    //                 $annualRois[$activityByLabo->year][] = [
+    //                     'name' => $activityByLabo->activity->Name,
+    //                     'roi' => floatval($value),
+    //                 ];
+    //                 $value = $value . '%';
+    //             }
+    //             $rows[] = [$key, $value];
+    //         }
+
+    //         // Écriture
+    //         $sheet->fromArray($rows, null, 'A1');
+    //         $sheet->mergeCells('A1:B1');
+    //         $sheet->getStyle('A1')->applyFromArray([
+    //             'font' => ['bold' => true, 'size' => 20],
+    //             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+    //         ]);
+
+    //         $rowCount = count($rows);
+    //         $sheet->getStyle("A2:B$rowCount")->applyFromArray([
+    //             'borders' => [
+    //                 'allBorders' => [
+    //                     'borderStyle' => Border::BORDER_THIN,
+    //                     'color' => ['rgb' => '000000'],
+    //                 ],
+    //             ],
+    //             'alignment' => [
+    //                 'horizontal' => Alignment::HORIZONTAL_CENTER,
+    //                 'vertical' => Alignment::VERTICAL_CENTER,
+    //             ],
+    //         ]);
+
+    //         $sheet->getStyle('A2:B2')->applyFromArray([
+    //             'font' => ['bold' => true],
+    //             'fill' => [
+    //                 'fillType' => Fill::FILL_SOLID,
+    //                 'startColor' => ['rgb' => 'd9e1f2'],
+    //             ],
+    //         ]);
+
+    //         $sheet->getColumnDimension('A')->setAutoSize(true);
+    //         $sheet->getColumnDimension('B')->setAutoSize(true);
+
+    //         // Mise en couleur du ROI
+    //         foreach ($rows as $i => $row) {
+    //             if (strtolower($row[0]) === 'roi' && is_numeric(str_replace('%', '', $row[1]))) {
+    //                 $roi = floatval(str_replace('%', '', $row[1])) / 100;
+    //                 $color = 'FFC7CE';
+    //                 if ($roi > 1) $color = 'C6EFCE';
+    //                 elseif ($roi > 0.75) $color = 'FF9999';
+    //                 elseif ($roi > 0.5) $color = 'FF6666';
+    //                 elseif ($roi > 0.25) $color = 'FF3333';
+
+    //                 $cell = 'B' . ($i + 1);
+    //                 $sheet->getStyle($cell)->applyFromArray([
+    //                     'fill' => [
+    //                         'fillType' => Fill::FILL_SOLID,
+    //                         'startColor' => ['rgb' => $color],
+    //                     ],
+    //                 ]);
+    //             }
+    //         }
+
+    //         $sheet->getProtection()->setSheet(true);
+    //         $sheet->getProtection()->setSort(true);
+    //         $sheet->getProtection()->setInsertRows(false);
+    //         $sheet->getProtection()->setInsertColumns(false);
+    //         $sheet->getProtection()->setFormatCells(false);
+    //         $sheet->getProtection()->setPassword('secret');
+    //     }
+
+    //     // Feuilles de synthèse annuelle
+    //     foreach ($annualRois as $year => $activities) {
+    //         $sheet = new Worksheet($spreadsheet, "Synthèse $year");
+    //         $spreadsheet->addSheet($sheet);
+
+    //         $rows = [['Activité', 'ROI']];
+    //         $totalRoi = 0;
+    //         $count = 0;
+
+    //         foreach ($activities as $entry) {
+    //             $rows[] = [$entry['name'], $entry['roi'] . '%'];
+    //             $totalRoi += $entry['roi'];
+    //             $count++;
+    //         }
+
+    //         $averageRoi = $count ? $totalRoi / $count : 0;
+    //         $rows[] = ['ROI moyen', round($averageRoi, 2) . '%'];
+
+    //         $sheet->fromArray($rows, null, 'A1');
+    //         $rowCount = count($rows);
+    //         $sheet->getStyle("A1:B$rowCount")->applyFromArray([
+    //             'borders' => [
+    //                 'allBorders' => [
+    //                     'borderStyle' => Border::BORDER_THIN,
+    //                     'color' => ['rgb' => '000000'],
+    //                 ],
+    //             ],
+    //             'alignment' => [
+    //                 'horizontal' => Alignment::HORIZONTAL_CENTER,
+    //                 'vertical' => Alignment::VERTICAL_CENTER,
+    //             ],
+    //         ]);
+
+    //         $sheet->getStyle('A1:B1')->applyFromArray([
+    //             'font' => ['bold' => true],
+    //             'fill' => [
+    //                 'fillType' => Fill::FILL_SOLID,
+    //                 'startColor' => ['rgb' => 'd9e1f2'],
+    //             ],
+    //         ]);
+
+    //         $sheet->getColumnDimension('A')->setAutoSize(true);
+    //         $sheet->getColumnDimension('B')->setAutoSize(true);
+
+    //         $roiCell = 'B' . count($rows);
+    //         $roiValue = $averageRoi / 100;
+    //         $color = 'FFC7CE';
+    //         if ($roiValue > 1) $color = 'C6EFCE';
+    //         elseif ($roiValue > 0.75) $color = 'FF9999';
+    //         elseif ($roiValue > 0.5) $color = 'FF6666';
+    //         elseif ($roiValue > 0.25) $color = 'FF3333';
+
+    //         $sheet->getStyle($roiCell)->applyFromArray([
+    //             'fill' => [
+    //                 'fillType' => Fill::FILL_SOLID,
+    //                 'startColor' => ['rgb' => $color],
+    //             ],
+    //         ]);
+
+    //         $sheet->getProtection()->setSheet(true);
+    //         $sheet->getProtection()->setSort(true);
+    //         $sheet->getProtection()->setInsertRows(false);
+    //         $sheet->getProtection()->setInsertColumns(false);
+    //         $sheet->getProtection()->setFormatCells(false);
+    //         $sheet->getProtection()->setPassword('secret');
+    //     }
+
+    //     $spreadsheet->getSecurity()->setLockWindows(true);
+    //     $spreadsheet->getSecurity()->setLockStructure(true);
+
+    //     $writer = new Xlsx($spreadsheet);
+    //     $fileName = 'export_activities_labo_' . $laboId . '.xlsx';
+    //     $tempFile = tempnam(sys_get_temp_dir(), $fileName);
+    //     $writer->save($tempFile);
+
+    //     return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
+    // }
+
+    /**
+     * Summary of exportAllActivitiesExcel
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+
+    public function exportAllActivitiesExcel(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request);
+        if (!$laboId) {
+            return response()->json(['message' => 'Information du laboratoire non trouvée.'], 401);
+        }
+
+        $labo = Labo::find($laboId);
+        if (!$labo) {
+            return response()->json(['message' => 'Laboratoire non trouvé.'], 404);
+        }
+
+        $activitiesByLabo = ActivityByLabo::with(['activity'])->where('laboId', $laboId)->get();
+        if ($activitiesByLabo->isEmpty()) {
+            return response()->json(['message' => 'Aucune activité trouvée.'], 404);
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        $annualRois = []; // [year => ['ventes_incrementales' => sum, 'cout_total' => sum, 'activities' => [['name' => ..., 'roi' => ...], ...]]]
+
+        foreach ($activitiesByLabo as $activityByLabo) {
+            $sheet = new Worksheet($spreadsheet, substr($activityByLabo->activity->Name, 0, 31));
+            $spreadsheet->addSheet($sheet);
+
+            $rows = [];
+
+            // Titre
+            $title = "Activité : " . $activityByLabo->activity->Name;
+            $rows[] = [$title, ''];
+            $rows[] = ['Clé', 'Valeur'];
+
+            $rows[] = ['Laboratoire', $labo->Name];
+            $rows[] = ['Année', $activityByLabo->year];
+            $rows[] = ['', ''];
+
+            // Items
+            $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)->get()
+                ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
+
+            $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)
+                ->with('activityItem')
+                ->get()
+                ->mapWithKeys(
+                    fn($itemValue) =>
+                    [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
+                )->toArray();
+
+            foreach ($activityItems as $symbol => $item) {
+                if (strtolower($symbol) === 'roi') continue;
+
+                $value = $itemValues[$symbol] ?? '';
+                if ($item->Type === 'percentage' && is_numeric($value)) {
+                    $value = $value . '%';
+                }
+                $rows[] = [$item->Name, $value];
+            }
+
+            $rows[] = ['', ''];
+
+            // Calculs
+            $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
+            $calculatedResults = [];
+
+            if ($formula) {
+                $formulaData = json_decode($formula->formulat, true);
+                $intermediateResults = [];
+
+                foreach ($formulaData as $key => $expression) {
+                    try {
+                        $parsedExpression = $expression;
+
+                        foreach ($activityItems as $symbol => $item) {
+                            $value = $itemValues[$symbol] ?? 0;
+                            if ($item->Type === 'percentage') $value /= 100;
+                            $parsedExpression = str_replace($symbol, $value, $parsedExpression);
+                        }
+
+                        foreach ($intermediateResults as $k => $v) {
+                            $parsedExpression = str_replace($k, $v, $parsedExpression);
+                        }
+
+                        if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
+                            $calculatedResults[$key] = 'Variable non définie';
+                            continue;
+                        }
+
+                        $result = eval("return $parsedExpression;");
+                        if (is_infinite($result) || is_nan($result)) {
+                            $calculatedResults[$key] = 'Résultat invalide';
+                            continue;
+                        }
+
+                        if ($key === 'roi') $result *= 100;
+                        $calculatedResults[$key] = $result;
+                        $intermediateResults[$key] = $result;
+                    } catch (\Throwable $e) {
+                        $calculatedResults[$key] = 'Erreur';
+                    }
+                }
+            }
+
+            // Store data for annual ROI calculation
+            $year = $activityByLabo->year;
+            if (!isset($annualRois[$year])) {
+                $annualRois[$year] = [
+                    'ventes_incrementales' => 0,
+                    'cout_total' => 0,
+                    'activities' => [],
+                ];
+            }
+
+            $ventesKey = $activityByLabo->ActivityId == 13 ? 'Revenu Total' : 'ventes_incrementales';
+            $coutKey = $activityByLabo->ActivityId == 13 ? 'cout total' : 'cout_total';
+
+            $annualRois[$year]['ventes_incrementales'] += $calculatedResults[$ventesKey] ?? 0;
+            $annualRois[$year]['cout_total'] += $calculatedResults[$coutKey] ?? 0;
+            $annualRois[$year]['activities'][] = [
+                'name' => $activityByLabo->activity->Name,
+                'roi' => isset($calculatedResults['roi']) ? floatval($calculatedResults['roi']) : 0,
+            ];
+
+            foreach ($calculatedResults as $key => $value) {
+                if ($key === 'roi' && is_numeric($value)) {
+                    $value = $value . '%';
+                }
+                $rows[] = [$key, $value];
+            }
+
+            // Écriture
+            $sheet->fromArray($rows, null, 'A1');
+            $sheet->mergeCells('A1:B1');
+            $sheet->getStyle('A1')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 20],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ]);
+
+            $rowCount = count($rows);
+            $sheet->getStyle("A2:B$rowCount")->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            $sheet->getStyle('A2:B2')->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'd9e1f2'],
+                ],
+            ]);
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+
+            // Mise en couleur du ROI
+            foreach ($rows as $i => $row) {
+                if (strtolower($row[0]) === 'roi' && is_numeric(str_replace('%', '', $row[1]))) {
+                    $roi = floatval(str_replace('%', '', $row[1])) / 100;
+                    $color = 'FFC7CE';
+                    if ($roi > 1) $color = 'C6EFCE';
+                    elseif ($roi > 0.75) $color = 'FF9999';
+                    elseif ($roi > 0.5) $color = 'FF6666';
+                    elseif ($roi > 0.25) $color = 'FF3333';
+
+                    $cell = 'B' . ($i + 1);
+                    $sheet->getStyle($cell)->applyFromArray([
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => $color],
+                        ],
+                    ]);
+                }
+            }
+
+            $sheet->getProtection()->setSheet(true);
+            $sheet->getProtection()->setSort(true);
+            $sheet->getProtection()->setInsertRows(false);
+            $sheet->getProtection()->setInsertColumns(false);
+            $sheet->getProtection()->setFormatCells(false);
+            $sheet->getProtection()->setPassword('secret');
+        }
+
+        // Feuilles de synthèse annuelle
+        foreach ($annualRois as $year => $data) {
+            $sheet = new Worksheet($spreadsheet, "Synthèse $year");
+            $spreadsheet->addSheet($sheet);
+
+            $rows = [['Activité', 'ROI']];
+            foreach ($data['activities'] as $entry) {
+                $rows[] = [$entry['name'], $entry['roi'] . '%'];
+            }
+
+            // Calculate annual ROI: (sum of ventes_incrementales / sum of cout_total) * 100
+            $annualRoi = $data['cout_total'] != 0 ? ($data['ventes_incrementales'] / $data['cout_total']) * 100 : 0;
+            $rows[] = ['ROI annuel', round($annualRoi, 2) . '%'];
+
+            $sheet->fromArray($rows, null, 'A1');
+            $rowCount = count($rows);
+            $sheet->getStyle("A1:B$rowCount")->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            $sheet->getStyle('A1:B1')->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'd9e1f2'],
+                ],
+            ]);
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+
+            $roiCell = 'B' . count($rows);
+            $roiValue = $annualRoi / 100;
+            $color = 'FFC7CE';
+            if ($roiValue > 1) $color = 'C6EFCE';
+            elseif ($roiValue > 0.75) $color = 'FF9999';
+            elseif ($roiValue > 0.5) $color = 'FF6666';
+            elseif ($roiValue > 0.25) $color = 'FF3333';
+
+            $sheet->getStyle($roiCell)->applyFromArray([
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => $color],
+                ],
+            ]);
+
+            $sheet->getProtection()->setSheet(true);
+            $sheet->getProtection()->setSort(true);
+            $sheet->getProtection()->setInsertRows(false);
+            $sheet->getProtection()->setInsertColumns(false);
+            $sheet->getProtection()->setFormatCells(false);
+            $sheet->getProtection()->setPassword('secret');
+        }
+
+        $spreadsheet->getSecurity()->setLockWindows(true);
+        $spreadsheet->getSecurity()->setLockStructure(true);
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'export_activities_labo_' . $laboId . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), $fileName);
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
 
     public function exportActivityCsv(Request $request)

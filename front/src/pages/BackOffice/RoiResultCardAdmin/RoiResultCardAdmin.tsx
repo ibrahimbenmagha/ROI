@@ -86,55 +86,39 @@ const DisplayCalculatedData = () => {
     }
   };
 
-  const handleExportCsv = () => {
-    if (!activityData) return;
-
-    const convertToCSV = (data: ActivityData) => {
-      const header = "Section,Clé,Valeur\n";
-      const activityByLaboRows = Object.entries(data.activityByLabo)
-        .map(([key, value]) => `"activityByLabo","${key}","${value}"`)
-        .join("\n");
-      const itemsRows = data.items
-        .map(
-          (item) =>
-            `"items","${item.name}","${item.value}${
-              item.type === "percentage" ? "%" : ""
-            }"`
-        )
-        .join("\n");
-      const calculatedRows = Object.entries(data.calculated_results)
-        .map(([key, value]) => {
-          let formattedValue = value;
-          if (typeof value === "number") {
-            formattedValue =
-              key.toLowerCase().includes("roi") && !isNaN(value)
-                ? `${(value * 100).toFixed(2)}%`
-                : key.toLowerCase().includes("cost") ||
-                  key.toLowerCase().includes("sales")
-                ? `${value.toFixed(2)} MAD`
-                : value.toFixed(value % 1 === 0 ? 0 : 2);
-          }
-          return `"calculated_results","${key}","${formattedValue}"`;
-        })
-        .join("\n");
-
-      return header + activityByLaboRows + "\n" + itemsRows + "\n" + calculatedRows;
+    const handleExportCsv = async () => {
+      try {
+        const response = await axiosInstance.get("exportActivityCsv", {
+          responseType: "blob", // important pour les fichiers binaires
+        });
+  
+        const blob = new Blob([response.data], {
+          type: "text/csv;charset=utf-8;",
+        });
+  
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+  
+        // Nom du fichier selon les infos dans le header ou fallback
+        const contentDisposition = response.headers["content-disposition"];
+        let fileName = "activity_export.csv";
+  
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="(.+)"/);
+          if (match?.[1]) fileName = match[1];
+        }
+  
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Erreur lors de l'export CSV:", error);
+        alert("Erreur lors de l'export du fichier CSV.");
+      }
     };
 
-    const csvContent = convertToCSV(activityData);
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `activity_${activityData.activityByLabo.id}_data.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleExportPdf = () => {
     if (!activityData) return;

@@ -59,7 +59,6 @@ interface ActivityData {
 }
 
 const DisplayCalculatedData = () => {
-
   const [activityData, setActivityData] = useState<ActivityData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,6 +127,38 @@ const DisplayCalculatedData = () => {
     } catch (error) {
       console.error("Erreur lors de l'export CSV:", error);
       alert("Erreur lors de l'export du fichier CSV.");
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const response = await axiosInstance.get("exportActivityExcel", {
+        responseType: "blob", // important pour fichiers binaires comme Excel
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "activity_export.xlsx";
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match?.[1]) fileName = match[1];
+      }
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Erreur lors de l'export Excel:", error);
+      alert("Erreur lors de l'export du fichier Excel.");
     }
   };
 
@@ -425,7 +456,8 @@ const DisplayCalculatedData = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={handleExportCsv}
+                  // onClick={handleExportCsv}
+                  onClick={handleExportExcel}
                   disabled={loading || !activityData}
                   className="flex items-center gap-2"
                 >

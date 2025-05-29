@@ -29,6 +29,7 @@ Route::prefix('auth')->group(function () {
 
 
 
+
 Route::middleware(['check.role:Admin'])->group(function () {
     Route::post('CreateLabo', [LaboController::class, 'CreateLabo']);
     Route::get('GetAllLabos', [LaboController::class, 'GetAllLabos']);
@@ -51,6 +52,7 @@ Route::middleware(['check.role:Admin'])->group(function () {
 
 
 
+
 Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
@@ -66,7 +68,6 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 
-    Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
     Route::get('exportAllActivitiesCsv', [ActivitiesController::class, 'exportAllActivitiesCsv']);
 
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
@@ -79,7 +80,6 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
 
 
-
 Route::middleware('check.role:Admin,Laboratoire')->group(function () {
 
     Route::get('getAllActivityNotCustum', [ActivitiesController::class, 'getAllActivityNotCustum']);
@@ -88,6 +88,12 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getAllCalculatedActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllCalculatedActivityByLaboInfosByLaboId']);
     Route::get('calculateDynamicROI', [ActivitiesController::class, 'calculateDynamicROI']);
     Route::get('getActivityByLaboData', [ActivitiesController::class, 'getActivityByLaboData']);
+    Route::get('exportActivityCsv', [ActivitiesController::class, 'exportActivityCsv']);
+
+    Route::get('exportActivityExcel', [ActivitiesController::class, 'exportActivityExcel']);
+    Route::get('exportAllActivitiesExcel', [ActivitiesController::class, 'exportAllActivitiesExcel']);
+
+
 
     Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
     Route::get('getActivityItemById/{id}', [activityitems::class, 'getActivityItemById']);
