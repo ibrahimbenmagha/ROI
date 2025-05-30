@@ -29,6 +29,7 @@ use PhpOffice\PhpSpreadsheet\Style\Font;
 class  ActivitiesController extends Controller
 {
 
+
     public function getAllActivity()
     {
         $Activities = ActivitiesList::all();
@@ -258,6 +259,7 @@ class  ActivitiesController extends Controller
         }
     }
 
+
     public function getActivityRepport()
     {
         // Récupérer toutes les données nécessaires
@@ -325,6 +327,7 @@ class  ActivitiesController extends Controller
 
         return response()->json(['data' => $formattedData], 200);
     }
+
 
     public function getActivityRepportBYActivityId(Request $request, $activityListId)
     {
@@ -403,18 +406,68 @@ class  ActivitiesController extends Controller
     public function deleteActivityValues(Request $request)
     {
         $ActivityByLaboId = $request->cookie('activityId');
+
         try {
-            ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
-            ActivityByLabo::where('id', $ActivityByLaboId)->delete();
+            // Find the ActivityByLabo record
+            $activityByLabo = ActivityByLabo::where('id', $ActivityByLaboId)->first();
+
+            if (!$activityByLabo) {
+                return response()->json([
+                    'message' => 'Activité non trouvée'
+                ], 404);
+            }
+
+            // Get the associated activity from activitieslist
+            $activity = ActivitiesList::where('id', $activityByLabo->ActivityId)->first();
+
+            if (!$activity) {
+                return response()->json([
+                    'message' => 'Activité associée non trouvée dans la liste des activités'
+                ], 404);
+            }
+
+            // Start a transaction to ensure data integrity
+            DB::beginTransaction();
+
+            if ($activity->is_custom) {
+                // Custom activity: delete the entire activity and its relations
+                // Delete activity item values
+                ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+
+                // Delete activity by labo
+                ActivityByLabo::where('id', $ActivityByLaboId)->delete();
+
+                // Delete activity items
+                ActivityItem::where('ActivityId', $activity->id)->delete();
+
+                // Delete calculation formula
+                CalculationFormulat::where('ActivityId', $activity->id)->delete();
+
+                // Delete the activity from activitieslist
+                ActivitiesList::where('id', $activity->id)->delete();
+
+                $message = 'Activité personnalisée et toutes ses relations supprimées avec succès';
+            } else {
+                // Non-custom activity: delete only activity item values and activity by labo
+                ActivityItemValue::where('ActivityByLaboId', $ActivityByLaboId)->delete();
+                ActivityByLabo::where('id', $ActivityByLaboId)->delete();
+
+                $message = 'Valeurs de l\'activité supprimées avec succès';
+            }
+
+            DB::commit();
+
             return response()->json([
-                'message' => 'Values deleted successfully'
+                'message' => $message
             ], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
-                'message' => 'Failed to delete values',
+                'message' => 'Échec de la suppression',
                 'error' => $e->getMessage()
             ], 500);
-        };
+        }
     }
 
 
@@ -904,6 +957,7 @@ class  ActivitiesController extends Controller
         }
     }
 
+
     public function updateActivity(Request $request, $id)
     {
         // Manual validation
@@ -1091,6 +1145,7 @@ class  ActivitiesController extends Controller
             ], 500);
         }
     }
+
 
     public function exportActivityExcel(Request $request)
     {
@@ -1319,265 +1374,6 @@ class  ActivitiesController extends Controller
     }
 
 
-    // public function exportAllActivitiesExcel(Request $request)
-    // {
-    //     $laboId = JWTHelper::getLaboId($request);
-    //     if (!$laboId) {
-    //         return response()->json(['message' => 'Information du laboratoire non trouvée.'], 401);
-    //     }
-
-    //     $labo = Labo::find($laboId);
-    //     if (!$labo) {
-    //         return response()->json(['message' => 'Laboratoire non trouvé.'], 404);
-    //     }
-
-    //     $activitiesByLabo = ActivityByLabo::with(['activity'])->where('laboId', $laboId)->get();
-    //     if ($activitiesByLabo->isEmpty()) {
-    //         return response()->json(['message' => 'Aucune activité trouvée.'], 404);
-    //     }
-
-    //     $spreadsheet = new Spreadsheet();
-    //     $spreadsheet->removeSheetByIndex(0);
-
-    //     $annualRois = []; // [year => [ ['name' => ..., 'roi' => ...], ... ] ]
-
-    //     foreach ($activitiesByLabo as $activityByLabo) {
-    //         $sheet = new Worksheet($spreadsheet, substr($activityByLabo->activity->Name, 0, 31));
-    //         $spreadsheet->addSheet($sheet);
-
-    //         $rows = [];
-
-    //         // Titre
-    //         $title = "Activité : " . $activityByLabo->activity->Name;
-    //         $rows[] = [$title, ''];
-    //         $rows[] = ['Clé', 'Valeur'];
-
-    //         $rows[] = ['Laboratoire', $labo->Name];
-    //         $rows[] = ['Année', $activityByLabo->year];
-    //         $rows[] = ['', ''];
-
-    //         // Items
-    //         $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)->get()
-    //             ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
-
-    //         $itemValues = ActivityItemValue::where('ActivityByLaboId', $activityByLabo->id)
-    //             ->with('activityItem')
-    //             ->get()
-    //             ->mapWithKeys(
-    //                 fn($itemValue) =>
-    //                 [$itemValue->activityItem->symbole ?? 'item_' . $itemValue->activityItem->id => $itemValue->value]
-    //             )->toArray();
-
-    //         foreach ($activityItems as $symbol => $item) {
-    //             if (strtolower($symbol) === 'roi') continue;
-
-    //             $value = $itemValues[$symbol] ?? '';
-    //             if ($item->Type === 'percentage' && is_numeric($value)) {
-    //                 $value = $value . '%';
-    //             }
-    //             $rows[] = [$item->Name, $value];
-    //         }
-
-    //         $rows[] = ['', ''];
-
-    //         // Calculs
-    //         $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
-    //         $calculatedResults = [];
-
-    //         if ($formula) {
-    //             $formulaData = json_decode($formula->formulat, true);
-    //             $intermediateResults = [];
-
-    //             foreach ($formulaData as $key => $expression) {
-    //                 try {
-    //                     $parsedExpression = $expression;
-
-    //                     foreach ($activityItems as $symbol => $item) {
-    //                         $value = $itemValues[$symbol] ?? 0;
-    //                         if ($item->Type === 'percentage') $value /= 100;
-    //                         $parsedExpression = str_replace($symbol, $value, $parsedExpression);
-    //                     }
-
-    //                     foreach ($intermediateResults as $k => $v) {
-    //                         $parsedExpression = str_replace($k, $v, $parsedExpression);
-    //                     }
-
-    //                     if (preg_match('/\b[a-zA-Z_]+\b/', $parsedExpression)) {
-    //                         $calculatedResults[$key] = 'Variable non définie';
-    //                         continue;
-    //                     }
-
-    //                     $result = eval("return $parsedExpression;");
-    //                     if (is_infinite($result) || is_nan($result)) {
-    //                         $calculatedResults[$key] = 'Résultat invalide';
-    //                         continue;
-    //                     }
-
-    //                     if ($key === 'roi') $result *= 100;
-    //                     $calculatedResults[$key] = $result;
-    //                     $intermediateResults[$key] = $result;
-    //                 } catch (\Throwable $e) {
-    //                     $calculatedResults[$key] = 'Erreur';
-    //                 }
-    //             }
-    //         }
-
-    //         foreach ($calculatedResults as $key => $value) {
-    //             if ($key === 'roi' && is_numeric($value)) {
-    //                 $annualRois[$activityByLabo->year][] = [
-    //                     'name' => $activityByLabo->activity->Name,
-    //                     'roi' => floatval($value),
-    //                 ];
-    //                 $value = $value . '%';
-    //             }
-    //             $rows[] = [$key, $value];
-    //         }
-
-    //         // Écriture
-    //         $sheet->fromArray($rows, null, 'A1');
-    //         $sheet->mergeCells('A1:B1');
-    //         $sheet->getStyle('A1')->applyFromArray([
-    //             'font' => ['bold' => true, 'size' => 20],
-    //             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-    //         ]);
-
-    //         $rowCount = count($rows);
-    //         $sheet->getStyle("A2:B$rowCount")->applyFromArray([
-    //             'borders' => [
-    //                 'allBorders' => [
-    //                     'borderStyle' => Border::BORDER_THIN,
-    //                     'color' => ['rgb' => '000000'],
-    //                 ],
-    //             ],
-    //             'alignment' => [
-    //                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-    //                 'vertical' => Alignment::VERTICAL_CENTER,
-    //             ],
-    //         ]);
-
-    //         $sheet->getStyle('A2:B2')->applyFromArray([
-    //             'font' => ['bold' => true],
-    //             'fill' => [
-    //                 'fillType' => Fill::FILL_SOLID,
-    //                 'startColor' => ['rgb' => 'd9e1f2'],
-    //             ],
-    //         ]);
-
-    //         $sheet->getColumnDimension('A')->setAutoSize(true);
-    //         $sheet->getColumnDimension('B')->setAutoSize(true);
-
-    //         // Mise en couleur du ROI
-    //         foreach ($rows as $i => $row) {
-    //             if (strtolower($row[0]) === 'roi' && is_numeric(str_replace('%', '', $row[1]))) {
-    //                 $roi = floatval(str_replace('%', '', $row[1])) / 100;
-    //                 $color = 'FFC7CE';
-    //                 if ($roi > 1) $color = 'C6EFCE';
-    //                 elseif ($roi > 0.75) $color = 'FF9999';
-    //                 elseif ($roi > 0.5) $color = 'FF6666';
-    //                 elseif ($roi > 0.25) $color = 'FF3333';
-
-    //                 $cell = 'B' . ($i + 1);
-    //                 $sheet->getStyle($cell)->applyFromArray([
-    //                     'fill' => [
-    //                         'fillType' => Fill::FILL_SOLID,
-    //                         'startColor' => ['rgb' => $color],
-    //                     ],
-    //                 ]);
-    //             }
-    //         }
-
-    //         $sheet->getProtection()->setSheet(true);
-    //         $sheet->getProtection()->setSort(true);
-    //         $sheet->getProtection()->setInsertRows(false);
-    //         $sheet->getProtection()->setInsertColumns(false);
-    //         $sheet->getProtection()->setFormatCells(false);
-    //         $sheet->getProtection()->setPassword('secret');
-    //     }
-
-    //     // Feuilles de synthèse annuelle
-    //     foreach ($annualRois as $year => $activities) {
-    //         $sheet = new Worksheet($spreadsheet, "Synthèse $year");
-    //         $spreadsheet->addSheet($sheet);
-
-    //         $rows = [['Activité', 'ROI']];
-    //         $totalRoi = 0;
-    //         $count = 0;
-
-    //         foreach ($activities as $entry) {
-    //             $rows[] = [$entry['name'], $entry['roi'] . '%'];
-    //             $totalRoi += $entry['roi'];
-    //             $count++;
-    //         }
-
-    //         $averageRoi = $count ? $totalRoi / $count : 0;
-    //         $rows[] = ['ROI moyen', round($averageRoi, 2) . '%'];
-
-    //         $sheet->fromArray($rows, null, 'A1');
-    //         $rowCount = count($rows);
-    //         $sheet->getStyle("A1:B$rowCount")->applyFromArray([
-    //             'borders' => [
-    //                 'allBorders' => [
-    //                     'borderStyle' => Border::BORDER_THIN,
-    //                     'color' => ['rgb' => '000000'],
-    //                 ],
-    //             ],
-    //             'alignment' => [
-    //                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-    //                 'vertical' => Alignment::VERTICAL_CENTER,
-    //             ],
-    //         ]);
-
-    //         $sheet->getStyle('A1:B1')->applyFromArray([
-    //             'font' => ['bold' => true],
-    //             'fill' => [
-    //                 'fillType' => Fill::FILL_SOLID,
-    //                 'startColor' => ['rgb' => 'd9e1f2'],
-    //             ],
-    //         ]);
-
-    //         $sheet->getColumnDimension('A')->setAutoSize(true);
-    //         $sheet->getColumnDimension('B')->setAutoSize(true);
-
-    //         $roiCell = 'B' . count($rows);
-    //         $roiValue = $averageRoi / 100;
-    //         $color = 'FFC7CE';
-    //         if ($roiValue > 1) $color = 'C6EFCE';
-    //         elseif ($roiValue > 0.75) $color = 'FF9999';
-    //         elseif ($roiValue > 0.5) $color = 'FF6666';
-    //         elseif ($roiValue > 0.25) $color = 'FF3333';
-
-    //         $sheet->getStyle($roiCell)->applyFromArray([
-    //             'fill' => [
-    //                 'fillType' => Fill::FILL_SOLID,
-    //                 'startColor' => ['rgb' => $color],
-    //             ],
-    //         ]);
-
-    //         $sheet->getProtection()->setSheet(true);
-    //         $sheet->getProtection()->setSort(true);
-    //         $sheet->getProtection()->setInsertRows(false);
-    //         $sheet->getProtection()->setInsertColumns(false);
-    //         $sheet->getProtection()->setFormatCells(false);
-    //         $sheet->getProtection()->setPassword('secret');
-    //     }
-
-    //     $spreadsheet->getSecurity()->setLockWindows(true);
-    //     $spreadsheet->getSecurity()->setLockStructure(true);
-
-    //     $writer = new Xlsx($spreadsheet);
-    //     $fileName = 'export_activities_labo_' . $laboId . '.xlsx';
-    //     $tempFile = tempnam(sys_get_temp_dir(), $fileName);
-    //     $writer->save($tempFile);
-
-    //     return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
-    // }
-
-    /**
-     * Summary of exportAllActivitiesExcel
-     * @param \Illuminate\Http\Request $request
-     * @return mixed|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
-
     public function exportAllActivitiesExcel(Request $request)
     {
         $laboId = JWTHelper::getLaboId($request);
@@ -1598,24 +1394,32 @@ class  ActivitiesController extends Controller
         $spreadsheet = new Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
 
-        $annualRois = []; // [year => ['ventes_incrementales' => sum, 'cout_total' => sum, 'activities' => [['name' => ..., 'roi' => ...], ...]]]
+        $annualRois = [];
 
         foreach ($activitiesByLabo as $activityByLabo) {
-            $sheet = new Worksheet($spreadsheet, substr($activityByLabo->activity->Name, 0, 31));
+            $activityName = $activityByLabo->activity->Name . ' ' . $activityByLabo->year;
+            $baseSheetName = substr($activityName, 0, 31);
+            $sheetName = $baseSheetName;
+            $index = 1;
+            while ($spreadsheet->getSheetByName($sheetName)) {
+                $suffix = " ($index)";
+                $maxLength = 31 - strlen($suffix);
+                $sheetName = substr($baseSheetName, 0, $maxLength) . $suffix;
+                $index++;
+            }
+
+            $sheet = new Worksheet($spreadsheet, $sheetName);
             $spreadsheet->addSheet($sheet);
 
             $rows = [];
 
-            // Titre
             $title = "Activité : " . $activityByLabo->activity->Name;
             $rows[] = [$title, ''];
             $rows[] = ['Clé', 'Valeur'];
-
             $rows[] = ['Laboratoire', $labo->Name];
             $rows[] = ['Année', $activityByLabo->year];
             $rows[] = ['', ''];
 
-            // Items
             $activityItems = ActivityItem::where('ActivityId', $activityByLabo->ActivityId)->get()
                 ->keyBy(fn($item) => $item->symbole ?? 'item_' . $item->id);
 
@@ -1629,7 +1433,6 @@ class  ActivitiesController extends Controller
 
             foreach ($activityItems as $symbol => $item) {
                 if (strtolower($symbol) === 'roi') continue;
-
                 $value = $itemValues[$symbol] ?? '';
                 if ($item->Type === 'percentage' && is_numeric($value)) {
                     $value = $value . '%';
@@ -1639,7 +1442,6 @@ class  ActivitiesController extends Controller
 
             $rows[] = ['', ''];
 
-            // Calculs
             $formula = CalculationFormulat::where('ActivityId', $activityByLabo->ActivityId)->first();
             $calculatedResults = [];
 
@@ -1681,7 +1483,6 @@ class  ActivitiesController extends Controller
                 }
             }
 
-            // Store data for annual ROI calculation
             $year = $activityByLabo->year;
             if (!isset($annualRois[$year])) {
                 $annualRois[$year] = [
@@ -1694,8 +1495,11 @@ class  ActivitiesController extends Controller
             $ventesKey = $activityByLabo->ActivityId == 13 ? 'Revenu Total' : 'ventes_incrementales';
             $coutKey = $activityByLabo->ActivityId == 13 ? 'cout total' : 'cout_total';
 
-            $annualRois[$year]['ventes_incrementales'] += $calculatedResults[$ventesKey] ?? 0;
-            $annualRois[$year]['cout_total'] += $calculatedResults[$coutKey] ?? 0;
+            $ventesValue = floatval($calculatedResults[$ventesKey] ?? 0);
+            $coutValue = floatval($calculatedResults[$coutKey] ?? 0);
+
+            $annualRois[$year]['ventes_incrementales'] += $ventesValue;
+            $annualRois[$year]['cout_total'] += $coutValue;
             $annualRois[$year]['activities'][] = [
                 'name' => $activityByLabo->activity->Name,
                 'roi' => isset($calculatedResults['roi']) ? floatval($calculatedResults['roi']) : 0,
@@ -1708,7 +1512,6 @@ class  ActivitiesController extends Controller
                 $rows[] = [$key, $value];
             }
 
-            // Écriture
             $sheet->fromArray($rows, null, 'A1');
             $sheet->mergeCells('A1:B1');
             $sheet->getStyle('A1')->applyFromArray([
@@ -1741,7 +1544,6 @@ class  ActivitiesController extends Controller
             $sheet->getColumnDimension('A')->setAutoSize(true);
             $sheet->getColumnDimension('B')->setAutoSize(true);
 
-            // Mise en couleur du ROI
             foreach ($rows as $i => $row) {
                 if (strtolower($row[0]) === 'roi' && is_numeric(str_replace('%', '', $row[1]))) {
                     $roi = floatval(str_replace('%', '', $row[1])) / 100;
@@ -1769,7 +1571,6 @@ class  ActivitiesController extends Controller
             $sheet->getProtection()->setPassword('secret');
         }
 
-        // Feuilles de synthèse annuelle
         foreach ($annualRois as $year => $data) {
             $sheet = new Worksheet($spreadsheet, "Synthèse $year");
             $spreadsheet->addSheet($sheet);
@@ -1779,8 +1580,10 @@ class  ActivitiesController extends Controller
                 $rows[] = [$entry['name'], $entry['roi'] . '%'];
             }
 
-            // Calculate annual ROI: (sum of ventes_incrementales / sum of cout_total) * 100
-            $annualRoi = $data['cout_total'] != 0 ? ($data['ventes_incrementales'] / $data['cout_total']) * 100 : 0;
+            $annualRoi = $data['cout_total'] != 0
+                ? ($data['ventes_incrementales'] / $data['cout_total']) * 100
+                : 0;
+
             $rows[] = ['ROI annuel', round($annualRoi, 2) . '%'];
 
             $sheet->fromArray($rows, null, 'A1');
@@ -1842,6 +1645,7 @@ class  ActivitiesController extends Controller
 
         return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
+
 
     public function exportActivityCsv(Request $request)
     {
@@ -1945,6 +1749,7 @@ class  ActivitiesController extends Controller
             ->header('Content-Type', 'text/csv; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="export_activity_' . $activityByLaboId . '.csv"');
     }
+
 
     public function exportAllActivitiesCsv(Request $request)
     {
@@ -2087,6 +1892,7 @@ class  ActivitiesController extends Controller
             ->header('Content-Disposition', 'attachment; filename="export_activities_labo_' . $laboId . '.csv"');
     }
 
+
     public function getAllActivitiesInfo(Request $request)
     {
         try {
@@ -2142,4 +1948,6 @@ class  ActivitiesController extends Controller
             ], 500);
         }
     }
+
+
 }

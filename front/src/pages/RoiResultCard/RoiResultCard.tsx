@@ -242,7 +242,7 @@ const DisplayCalculatedData = () => {
     if (confirmDelete) {
       try {
         await axiosInstance.delete(
-          `/api/deleteActivityValues/${activityData?.activityByLabo.id}`,
+          'deleteActivityValues',
           {
             withCredentials: true,
           }

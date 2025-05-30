@@ -19,91 +19,213 @@ class Activity1_12 extends Controller
 {
 
     //Insertion d'une activite costume (Roi manuellement definie)
-    public function insertCustomActivity(Request $request)
-    {
-        try {
-            // Validate input
-            $validated = $request->validate([
-                'activityName' => 'required|string|max:255',
-                'year' => 'required|integer|min:1900|max:9999',
-                'roi' => 'required|numeric|min:0',
+
+    // public function insertCustomActivity(Request $request)
+    // {
+    //     try {
+    //         // Validate input
+    //         $validated = $request->validate([
+    //             'activityName' => 'required|string|max:255',
+    //             'year' => 'required|integer|min:1900|max:9999',
+    //             'roi' => 'required|numeric|min:0',
+    //         ]);
+
+    //         // Get laboId from JWT
+    //         $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+    //         if (!$laboId) {
+    //             return response()->json(['message' => 'Token invalide'], 401);
+    //         }
+
+    //         // Check if activity exists
+    //         $activity = ActivitiesList::where('Name', $validated['activityName'])->first();
+
+    //         if (!$activity) {
+    //             // Create new activity with is_custom = true
+    //             $activity = ActivitiesList::create([
+    //                 'Name' => $validated['activityName'],
+    //                 'is_custom' => true,
+    //             ]);
+
+    //             // Create default Roi item
+    //             $roiItem = ActivityItem::create([
+    //                 'ActivityId' => $activity->id,
+    //                 'Name' => 'Roi',
+    //                 'symbole' => 'ROI',
+    //                 'Type' => 'number',
+    //             ]);
+
+    //             // Create a simple formula for the activity
+    //             $formula = CalculationFormulat::create([
+    //                 'ActivityId' => $activity->id,
+    //                 'formulat' => json_encode(['roi' => 'ROI'], JSON_UNESCAPED_UNICODE),
+    //             ]);
+    //         }
+
+    //         // Create entry in activitybylabo
+    //         $activityByLabo = ActivityByLabo::create([
+    //             'ActivityId' => $activity->id,
+    //             'laboId' => $laboId,
+    //             'year' => $validated['year'],
+    //         ]);
+
+    //         // Find the Roi item for the activity
+    //         $roiItem = ActivityItem::where('ActivityId', $activity->id)
+    //             ->where('Name', 'Roi')
+    //             ->first();
+
+    //         if ($roiItem) {
+    //             // Insert ROI value
+    //             ActivityItemValue::create([
+    //                 'activityItemId' => $roiItem->id,
+    //                 'ActivityByLaboId' => $activityByLabo->id,
+    //                 'value' => $validated['roi'],
+    //                 'created_at' => now(),
+    //                 'updated_at' => now(),
+    //             ]);
+    //         } else {
+    //             // This should not happen if activity creation includes Roi item
+    //             return response()->json([
+    //                 'message' => 'Erreur : Item ROI non trouvé pour cette activité',
+    //             ], 500);
+    //         }
+
+    //         return response()->json([
+    //             'message' => 'Activité personnalisée créée avec succès',
+    //             'activity' => [
+    //                 'id' => $activity->id,
+    //                 'name' => $activity->Name,
+    //                 'year' => $activityByLabo->year,
+    //                 'roi' => $validated['roi'],
+    //             ],
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Erreur lors de la création de l\'activité',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+public function insertCustomActivity(Request $request)
+{
+    try {
+        // Validate input
+        $validated = $request->validate([
+            'activityName' => 'required|string|max:255',
+            'year' => 'required|integer|min:1900|max:9999',
+            'revenue_totale' => 'required|numeric|min:0',
+            'cout_totale' => 'required|numeric|min:0',
+            'roi' => 'required|numeric|min:0',
+        ]);
+
+        // Get laboId from JWT
+        $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+        if (!$laboId) {
+            return response()->json(['message' => 'Token invalide'], 401);
+        }
+
+        // Check if activity exists
+        $activity = ActivitiesList::where('Name', $validated['activityName'])->first();
+
+        if (!$activity) {
+            // Create new activity with is_custom = true
+            $activity = ActivitiesList::create([
+                'Name' => $validated['activityName'],
+                'is_custom' => true,
             ]);
 
-            // Get laboId from JWT
-            $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
-            if (!$laboId) {
-                return response()->json(['message' => 'Token invalide'], 401);
-            }
-
-            // Check if activity exists
-            $activity = ActivitiesList::where('Name', $validated['activityName'])->first();
-
-            if (!$activity) {
-                // Create new activity with is_custom = true
-                $activity = ActivitiesList::create([
-                    'Name' => $validated['activityName'],
-                    'is_custom' => true,
-                ]);
-
-                // Create default Roi item
-                $roiItem = ActivityItem::create([
-                    'ActivityId' => $activity->id,
-                    'Name' => 'Roi',
-                    'symbole' => 'ROI',
-                    'Type' => 'number',
-                ]);
-
-                // Create a simple formula for the activity
-                $formula = CalculationFormulat::create([
-                    'ActivityId' => $activity->id,
-                    'formulat' => json_encode(['roi' => 'ROI'], JSON_UNESCAPED_UNICODE),
-                ]);
-            }
-
-            // Create entry in activitybylabo
-            $activityByLabo = ActivityByLabo::create([
+            // Create items: Ventes incrementales, Cout totale, Roi
+            ActivityItem::create([
                 'ActivityId' => $activity->id,
-                'laboId' => $laboId,
-                'year' => $validated['year'],
+                'Name' => 'Ventes incrementales',
+                'symbole' => 'A',
+                'Type' => 'number',
             ]);
 
-            // Find the Roi item for the activity
-            $roiItem = ActivityItem::where('ActivityId', $activity->id)
-                ->where('Name', 'Roi')
-                ->first();
+            ActivityItem::create([
+                'ActivityId' => $activity->id,
+                'Name' => 'Cout totale',
+                'symbole' => 'B',
+                'Type' => 'number',
+            ]);
 
-            if ($roiItem) {
-                // Insert ROI value
-                ActivityItemValue::create([
-                    'activityItemId' => $roiItem->id,
-                    'ActivityByLaboId' => $activityByLabo->id,
-                    'value' => $validated['roi'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            } else {
-                // This should not happen if activity creation includes Roi item
-                return response()->json([
-                    'message' => 'Erreur : Item ROI non trouvé pour cette activité',
-                ], 500);
-            }
+            $roiItem = ActivityItem::create([
+                'ActivityId' => $activity->id,
+                'Name' => 'Roi',
+                'symbole' => 'ROI',
+                'Type' => 'number',
+            ]);
 
+            // Create formula: {"roi": "A / B"}
+            $formula = CalculationFormulat::create([
+                'ActivityId' => $activity->id,
+                'formulat' => json_encode(['roi' => 'A / B'], JSON_UNESCAPED_UNICODE),
+            ]);
+        }
+
+        // Create entry in activitybylabo
+        $activityByLabo = ActivityByLabo::create([
+            'ActivityId' => $activity->id,
+            'laboId' => $laboId,
+            'year' => $validated['year'],
+        ]);
+
+        // Insert item values
+        $items = ActivityItem::where('ActivityId', $activity->id)->get()->keyBy('symbole');
+
+        if (isset($items['A']) && isset($items['B']) && isset($items['ROI'])) {
+            ActivityItemValue::create([
+                'activityItemId' => $items['A']->id,
+                'ActivityByLaboId' => $activityByLabo->id,
+                'value' => $validated['revenue_totale'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            ActivityItemValue::create([
+                'activityItemId' => $items['B']->id,
+                'ActivityByLaboId' => $activityByLabo->id,
+                'value' => $validated['cout_totale'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            ActivityItemValue::create([
+                'activityItemId' => $items['ROI']->id,
+                'ActivityByLaboId' => $activityByLabo->id,
+                'value' => $validated['roi'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
             return response()->json([
-                'message' => 'Activité personnalisée créée avec succès',
-                'activity' => [
-                    'id' => $activity->id,
-                    'name' => $activity->Name,
-                    'year' => $activityByLabo->year,
-                    'roi' => $validated['roi'],
-                ],
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création de l\'activité',
-                'error' => $e->getMessage(),
+                'message' => 'Erreur : Items nécessaires (A, B, ROI) non trouvés pour cette activité',
             ], 500);
         }
+
+        return response()->json([
+            'message' => 'Activité personnalisée créée avec succès',
+            'activity' => [
+                'id' => $activity->id,
+                'name' => $activity->Name,
+                'year' => $activityByLabo->year,
+                'revenue_totale' => $validated['revenue_totale'],
+                'cout_totale' => $validated['cout_totale'],
+                'roi' => $validated['roi'],
+            ],
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la création de l\'activité',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
+
+
+
+    /** */
 
     //Insertuion de toutes le activities (Dynamique) 
     public function insertActivityData(Request $request)

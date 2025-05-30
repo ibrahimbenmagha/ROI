@@ -68,8 +68,6 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
 
     Route::post('/generate-interpretation', [InterpretationController::class, 'generate']);
 
-    Route::get('exportAllActivitiesCsv', [ActivitiesController::class, 'exportAllActivitiesCsv']);
-
     Route::delete('deleteLaboData', [ActivitiesController::class, 'deleteLaboData']);
     Route::post('CreateActivityByLabo', [ActivitiesController::class, 'CreateActivityByLabo']);
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
