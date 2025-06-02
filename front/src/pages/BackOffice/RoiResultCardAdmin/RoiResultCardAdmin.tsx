@@ -67,9 +67,7 @@ const DisplayCalculatedData = () => {
   const fetchActivityData = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("getActivityByLaboData", {
-        withCredentials: true, // Ensure cookies are sent
-      });
+      const response = await axiosInstance.get("getActivityByLaboData");
       if (response.status === 200) {
         setActivityData(response.data);
       } else {
@@ -86,39 +84,69 @@ const DisplayCalculatedData = () => {
     }
   };
 
-    const handleExportCsv = async () => {
-      try {
-        const response = await axiosInstance.get("exportActivityCsv", {
-          responseType: "blob", // important pour les fichiers binaires
-        });
-  
-        const blob = new Blob([response.data], {
-          type: "text/csv;charset=utf-8;",
-        });
-  
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-  
-        // Nom du fichier selon les infos dans le header ou fallback
-        const contentDisposition = response.headers["content-disposition"];
-        let fileName = "activity_export.csv";
-  
-        if (contentDisposition) {
-          const match = contentDisposition.match(/filename="(.+)"/);
-          if (match?.[1]) fileName = match[1];
-        }
-  
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error("Erreur lors de l'export CSV:", error);
-        alert("Erreur lors de l'export du fichier CSV.");
-      }
-    };
+  const handleExportCsv = async () => {
+    try {
+      const response = await axiosInstance.get("exportActivityCsv", {
+        responseType: "blob",
+      });
 
+      const blob = new Blob([response.data], {
+        type: "text/csv;charset=utf-8;",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "activity_export.csv";
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match?.[1]) fileName = match[1];
+      }
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Erreur lors de l'export CSV:", error);
+      alert("Erreur lors de l'export du fichier CSV.");
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const response = await axiosInstance.get("exportActivityExcel", {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "activity_export.xlsx";
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match?.[1]) fileName = match[1];
+      }
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Erreur lors de l'export Excel:", error);
+      alert("Erreur lors de l'export du fichier Excel.");
+    }
+  };
 
   const handleExportPdf = () => {
     if (!activityData) return;
@@ -138,8 +166,8 @@ const DisplayCalculatedData = () => {
         let formattedValue = value;
         if (typeof value === "number") {
           formattedValue =
-            key.toLowerCase().includes("roi") && !isNaN(value)
-              ? `${(value * 100).toFixed(2)}%`
+            key.toLowerCase().includes("roi")
+              ? `${value.toFixed(2)}%` // Use value directly as percentage
               : key.toLowerCase().includes("cost") ||
                 key.toLowerCase().includes("sales")
               ? `${value.toFixed(2)} MAD`
@@ -157,8 +185,6 @@ const DisplayCalculatedData = () => {
     doc.save(`activity_${activityData.activityByLabo.id}_data.pdf`);
   };
 
-
-
   return (
     <Layout className="min-h-screen">
       <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
@@ -166,7 +192,8 @@ const DisplayCalculatedData = () => {
           <Card className="mb-6 shadow-lg">
             <CardHeader>
               <CardTitle>
-                Résultats du calcul ROI - {activityData?.activityByLabo.activity}
+                Résultats du calcul ROI -{" "}
+                {activityData?.activityByLabo.activity}
               </CardTitle>
               <CardDescription>
                 {activityData
@@ -219,8 +246,8 @@ const DisplayCalculatedData = () => {
                       {Object.entries(activityData.calculated_results).map(
                         ([key, value], index) => (
                           <div
-                            key={index}
-                            className="bg-white shadow-md p-4 rounded-md flex flex-col items-start"
+                            key={key}
+                            className="bg-white shadow-md p-4 rounded-md flex flex-col items-center"
                           >
                             <Text className="font-semibold text-sm">
                               {key
@@ -230,7 +257,7 @@ const DisplayCalculatedData = () => {
                             <Text className="text-xl font-medium">
                               {typeof value === "number" && !isNaN(value)
                                 ? key.toLowerCase().includes("roi")
-                                  ? `${(value * 100).toFixed(2)}%`
+                                  ? `${value.toFixed(2)}%` // Use value directly as percentage
                                   : key.toLowerCase().includes("cost") ||
                                     key.toLowerCase().includes("sales")
                                   ? `${value.toFixed(2)} MAD`
@@ -276,6 +303,15 @@ const DisplayCalculatedData = () => {
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={handleExportExcel}
+                  disabled={loading || !activityData}
+                  className="flex items-center gap-2"
+                >
+                  <DownloadOutlined className="mr-2" />
+                  Exporter Excel
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={handleExportPdf}
                   disabled={loading || !activityData}
                   className="flex items-center gap-2"
@@ -293,3 +329,4 @@ const DisplayCalculatedData = () => {
 };
 
 export default DisplayCalculatedData;
+

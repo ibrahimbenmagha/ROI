@@ -25,6 +25,7 @@ import CustomActivityPage from "./pages/CalcutaleCustumAct/CalcutaleCustumAct";
 import DisplayCalculatedActivity from "./pages/DisplayActivityByLaboCalculated/DisplayActivityByLaboCalculated";
 
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
+
 import {
   LaboRoute,
   AdminRoute,
@@ -34,6 +35,7 @@ import {
 } from "./components/AuthRoute";
 
 import CreateRegularActivity from "./pages/BackOffice/AddActivity/AddActivity";
+
 import ActivityDispkay from "./pages/BackOffice/ActivityDisplay/ActivityDisplay";
 
 const queryClient = new QueryClient();
@@ -45,7 +47,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Redirection par défaut */}
 
           <Route path="*" element={<Navigate to="/CreateActivity" />} />
 

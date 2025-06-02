@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { jsPDF } from "jspdf";
-import {
-  Layout,
-  Typography,
-  Spin,
-  Empty,
-  message,
-  Modal,
-  Form,
-  InputNumber,
-} from "antd";
+import { Layout, Typography, Spin, Empty, message, Modal, Form, InputNumber } from "antd";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +39,7 @@ interface ActivityByLabo {
   labo: string;
   activity: string;
   year: string;
-  is_custom: boolean; // Added to indicate custom activity
+  is_custom: boolean;
 }
 
 interface ActivityData {
@@ -63,11 +53,30 @@ const DisplayCalculatedData = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isModifying, setIsModifying] = useState<boolean>(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
+  // Helper function to determine ROI border color
+  const getRoiBorderClass = (roi: number): string => {
+    if (roi >= 1) {
+      return "border-l-4 border-green-500";
+    }
+    if (roi < 0) {
+      return "border-l-4 border-red-600";
+    }
+    const intensity = Math.min(Math.max(roi, 0), 0.75);
+    if (intensity >= 0.5) {
+      return "border-l-4 border-red-300"; // ROI 0.5 to 0.75
+    } else if (intensity >= 0.25) {
+      return "border-l-4 border-red-400"; // ROI 0.25 to 0.5
+    } else {
+      return "border-l-4 border-red-600"; // ROI 0 to 0.25
+    }
+  };
+
   useEffect(() => {
-    // Avoid double reload
     if (!sessionStorage.getItem("reloaded")) {
       sessionStorage.setItem("reloaded", "true");
       window.location.reload();
@@ -97,43 +106,10 @@ const DisplayCalculatedData = () => {
     }
   };
 
-  const handleExportCsv = async () => {
-    try {
-      const response = await axiosInstance.get("exportActivityCsv", {
-        responseType: "blob", // important pour les fichiers binaires
-      });
-
-      const blob = new Blob([response.data], {
-        type: "text/csv;charset=utf-8;",
-      });
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-
-      // Nom du fichier selon les infos dans le header ou fallback
-      const contentDisposition = response.headers["content-disposition"];
-      let fileName = "activity_export.csv";
-
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+)"/);
-        if (match?.[1]) fileName = match[1];
-      }
-
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Erreur lors de l'export CSV:", error);
-      alert("Erreur lors de l'export du fichier CSV.");
-    }
-  };
-
   const handleExportExcel = async () => {
     try {
       const response = await axiosInstance.get("exportActivityExcel", {
-        responseType: "blob", // important pour fichiers binaires comme Excel
+        responseType: "blob",
       });
 
       const blob = new Blob([response.data], {
@@ -156,82 +132,44 @@ const DisplayCalculatedData = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Erreur lors de l'export Excel:", error);
-      alert("Erreur lors de l'export du fichier Excel.");
+      message.error("Erreur lors de l'export du fichier Excel.");
     }
   };
 
-  const handleExportPdf = () => {
-    if (!activityData) return;
+  const handleExportPdf = async () => {
+    try {
+      const response = await axiosInstance.get("exportActivityPdf", {
+        responseType: "blob",
+      });
 
-    const doc = new jsPDF();
-    doc.setFont("helvetica", ""); // Police avec bon support UTF-8
-    doc.setFontSize(12);
+      const blob = new Blob([response.data], {
+        type: "application/pdf",
+      });
 
-    // En-tête
-    doc.text(`Activité: ${activityData.activityByLabo.activity}`, 10, 10);
-    doc.text(`Laboratoire: ${activityData.activityByLabo.labo}`, 10, 18);
-    doc.text(`Année: ${activityData.activityByLabo.year}`, 10, 26);
-    doc.text(
-      `Type: ${
-        activityData.activityByLabo.is_custom ? "Personnalisée" : "Standard"
-      }`,
-      10,
-      34
-    );
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
 
-    // Ligne de séparation
-    doc.setDrawColor(150);
-    doc.line(10, 40, 200, 40);
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "activity_export.pdf";
 
-    // Items de l'activité
-    doc.setFontSize(14);
-    doc.text("Items de l'activité :", 10, 48);
-    doc.setFontSize(12);
-
-    let y = 56;
-    activityData.items.forEach((item) => {
-      const value =
-        item.value !== null
-          ? `${item.value}${item.type === "percentage" ? "%" : ""}`
-          : "N/A";
-      doc.text(`${item.name}: ${value}`, 10, y);
-      y += 8;
-      if (y > 270) {
-        doc.addPage();
-        y = 10;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match?.[1]) fileName = match[1];
       }
-    });
 
-    // Résultats calculés
-    y += 6;
-    doc.setFontSize(14);
-    doc.text("Résultats calculés :", 10, y);
-    doc.setFontSize(12);
-    y += 8;
-
-    Object.entries(activityData.calculated_results).forEach(([key, value]) => {
-      let formattedValue = value;
-      if (typeof value === "number" && !isNaN(value)) {
-        formattedValue = key.toLowerCase().includes("roi")
-          ? `${value.toFixed(2)}%`
-          : key.toLowerCase().includes("cost") ||
-            key.toLowerCase().includes("sales")
-          ? `${value.toFixed(2)} MAD`
-          : value.toFixed(value % 1 === 0 ? 0 : 2);
-      }
-      const label = key.replace(/_/g, " ");
-      doc.text(`${label}: ${formattedValue}`, 10, y);
-      y += 8;
-      if (y > 270) {
-        doc.addPage();
-        y = 10;
-      }
-    });
-
-    // Enregistrement
-    doc.save(`activity_${activityData.activityByLabo.id}_data.pdf`);
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Erreur lors de l'export PDF:", error);
+      message.error("Erreur lors de l'export du fichier PDF.");
+    }
   };
 
   const deleteActivityValues = async (e: React.MouseEvent) => {
@@ -241,13 +179,11 @@ const DisplayCalculatedData = () => {
     );
     if (confirmDelete) {
       try {
-        await axiosInstance.delete(
-          'deleteActivityValues',
-          {
-            withCredentials: true,
-          }
-        );
-        message.success("Les données ont été supprimées avec succès");
+        setIsDeleting(true);
+        const response = await axiosInstance.delete("deleteActivityValues", {
+          withCredentials: true,
+        });
+        message.success(response.data.message || "Données supprimées avec succès");
         deleteCookie("activityNumber");
         navigate("/Home");
       } catch (error) {
@@ -256,22 +192,21 @@ const DisplayCalculatedData = () => {
           error.response?.data?.error ||
             "Erreur lors de la suppression des données"
         );
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
 
   const showModifyModal = () => {
     if (activityData) {
-      // Pre-fill form with current values
       const initialValues = {
-        year: activityData.activityByLabo.year,
+        year: parseInt(activityData.activityByLabo.year),
         items: activityData.items
-          .filter((item) =>
-            activityData.activityByLabo.is_custom ? item.name === "Roi" : true
-          )
+          .filter((item) => item.name.toLowerCase() !== "roi")
           .map((item) => ({
             id: item.id,
-            value: item.value,
+            value: item.type === "percentage" && item.value !== null ? item.value * 100 : item.value,
           })),
       };
       form.setFieldsValue(initialValues);
@@ -281,13 +216,19 @@ const DisplayCalculatedData = () => {
 
   const handleModifySubmit = async (values: any) => {
     try {
+      setIsModifying(true);
       const payload = {
         year: values.year,
         items: values.items.map(
-          (item: { id: number; value: number | null }) => ({
-            activityItemId: item.id,
-            value: item.value,
-          })
+          (item: { id: number; value: number | null }) => {
+            const activityItem = activityData?.items.find((i) => i.id === item.id);
+            return {
+              activityItemId: item.id,
+              value: activityItem?.type === "percentage" && item.value !== null
+                ? item.value / 100
+                : item.value,
+            };
+          }
         ),
       };
 
@@ -300,7 +241,7 @@ const DisplayCalculatedData = () => {
       if (response.status === 200) {
         message.success("Données modifiées avec succès");
         setIsModalVisible(false);
-        await fetchActivityData(); // Refresh data
+        await fetchActivityData();
       } else {
         message.error("Erreur lors de la modification des données");
       }
@@ -310,6 +251,8 @@ const DisplayCalculatedData = () => {
         error.response?.data?.error ||
           "Erreur lors de la modification des données"
       );
+    } finally {
+      setIsModifying(false);
     }
   };
 
@@ -319,30 +262,26 @@ const DisplayCalculatedData = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-gray-100">
       <TheHeader />
-      <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <Card className="mb-6 shadow-lg">
-            <CardHeader>
-              <CardTitle>
+      <Content className="p-6 sm:p-8">
+        <div className="max-w-4xl mx-auto">
+          <Card className="shadow-xl rounded-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+              <CardTitle className="text-2xl font-bold">
                 Résultats du calcul ROI{" "}
-                {activityData
-                  ? `- ${activityData.activityByLabo.activity}`
-                  : ""}
+                {activityData ? `- ${activityData.activityByLabo.activity}` : ""}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-blue-100">
                 {activityData
                   ? `Année: ${activityData.activityByLabo.year} | Type: ${
-                      activityData.activityByLabo.is_custom
-                        ? "Personnalisée"
-                        : "Standard"
+                      activityData.activityByLabo.is_custom ? "Personnalisée" : "Standard"
                     }`
                   : "Visualisation des données calculées"}
               </CardDescription>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="p-6">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Spin size="large" tip="Chargement des données..." />
@@ -352,28 +291,27 @@ const DisplayCalculatedData = () => {
                   {error}
                 </div>
               ) : !activityData ? (
-                <Empty
-                  description="Aucune donnée disponible"
-                  className="py-6"
-                />
+                <Empty description="Aucune donnée disponible" className="py-6" />
               ) : (
                 <>
-                  <div className="mb-6">
-                    <Title level={4}>Items de l'activité</Title>
+                  <div className="mb-8">
+                    <Title level={4} className="text-lg font-semibold mb-4">
+                      Items de l'activité
+                    </Title>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {activityData.items.map((item, index) => (
+                      {activityData.items.map((item) => (
                         <div
-                          key={index}
-                          className="bg-white shadow-md p-4 rounded-md flex flex-col items-start"
+                          key={item.id}
+                          className="bg-white shadow-sm p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center"
                         >
-                          <Text className="font-semibold text-sm">
+                          <Text className="text-sm font-bold text-gray-700 mb-2">
                             {item.name}
                           </Text>
-                          <Text className="text-xl font-medium">
+                          <Text className="text-lg text-gray-900">
                             {item.value !== null
-                              ? `${item.value}${
-                                  item.type === "percentage" ? "%" : ""
-                                }`
+                              ? item.type === "percentage"
+                                ? `${(item.value * 100).toFixed(0)}%`
+                                : item.value.toFixed(item.value % 1 === 0 ? 0 : 2)
                               : "N/A"}
                           </Text>
                         </div>
@@ -381,88 +319,86 @@ const DisplayCalculatedData = () => {
                     </div>
                   </div>
                   <div>
-                    <Title level={4}>Résultats calculés</Title>
+                    <Title level={4} className="text-lg font-semibold mb-4">
+                      Résultats calculés
+                    </Title>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {Object.entries(activityData.calculated_results).map(
-                        ([key, value], index) => (
-                          <div
-                            key={index}
-                            className={`bg-white shadow-md p-4 rounded-md flex flex-col items-start ${
-                              key.toLowerCase().includes("roi")
-                                ? "border-l-4 border-green-500"
-                                : ""
-                            }`}
-                          >
-                            <Text className="font-semibold text-sm">
-                              {key
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </Text>
-                            <Text className="text-xl font-medium">
-                              {typeof value === "number" && !isNaN(value)
-                                ? key.toLowerCase().includes("roi")
-                                  ? `${value.toFixed(2)}%`
-                                  : key.toLowerCase().includes("cost") ||
-                                    key.toLowerCase().includes("sales")
-                                  ? `${value.toFixed(2)} MAD`
-                                  : value.toFixed(value % 1 === 0 ? 0 : 2)
-                                : value.toString()}
-                            </Text>
-                          </div>
-                        )
-                      )}
+                      {Object.entries(activityData.calculated_results).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className={`bg-white shadow-sm p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center ${
+                            key.toLowerCase().includes("roi") && typeof value === "number" && !isNaN(value)
+                              ? getRoiBorderClass(value)
+                              : ""
+                          }`}
+                        >
+                          <Text className="text-sm font-bold text-gray-700 mb-2">
+                            {key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </Text>
+                          <Text className="text-lg text-gray-900">
+                            {typeof value === "number" && !isNaN(value)
+                              ? key.toLowerCase().includes("roi")
+                                ? `${(value * 100).toFixed(2)}%`
+                                : key.toLowerCase().includes("cost") || key.toLowerCase().includes("sales")
+                                ? `${value.toFixed(2)} MAD`
+                                : key.toLowerCase().includes("percentage")
+                                ? `${(value * 100).toFixed(0)}%`
+                                : value.toFixed(value % 1 === 0 ? 0 : 2)
+                              : value.toString()}
+                          </Text>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </>
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center">
+            <CardFooter className="flex justify-between items-center bg-gray-50 p-6">
               <Button
                 variant="outline"
                 onClick={() => navigate("/Home")}
-                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white"
+                className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
               >
-                <ArrowLeftOutlined className="mr-2" />
+                <ArrowLeftOutlined />
                 Retour à l'accueil
               </Button>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3 flex-wrap">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/DisplayCalculatedActivity")}
                   className="flex items-center gap-2"
                 >
-                  <ArrowLeftOutlined className="mr-2" />
+                  <ArrowLeftOutlined />
                   Retour
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2"
                   onClick={deleteActivityValues}
-                  disabled={loading || !activityData}
+                  disabled={loading || !activityData || isDeleting}
+                  className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
                 >
-                  <DeleteOutlined className="mr-2" />
-                  Supprimer
+                  <DeleteOutlined />
+                  {isDeleting ? "Suppression..." : "Supprimer"}
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2"
                   onClick={showModifyModal}
-                  disabled={loading || !activityData}
+                  disabled={loading || !activityData || isModifying}
+                  className="flex items-center gap-2 text-yellow-600 border-yellow-600 hover:bg-yellow-600 hover:text-white"
                 >
-                  <EditOutlined className="mr-2" />
+                  <EditOutlined />
                   Modifier
                 </Button>
                 <Button
                   variant="outline"
-                  // onClick={handleExportCsv}
                   onClick={handleExportExcel}
                   disabled={loading || !activityData}
                   className="flex items-center gap-2"
                 >
-                  <DownloadOutlined className="mr-2" />
-                  Exporter CSV
+                  <DownloadOutlined />
+                  Exporter Excel
                 </Button>
                 <Button
                   variant="outline"
@@ -470,7 +406,7 @@ const DisplayCalculatedData = () => {
                   disabled={loading || !activityData}
                   className="flex items-center gap-2"
                 >
-                  <DownloadOutlined className="mr-2" />
+                  <DownloadOutlined />
                   Exporter PDF
                 </Button>
               </div>
@@ -497,17 +433,23 @@ const DisplayCalculatedData = () => {
             label="Année"
             rules={[{ required: true, message: "Veuillez entrer l'année" }]}
           >
-            <InputNumber min={2000} max={2100} style={{ width: "100%" }} />
+            <InputNumber
+              min={2000}
+              max={2100}
+              className="w-full"
+              placeholder="Entrez l'année"
+            />
           </Form.Item>
 
-          <Title level={5}>Items de l'activité</Title>
+          <Title level={5} className="mb-4">
+            Items de l'activité
+          </Title>
           <Form.List name="items">
             {(fields) => (
               <>
-                {fields.map((field, index) => {
+                {fields.map((field) => {
                   const item = activityData?.items.find(
-                    (i) =>
-                      i.id === form.getFieldValue(["items", field.name, "id"])
+                    (i) => i.id === form.getFieldValue(["items", field.name, "id"])
                   );
                   return (
                     <Form.Item
@@ -527,11 +469,10 @@ const DisplayCalculatedData = () => {
                       ]}
                     >
                       <InputNumber
-                        style={{ width: "100%" }}
-                        addonAfter={
-                          item?.type === "percentage" ? "%" : undefined
-                        }
+                        className="w-full"
+                        addonAfter={item?.type === "percentage" ? "%" : undefined}
                         precision={item?.type === "percentage" ? 0 : 2}
+                        placeholder={`Entrez la valeur pour ${item?.name}`}
                       />
                     </Form.Item>
                   );
@@ -541,18 +482,17 @@ const DisplayCalculatedData = () => {
           </Form.List>
 
           <Form.Item>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-              }}
-            >
+            <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={handleModalCancel}>
                 Annuler
               </Button>
-              <Button type="primary" htmlType="submit">
-                Enregistrer
+              <Button
+                type="primary"
+                htmlType="submit"
+                disabled={isModifying}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isModifying ? "Enregistrement..." : "Enregistrer"}
               </Button>
             </div>
           </Form.Item>

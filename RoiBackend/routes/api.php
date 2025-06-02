@@ -90,7 +90,7 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
 
     Route::get('exportActivityExcel', [ActivitiesController::class, 'exportActivityExcel']);
     Route::get('exportAllActivitiesExcel', [ActivitiesController::class, 'exportAllActivitiesExcel']);
-
+    Route::get('exportActivityPdf', [ActivitiesController::class, 'exportActivityPdf']);
 
 
     Route::get('getActivityItems', [activityitems::class, 'getActivityItems']);
