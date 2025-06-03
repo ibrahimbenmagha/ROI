@@ -66,6 +66,10 @@
     "N": 5000,
     "id_N": 9
   },
+
+
+
+
   // Activité 2: Essai clinique
   {
     "activityId": 2,
@@ -121,7 +125,9 @@
     "K": 10000,
     "id_K": 17
   },
-  // Activité 3: Mailing
+  
+
+// Activité 3: Mailing
   {
     "activityId": 3,
     "year": 2023,
@@ -188,7 +194,10 @@
     "N": 2000,
     "id_N": 27
   },
-  // Activité 4: Conférences
+  
+
+
+// Activité 4: Conférences
   {
     "activityId": 4,
     "year": 2023,
@@ -255,7 +264,11 @@
     "M": 5000,
     "id_M": 37
   },
-  // Activité 5: Tables rondes
+  
+
+
+
+// Activité 5: Tables rondes
   {
     "activityId": 5,
     "year": 2023,
@@ -322,7 +335,11 @@
     "O": 5000,
     "id_O": 47
   },
-  // Activité 6: Visites médicales
+  
+
+
+
+// Activité 6: Visites médicales
   {
     "activityId": 6,
     "year": 2023,
@@ -383,7 +400,10 @@
     "M2": 10,
     "id_M2": 56
   },
-  // Activité 7: Publicité directe au consommateur
+  
+
+
+// Activité 7: Publicité directe au consommateur
   {
     "activityId": 7,
     "year": 2023,
@@ -444,7 +464,12 @@
     "S": 10000,
     "id_S": 65
   },
-  // Activité 8: Publicité directe au consommateur en ligne
+  
+
+
+
+
+// Activité 8: Publicité directe au consommateur en ligne
   {
     "activityId": 8,
     "year": 2023,
@@ -517,7 +542,12 @@
     "R": 20000,
     "id_R": 76
   },
-  // Activité 9: Publicité dans les revues
+  
+
+
+
+
+// Activité 9: Publicité dans les revues
   {
     "activityId": 9,
     "year": 2023,
@@ -578,7 +608,12 @@
     "L": 5000,
     "id_L": 85
   },
-  // Activité 10: Générique (Médecins)
+  
+
+
+
+
+// Activité 10: Générique (Médecins)
   {
     "activityId": 10,
     "year": 2023,
@@ -633,7 +668,12 @@
     "L": 10000,
     "id_L": 93
   },
-  // Activité 11: Générique (Patients)
+  
+
+
+
+
+// Activité 11: Générique (Patients)
   {
     "activityId": 11,
     "year": 2023,
@@ -682,7 +722,13 @@
     "J": 50000,
     "id_J": 100
   },
-  // Activité 12: Promotion numérique pour les médecins
+  
+
+
+
+
+
+// Activité 12: Promotion numérique pour les médecins
   {
     "activityId": 12,
     "year": 2023,

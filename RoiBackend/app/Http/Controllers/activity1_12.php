@@ -135,185 +135,6 @@ class Activity1_12 extends Controller
     }
 
 
-    // public function insertActivityData(Request $request)
-    // {
-    //     try {
-    //         // Récupération de l'ID du labo depuis le token JWT
-    //         $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
-    //         if (!$laboId) {
-    //             return response()->json(['message' => 'Token invalide'], 401);
-    //         }
-
-    //         // Récupération de l'ID de l'activité depuis le cookie
-    //         $activityId = $request->cookie('activityNumber') ?? $request->input('activitynumber');
-    //         if (!$activityId) {
-    //             return response()->json(['message' => 'Activité non spécifiée'], 400);
-    //         }
-
-    //         // Récupération de la formule de calcul
-    //         $formula = CalculationFormulat::where('ActivityId', $activityId)->first();
-    //         if (!$formula) {
-    //             return response()->json(['message' => 'Formule de calcul non trouvée pour cette activité'], 404);
-    //         }
-
-    //         // Récupération des items de l'activité
-    //         $activityItems = ActivityItem::where('ActivityId', $activityId)
-    //             ->where('Name', '!=', 'Roi') // Note: 'ROI' is 'Roi' in activityitems
-    //             ->get();
-
-    //         // Validation des données
-    //         $validationRules = ['year' => 'required|integer'];
-    //         $itemIds = [];
-
-    //         foreach ($activityItems as $item) {
-    //             $rule = 'required|numeric|min:0';
-    //             if ($item->Type === 'percentage') {
-    //                 $rule .= '|max:100';
-    //             } elseif ($item->symbole === 'E' && $item->ActivityId == 1) {
-    //                 $rule .= '|min:0.1'; // Specific validation for 'E' in Activity ID 1
-    //             }
-    //             $validationRules[$item->symbole] = $rule;
-    //             $validationRules['id_' . $item->symbole] = 'required|integer';
-    //             $itemIds[$item->symbole] = $item->id;
-    //         }
-
-    //         // Validation pour l'item ROI
-    //         $roiItem = ActivityItem::where('ActivityId', $activityId)
-    //             ->where('Name', 'Roi')
-    //             ->first();
-    //         if ($roiItem && $request->has('id_ROI')) {
-    //             $validationRules['id_ROI'] = 'required|integer';
-    //         }
-
-    //         $validated = $request->validate($validationRules);
-
-    //         // Création de l'entrée ActivityByLabo
-    //         $activityByLabo = ActivityByLabo::create([
-    //             'ActivityId' => $activityId,
-    //             'laboId' => $laboId,
-    //             'year' => $validated['year'],
-    //         ]);
-
-    //         // Préparation des valeurs à insérer et des valeurs pour calcul
-    //         $values = [];
-    //         $calculatedValues = [];
-
-    //         // Stocker les valeurs originales et préparer les valeurs pour calcul
-    //         foreach ($activityItems as $item) {
-    //             $originalValue = $validated[$item->symbole];
-    //             $calcValue = $originalValue;
-
-    //             // Convertir les pourcentages en décimal pour les calculs uniquement
-    //             if ($item->Type === 'percentage') {
-    //                 $calcValue = $originalValue / 100;
-    //             }
-
-    //             $calculatedValues[$item->symbole] = $calcValue;
-    //             $values[] = [
-    //                 'activityItemId' => $validated['id_' . $item->symbole],
-    //                 'ActivityByLaboId' => $activityByLabo->id,
-    //                 'value' => $originalValue, // Stocker la valeur originale
-    //                 'created_at' => now(),
-    //                 'updated_at' => now(),
-    //             ];
-    //         }
-
-    //         // Décodage de la formule JSON
-    //         $formulaSteps = json_decode($formula->formulat, true);
-    //         $results = [];
-    //         $intermediateResults = [];
-
-    //         // Exécution des calculs étape par étape
-    //         foreach ($formulaSteps as $key => $expression) {
-    //             if ($key === 'roi') continue; // Traiter le ROI à part
-
-    //             try {
-    //                 $expressionToEval = $expression;
-
-    //                 // Remplacer les variables des items
-    //                 foreach ($calculatedValues as $var => $val) {
-    //                     $expressionToEval = str_replace($var, $val, $expressionToEval);
-    //                 }
-
-    //                 // Remplacer les résultats intermédiaires
-    //                 foreach ($intermediateResults as $resultKey => $resultValue) {
-    //                     $expressionToEval = str_replace($resultKey, $resultValue, $expressionToEval);
-    //                 }
-
-    //                 // Vérifier les variables non résolues
-    //                 if (preg_match('/\b[a-zA-Z_]+\b/', $expressionToEval, $matches)) {
-    //                     $results[$key] = "Erreur : variable non définie '$matches[0]'";
-    //                     continue;
-    //                 }
-
-    //                 // Calculer l'expression
-    //                 $result = eval("return $expressionToEval;");
-    //                 if (is_infinite($result) || is_nan($result)) {
-    //                     $results[$key] = 'Erreur : résultat invalide (division par zéro ou NaN)';
-    //                     continue;
-    //                 }
-
-    //                 $results[$key] = $result;
-    //                 $intermediateResults[$key] = $result;
-    //             } catch (\Exception $e) {
-    //                 $results[$key] = 'Erreur de calcul : ' . $e->getMessage();
-    //             }
-    //         }
-
-    //         // Calcul final du ROI
-    //         if (isset($formulaSteps['roi'])) {
-    //             try {
-    //                 $roiExpression = $formulaSteps['roi'];
-    //                 foreach ($calculatedValues as $var => $val) {
-    //                     $roiExpression = str_replace($var, $val, $roiExpression);
-    //                 }
-    //                 foreach ($intermediateResults as $resultKey => $resultValue) {
-    //                     $roiExpression = str_replace($resultKey, $resultValue, $roiExpression);
-    //                 }
-
-    //                 if (preg_match('/\b[a-zA-Z_]+\b/', $roiExpression, $matches)) {
-    //                     $results['ROI'] = "Erreur : variable non définie '$matches[0]'";
-    //                 } else {
-    //                     $roi = eval("return $roiExpression;");
-    //                     if (is_infinite($roi) || is_nan($roi)) {
-    //                         $results['ROI'] = 'Erreur : résultat invalide (division par zéro ou NaN)';
-    //                     } else {
-    //                         $results['ROI'] = $roi;
-
-    //                         // Ajout du ROI aux valeurs à insérer
-    //                         if ($roiItem) {
-    //                             $values[] = [
-    //                                 'activityItemId' => $roiItem->id,
-    //                                 'ActivityByLaboId' => $activityByLabo->id,
-    //                                 'value' => $roi,
-    //                                 'created_at' => now(),
-    //                                 'updated_at' => now(),
-    //                             ];
-    //                         }
-    //                     }
-    //                 }
-    //             } catch (\Exception $e) {
-    //                 $results['ROI'] = 'Erreur de calcul : ' . $e->getMessage();
-    //             }
-    //         }
-
-    //         // Insertion des valeurs en base
-    //         ActivityItemValue::insert($values);
-
-    //         return response()->json([
-    //             'message' => 'Activité créée et calculée avec succès',
-    //             'results' => $results,
-    //             'ROI' => $results['ROI'] ?? null,
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Erreur lors du traitement',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
-
     public function insertActivityData(Request $request)
     {
         try {
@@ -396,100 +217,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
-
-
-    //Calcule de toutes le activities (Dynamique) 
-    // public function calculateRoi(Request $request)
-    // {
-    //     try {
-    //         // Récupération de l'ID de l'activité
-    //         $activityId = $request->cookie('activityNumber') ??  $request->input('activityId');
-    //         if (!$activityId) {
-    //             return response()->json(['message' => 'Activité non spécifiée'], 400);
-    //         }
-
-    //         // Récupération de la formule de calcul
-    //         $formula = CalculationFormulat::where('ActivityId', $activityId)->first();
-    //         if (!$formula) {
-    //             return response()->json(['message' => 'Formule de calcul non trouvée'], 404);
-    //         }
-
-    //         // Récupération des items de l'activité (sauf ROI)
-    //         $activityItems = ActivityItem::where('ActivityId', $activityId)
-    //             ->where('Name', '!=', 'ROI')
-    //             ->get();
-
-    //         // Validation des données
-    //         $validationRules = ['year' => 'required|integer'];
-    //         $itemIds = [];
-
-    //         foreach ($activityItems as $item) {
-    //             $rule = 'required|numeric|min:0';
-    //             if ($item->Type === 'percentage') {
-    //                 $rule .= '|max:100';
-    //             }
-    //             $validationRules[$item->symbole] = $rule;
-    //             $validationRules['id_' . $item->symbole] = 'required|integer';
-    //             $itemIds[$item->symbole] = $item->id;
-    //         }
-
-    //         $validated = $request->validate($validationRules);
-
-    //         // Décodage de la formule JSON
-    //         $formulaSteps = json_decode($formula->formulat, true);
-    //         $calculatedValues = [];
-    //         $results = [];
-
-    //         // Conversion des pourcentages et stockage des valeurs
-    //         foreach ($activityItems as $item) {
-    //             $value = $validated[$item->symbole];
-    //             if ($item->Type === 'percentage') {
-    //                 $value = $value / 100;
-    //             }
-    //             $calculatedValues[$item->symbole] = $value;
-    //         }
-
-    //         // Exécution des calculs étape par étape
-    //         foreach ($formulaSteps as $key => $expression) {
-    //             if ($key === 'roi') continue; // On traitera le ROI à part
-
-    //             // Remplacement des variables dans l'expression
-    //             $expressionToEval = $expression;
-    //             foreach ($calculatedValues as $var => $val) {
-    //                 $expressionToEval = str_replace($var, $val, $expressionToEval);
-    //             }
-
-    //             // Calcul de l'expression
-    //             $result = eval("return $expressionToEval;");
-    //             $calculatedValues[$key] = $result;
-    //             $results[$key] = $result;
-    //         }
-
-    //         // Calcul final du ROI
-    //         $roi = null;
-    //         if (isset($formulaSteps['roi'])) {
-    //             $roiExpression = $formulaSteps['roi'];
-    //             foreach ($calculatedValues as $var => $val) {
-    //                 $roiExpression = str_replace($var, $val, $roiExpression);
-    //             }
-    //             $roi = eval("return $roiExpression;");
-    //             $results['ROI'] = $roi;
-    //         }
-
-    //         return response()->json([
-    //             'message' => 'Calcul du ROI effectué avec succès',
-    //             'formulas' => $formulaSteps,
-    //             'results' => $results,
-    //             'ROI' => $roi
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Erreur lors du calcul du ROI',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
 
 
     public function calculateRoi(Request $request)
@@ -710,9 +437,9 @@ class Activity1_12 extends Controller
                         }
 
                         // Convert ROI to percentage
-                        if ($key === 'roi') {
-                            $result *= 100; // Convert to percentage
-                        }
+                        // if ($key === 'roi') {
+                        //     $result *= 100; // Convert to percentage
+                        // }
 
                         $calculatedResults[$key] = $result;
                         $intermediateResults[$key] = $result;
@@ -782,4 +509,6 @@ class Activity1_12 extends Controller
             ], 500);
         }
     }
+
+
 }

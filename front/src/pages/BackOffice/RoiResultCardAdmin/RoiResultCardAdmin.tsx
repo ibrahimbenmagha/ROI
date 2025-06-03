@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { Layout, Typography, Spin, Empty, message } from "antd";
@@ -15,9 +17,8 @@ import {
   ArrowLeftOutlined,
   PrinterOutlined,
   DownloadOutlined,
-  DeleteOutlined,
 } from "@ant-design/icons";
-import axiosInstance, { deleteCookie } from "../../../axiosConfig";
+import axiosInstance from "../../../axiosConfig";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -54,7 +55,6 @@ const DisplayCalculatedData = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Avoid double reload
     if (!sessionStorage.getItem("reloaded")) {
       sessionStorage.setItem("reloaded", "true");
       window.location.reload();
@@ -89,30 +89,26 @@ const DisplayCalculatedData = () => {
       const response = await axiosInstance.get("exportActivityCsv", {
         responseType: "blob",
       });
-
       const blob = new Blob([response.data], {
         type: "text/csv;charset=utf-8;",
       });
-
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-
       const contentDisposition = response.headers["content-disposition"];
       let fileName = "activity_export.csv";
-
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="(.+)"/);
         if (match?.[1]) fileName = match[1];
       }
-
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Erreur lors de l'export CSV:", error);
-      alert("Erreur lors de l'export du fichier CSV.");
+      message.error("Erreur lors de l'export du fichier CSV.");
     }
   };
 
@@ -121,30 +117,26 @@ const DisplayCalculatedData = () => {
       const response = await axiosInstance.get("exportActivityExcel", {
         responseType: "blob",
       });
-
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-
       const contentDisposition = response.headers["content-disposition"];
       let fileName = "activity_export.xlsx";
-
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="(.+)"/);
         if (match?.[1]) fileName = match[1];
       }
-
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Erreur lors de l'export Excel:", error);
-      alert("Erreur lors de l'export du fichier Excel.");
+      message.error("Erreur lors de l'export du fichier Excel.");
     }
   };
 
@@ -157,23 +149,22 @@ const DisplayCalculatedData = () => {
       text += `Année: ${data.activityByLabo.year}\n\n`;
       text += "Items de l'activité:\n";
       data.items.forEach((item) => {
-        text += `${item.name}: ${item.value}${
+        text += `${item.name}: ${item.value !== null ? item.value.toFixed(2) : "N/A"}${
           item.type === "percentage" ? "%" : ""
         }\n`;
       });
       text += "\nRésultats calculés:\n";
       Object.entries(data.calculated_results).forEach(([key, value]) => {
         let formattedValue = value;
-        if (typeof value === "number") {
+        if (typeof value === "number" && !isNaN(value)) {
           formattedValue =
             key.toLowerCase().includes("roi")
-              ? `${value.toFixed(2)}%` // Use value directly as percentage
-              : key.toLowerCase().includes("cost") ||
-                key.toLowerCase().includes("sales")
+              ? `${(value * 100).toFixed(2)}%`
+              : key.toLowerCase().includes("cost") || key.toLowerCase().includes("sales")
               ? `${value.toFixed(2)} MAD`
               : value.toFixed(value % 1 === 0 ? 0 : 2);
         }
-        text += `${key.replace(/_/g, " ")}: ${formattedValue}\n`;
+        text += `${key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}: ${formattedValue}\n`;
       });
       return text;
     };
@@ -186,23 +177,22 @@ const DisplayCalculatedData = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Content style={{ padding: "32px 24px", background: "#f5f5f5" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <Card className="mb-6 shadow-lg">
-            <CardHeader>
-              <CardTitle>
-                Résultats du calcul ROI -{" "}
-                {activityData?.activityByLabo.activity}
+    <Layout className="min-h-screen bg-gray-100">
+      <Content className="p-6 sm:p-8">
+        <div className="w-[100%] mx-auto">
+          <Card className="shadow-xl rounded-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+              <CardTitle className="text-2xl font-bold">
+                Résultats du calcul ROI{" "}
+                {activityData ? `- ${activityData.activityByLabo.activity}` : ""}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-blue-100">
                 {activityData
                   ? `Laboratoire: ${activityData.activityByLabo.labo}, Année: ${activityData.activityByLabo.year}`
                   : "Visualisation des données calculées"}
               </CardDescription>
             </CardHeader>
-
-            <CardContent>
+            <CardContent className="p-6">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Spin size="large" tip="Chargement des données..." />
@@ -212,28 +202,27 @@ const DisplayCalculatedData = () => {
                   {error}
                 </div>
               ) : !activityData ? (
-                <Empty
-                  description="Aucune donnée disponible"
-                  className="py-6"
-                />
+                <Empty description="Aucune donnée disponible" className="py-6" />
               ) : (
                 <>
-                  <div className="mb-6">
-                    <Title level={4}>Items de l'activité</Title>
+                  <div className="mb-8">
+                    <Title level={4} className="text-lg font-semibold mb-4">
+                      Items de l'activité
+                    </Title>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {activityData.items.map((item, index) => (
+                      {activityData.items.map((item) => (
                         <div
-                          key={index}
-                          className="bg-white shadow-md p-4 rounded-md flex flex-col items-start"
+                          key={item.id}
+                          className="bg-white shadow-sm p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center"
                         >
-                          <Text className="font-semibold text-sm">
+                          <Text className="text-sm font-bold text-gray-700 mb-2">
                             {item.name}
                           </Text>
-                          <Text className="text-xl font-medium">
+                          <Text className="text-lg text-gray-900 bg-gray-50 border border-gray-300 rounded px-2 py-1">
                             {item.value !== null
-                              ? `${item.value}${
-                                  item.type === "percentage" ? "%" : ""
-                                }`
+                              ? item.type === "percentage"
+                                ? `${(item.value * 100).toFixed(0)}%`
+                                : item.value.toFixed(item.value % 1 === 0 ? 0 : 2)
                               : "N/A"}
                           </Text>
                         </div>
@@ -241,82 +230,77 @@ const DisplayCalculatedData = () => {
                     </div>
                   </div>
                   <div>
-                    <Title level={4}>Résultats calculés</Title>
+                    <Title level={4} className="text-lg font-semibold mb-4">
+                      Résultats calculés
+                    </Title>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {Object.entries(activityData.calculated_results).map(
-                        ([key, value], index) => (
-                          <div
-                            key={key}
-                            className="bg-white shadow-md p-4 rounded-md flex flex-col items-center"
+                      {Object.entries(activityData.calculated_results).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="bg-white shadow-sm p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center"
+                        >
+                          <Text className="text-sm font-bold text-gray-700 mb-2">
+                            {key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </Text>
+                          <Text
+                            className={`text-lg bg-gray-50 border border-gray-300 rounded px-2 py-1 ${
+                              key.toLowerCase().includes("roi") && typeof value === "number" && !isNaN(value)
+                                ? value >= 1
+                                  ? "text-green-500"
+                                  : "text-red-500"
+                                : "text-gray-900"
+                            }`}
                           >
-                            <Text className="font-semibold text-sm">
-                              {key
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </Text>
-                            <Text className="text-xl font-medium">
-                              {typeof value === "number" && !isNaN(value)
-                                ? key.toLowerCase().includes("roi")
-                                  ? `${value.toFixed(2)}%` // Use value directly as percentage
-                                  : key.toLowerCase().includes("cost") ||
-                                    key.toLowerCase().includes("sales")
-                                  ? `${value.toFixed(2)} MAD`
-                                  : value.toFixed(value % 1 === 0 ? 0 : 2)
-                                : value.toString()}
-                            </Text>
-                          </div>
-                        )
-                      )}
+                            {typeof value === "number" && !isNaN(value)
+                              ? key.toLowerCase().includes("roi")
+                                ? `${(value * 100).toFixed(0)}%`
+                                : key.toLowerCase().includes("cost") || key.toLowerCase().includes("sales")
+                                ? `${value.toFixed(2)} MAD`
+                                : value.toFixed(value % 1 === 0 ? 0 : 2)
+                              : value.toString()}
+                          </Text>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </>
               )}
             </CardContent>
-
-            <CardFooter className="flex justify-between items-center">
+            <CardFooter className="flex justify-between items-center bg-gray-50 p-6">
               <Button
                 variant="outline"
                 onClick={() => navigate("/Home")}
-                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white"
+                className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
               >
-                <ArrowLeftOutlined className="mr-2" />
+                <ArrowLeftOutlined />
                 Retour à l'accueil
               </Button>
-
-              <div className="flex gap-4">
+              <div className="flex gap-3 flex-wrap">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/DisplayCalculatedActivity")}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
                 >
-                  <ArrowLeftOutlined className="mr-2" />
+                  <ArrowLeftOutlined />
                   Retour
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleExportCsv}
-                  disabled={loading || !activityData}
-                  className="flex items-center gap-2"
-                >
-                  <DownloadOutlined className="mr-2" />
-                  Exporter CSV
-                </Button>
+  
                 <Button
                   variant="outline"
                   onClick={handleExportExcel}
                   disabled={loading || !activityData}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
                 >
-                  <DownloadOutlined className="mr-2" />
+                  <DownloadOutlined />
                   Exporter Excel
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleExportPdf}
                   disabled={loading || !activityData}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
                 >
-                  <DownloadOutlined className="mr-2" />
+                  <DownloadOutlined />
                   Exporter PDF
                 </Button>
               </div>
@@ -329,4 +313,3 @@ const DisplayCalculatedData = () => {
 };
 
 export default DisplayCalculatedData;
-

@@ -265,7 +265,9 @@ const DisplayCalculatedData = () => {
     <Layout className="min-h-screen bg-gray-100">
       <TheHeader />
       <Content className="p-6 sm:p-8">
-        <div className="max-w-4xl mx-auto">
+        {/* <div className="max-w-4xl mx-auto"> */}
+        <div className="w-[100%] mx-auto">
+
           <Card className="shadow-xl rounded-lg overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
               <CardTitle className="text-2xl font-bold">
@@ -365,14 +367,7 @@ const DisplayCalculatedData = () => {
               </Button>
 
               <div className="flex gap-3 flex-wrap">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/DisplayCalculatedActivity")}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeftOutlined />
-                  Retour
-                </Button>
+
                 <Button
                   variant="outline"
                   onClick={deleteActivityValues}
@@ -487,8 +482,7 @@ const DisplayCalculatedData = () => {
                 Annuler
               </Button>
               <Button
-                type="primary"
-                htmlType="submit"
+                type="submit"
                 disabled={isModifying}
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -503,3 +497,4 @@ const DisplayCalculatedData = () => {
 };
 
 export default DisplayCalculatedData;
+
