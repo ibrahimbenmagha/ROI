@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : lun. 26 mai 2025 à 14:20
+-- Généré le : jeu. 12 juin 2025 à 12:37
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -51,8 +51,7 @@ INSERT INTO `activitieslist` (`id`, `Name`, `is_custom`, `created_at`, `updated_
 (9, 'Publicité dans les revues', 0, NULL, NULL),
 (10, 'Générique (Médecins)', 0, NULL, NULL),
 (11, 'Générique (Patients)', 0, NULL, NULL),
-(12, 'Promotion numérique pour les médecins', 0, NULL, NULL),
-(13, 'IHGJ', 0, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
+(12, 'Promotion numérique pour les médecins', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -68,13 +67,6 @@ CREATE TABLE `activitybylabo` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Déchargement des données de la table `activitybylabo`
---
-
-INSERT INTO `activitybylabo` (`id`, `laboId`, `ActivityId`, `year`, `created_at`, `updated_at`) VALUES
-(1, 2, 13, '2023', '2025-05-26 10:50:42', '2025-05-26 10:50:42');
 
 -- --------------------------------------------------------
 
@@ -207,12 +199,7 @@ INSERT INTO `activityitems` (`id`, `Name`, `symbole`, `Type`, `ActivityId`, `cre
 (108, 'Nombre moyen de nouveaux patients par médecin ayant prescrit le produit', 'L', 'number', 12, NULL, NULL),
 (109, 'Valeur moyenne de revenu par patient incrémental', 'N', 'number', 12, NULL, NULL),
 (110, 'Coût total du programme e-digital', 'P', 'number', 12, NULL, NULL),
-(111, 'Roi', 'ROI', 'number', 12, NULL, NULL),
-(112, 'iTEM 1', 'B', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
-(113, 'iuyh', 'A', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
-(114, 'ih', 'C', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
-(115, '0iujo', 'D', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16'),
-(116, 'Roi', 'ROI', 'number', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
+(111, 'Roi', 'ROI', 'number', 12, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -228,17 +215,6 @@ CREATE TABLE `activityitemvalues` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Déchargement des données de la table `activityitemvalues`
---
-
-INSERT INTO `activityitemvalues` (`id`, `activityItemId`, `ActivityByLaboId`, `value`, `created_at`, `updated_at`) VALUES
-(1, 112, 1, 78, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
-(2, 113, 1, 87, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
-(3, 114, 1, 78, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
-(4, 115, 1, 87, '2025-05-26 10:50:42', '2025-05-26 10:50:42'),
-(5, 116, 1, 1, '2025-05-26 10:50:42', '2025-05-26 10:50:42');
 
 -- --------------------------------------------------------
 
@@ -307,8 +283,7 @@ INSERT INTO `calculationformula` (`id`, `formulat`, `ActivityId`, `created_at`, 
 (9, '{\"medecins_rappeles_annonce\":\"A * C\",\"medecins_prescrivant\":\"medecins_rappeles_annonce * E\",\"patients_incrementaux\":\"medecins_prescrivant * G\",\"ventes_incrementales\":\"patients_incrementaux * I\",\"cout_total\":\"K + L\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 9, NULL, NULL),
 (10, '{\"medecins_rappeles_message\":\"A * B\",\"medecins_perception_positive\":\"medecins_rappeles_message * D\",\"medecins_prescrivant\":\"medecins_perception_positive * F\",\"patients_incrementaux\":\"medecins_prescrivant * H\",\"ventes_incrementales\":\"patients_incrementaux * J\",\"cout_total\":\"L\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 10, NULL, NULL),
 (11, '{\"consommateurs_rappeles_message\":\"A * B\",\"consommateurs_consulte_medecin\":\"consommateurs_rappeles_message * D\",\"patients_incrementaux\":\"consommateurs_consulte_medecin * F\",\"ventes_incrementales\":\"patients_incrementaux * H\",\"cout_total\":\"J\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 11, NULL, NULL),
-(12, '{\"medecins_joignables_en_ligne\":\"A * B\",\"efficacite_atteinte\":\"D \\/ medecins_joignables_en_ligne\",\"medecins_engages\":\"D * F\",\"medecins_perception_positive\":\"medecins_engages * H\",\"medecins_prescrivant\":\"medecins_perception_positive * J\",\"patients_incrementaux\":\"medecins_prescrivant * L\",\"ventes_incrementales\":\"patients_incrementaux * N\",\"cout_total\":\"P\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 12, NULL, NULL),
-(13, '{\"Revenu Total\":\"B + A\",\"cout total\":\"C + D\",\"roi\":\"Revenu Total \\/ cout total\"}', 13, '2025-05-26 10:50:16', '2025-05-26 10:50:16');
+(12, '{\"medecins_joignables_en_ligne\":\"A * B\",\"efficacite_atteinte\":\"D \\/ medecins_joignables_en_ligne\",\"medecins_engages\":\"D * F\",\"medecins_perception_positive\":\"medecins_engages * H\",\"medecins_prescrivant\":\"medecins_perception_positive * J\",\"patients_incrementaux\":\"medecins_prescrivant * L\",\"ventes_incrementales\":\"patients_incrementaux * N\",\"cout_total\":\"P\",\"roi\":\"ventes_incrementales \\/ cout_total\"}', 12, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -371,6 +346,7 @@ CREATE TABLE `labo` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `Name` varchar(255) NOT NULL,
   `userId` bigint(20) UNSIGNED NOT NULL,
+  `valeur_patient_incremente` double DEFAULT NULL,
   `status` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -380,9 +356,9 @@ CREATE TABLE `labo` (
 -- Déchargement des données de la table `labo`
 --
 
-INSERT INTO `labo` (`id`, `Name`, `userId`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Labo Exemple 1', 5, 'Activated', '2025-05-26 10:48:33', '2025-05-26 10:48:33'),
-(2, 'Labo Example 2', 6, 'Activated', '2025-05-26 10:48:33', '2025-05-26 10:48:33');
+INSERT INTO `labo` (`id`, `Name`, `userId`, `valeur_patient_incremente`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Labo Exemple 1', 5, NULL, 'Activated', '2025-06-12 09:37:21', '2025-06-12 09:37:21'),
+(2, 'Labo Example 2', 6, NULL, 'Activated', '2025-06-12 09:37:21', '2025-06-12 09:37:21');
 
 -- --------------------------------------------------------
 
@@ -503,12 +479,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `FirstName`, `LastName`, `email`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `Role`, `email_verified_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$ESaQ/1CLEYOOOZSngyR4H.bk7ee4qSEdVTdU2Yct/lDIvqcd0qdZK', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$rVbn0wtWtUji3T/2EOAcA.UwTELmIxXyXZwZVfxixWo192gzO1JKu', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$Fw4w8d.qlb.skm0mapVN7uHMdiVBkgSEyAvshCu33fKkY9jTjvjda', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$7KEifYCUqDVZnCPsMqO2ceQkQKvGAkkCYwZ.wWaiYsuzmOwNbDjs6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
-(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$pcfMTf5to6.GhfEDD81K9.T.dsWAxq5kE3bMhkAiedWvRJZPKcHTG', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-26 10:48:33', '2025-05-26 10:48:33'),
-(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$A4V2EBQTGDAz96ylLcU8bu8cRBCkekqCIq06/Yl9lbB3n8e6MNW0C', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-05-26 10:48:33', '2025-05-26 10:48:33');
+(1, 'Ibrahim', 'Benmagha', 'benmagha@gmail.com', '$2y$12$P/PLSH5tjboCiebMdqCxquCub35rl1OAM00Ek9vNnd152Vtqjxf0C', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(2, 'said', 'taghmaoui', 'said@gmail.com', '$2y$12$PbVDVb4nwX2yIWpqTAsL1.bYHVRTnPqHAJ13E7IQOd0ZNRUD9ERYy', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(3, 'Rachid', 'katorza', 'Rachid@gmail.com', '$2y$12$W1q2pWwf0WXvQ6tYdKpoM.fqQSwesYCFyM3VqFIGJ.oSbL4rKw7R6', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(4, 'Yasser', 'Eddaoussari', 'Yasser@gmail.com', '$2y$12$m1G8DJz64rNMTPgCKehdqubSFLNTW3VM.63miwvPA/zksdS/OMd8W', NULL, NULL, NULL, 'Admin', NULL, NULL, NULL, NULL),
+(5, 'Mark', 'Lermon', 'Mark.Lermon@gmail.com', '$2y$12$UspL0X.N8x5YgNWoEZ6YeOaPf99A97Ms8lx2jy2vCytV.lNvESnEq', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-06-12 09:37:21', '2025-06-12 09:37:21'),
+(6, 'John', 'Doe', 'john.doe@example.com', '$2y$12$3gMgZJBFrc/plYknzlWP2OtQ5qZ3RJP9IubhEIFQyuCeatoF61ScW', NULL, NULL, NULL, 'Laboratoire', NULL, NULL, '2025-06-12 09:37:21', '2025-06-12 09:37:21');
 
 --
 -- Index pour les tables déchargées
@@ -647,25 +623,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `activitieslist`
 --
 ALTER TABLE `activitieslist`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `activitybylabo`
 --
 ALTER TABLE `activitybylabo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `activityitems`
 --
 ALTER TABLE `activityitems`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
 
 --
 -- AUTO_INCREMENT pour la table `activityitemvalues`
 --
 ALTER TABLE `activityitemvalues`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `admins`
@@ -677,7 +653,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT pour la table `calculationformula`
 --
 ALTER TABLE `calculationformula`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `failed_jobs`

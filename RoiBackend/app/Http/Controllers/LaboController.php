@@ -8,6 +8,8 @@ use App\Models\Labo;
 use App\Models\ActivityByLabo;
 use App\Models\ActivityItemValue;
 use Illuminate\Support\Facades\Hash;
+use App\Helpers\JwtHelper; // Adjust the namespace as needed
+
 
 class LaboController extends Controller
 {
@@ -125,37 +127,6 @@ class LaboController extends Controller
             return response()->json(['message' => 'Labo not found'], 404);
         }
     }
-
-    // public function deleteLaboWithData(Request $request)
-    // {
-    //     // $laboId = $request->input('laboId');
-    //     $laboId = $request->cookie('laboId');
-
-    //     if (empty($laboId) || $laboId === "undefined") {
-    //         return response()->json(['error' => 'Labo ID not found'], 400);
-    //     }
-    //     try {
-    //         // Suppression des données dans la table ActivityItemValue associées au labo
-    //         ActivityItemValue::whereHas('activityByLabo', function ($query) use ($laboId) {
-    //             $query->where('laboId', $laboId);
-    //         })->delete();
-
-    //         // Suppression de l'enregistrement du labo dans la table ActivityByLabo
-    //         ActivityByLabo::where('laboId', $laboId)->delete();
-
-    //         // Suppression du labo lui-même (si nécessaire, si le labo est un modèle en propre, par exemple)
-    //         Labo::where('id', $laboId)->delete(); 
-
-    //         User::find($laboId)->delete();
-
-
-    //         return response()->json(['success' => 'Labo and associated data deleted successfully'], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
-    //     }
-    // }
-
-
     public function deleteLaboWithData(Request $request)
     {
         $laboId = $request->cookie('laboId') ?? $request->input('laboId');
@@ -189,4 +160,52 @@ class LaboController extends Controller
             ], 500);
         }
     }
+
+    public function UpdateVPI(Request $request)
+    {
+        $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+        $validated = $request->validate([
+            'vpiResult' => 'required|numeric',
+        ]);
+
+        // Récupérer le laboratoire à mettre à jour
+        $labo = Labo::find($laboId);
+
+        if (!$labo) {
+            return response()->json(['error' => 'Laboratoire non trouvé'], 404);
+        }
+
+        // Mettre à jour la valeur_patient_incremente avec la valeur validée
+        $labo->valeur_patient_incremente = $validated['vpiResult'];
+        $labo->save();
+
+        return response()->json(['message' => 'Valeur Patient Incrémentée mise à jour avec succès', 'vpiResult' => $labo->valeur_patient_incremente], 200);
+    }
+
+
+    public function getVPI(Request $request)
+    {
+        // Récupérer l'ID du laboratoire à partir du JWT ou de la requête
+        $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
+
+        // Vérifier si l'ID est fourni
+        if (!$laboId) {
+            return response()->json(['error' => 'ID du laboratoire requis'], 400);
+        }
+
+        // Récupérer le laboratoire
+        $labo = Labo::find($laboId);
+
+        // Vérifier si le laboratoire existe
+        if (!$labo) {
+            return response()->json(['error' => 'Laboratoire non trouvé'], 404);
+        }
+
+        // Retourner la valeur valeur_patient_incremente
+        return response()->json([
+            'message' => 'Valeur Patient Incrémentée récupérée avec succès',
+            'valeur_patient_incremente' => $labo->valeur_patient_incremente
+        ], 200);
+    }
+    
 }

@@ -15,6 +15,7 @@ class Labo extends Model
         'Name',
         'userId',
         'status',
+        'valeur_patient_incremente'
     ];
 
     /**

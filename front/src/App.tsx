@@ -37,6 +37,7 @@ import {
 import CreateRegularActivity from "./pages/BackOffice/AddActivity/AddActivity";
 
 import ActivityDispkay from "./pages/BackOffice/ActivityDisplay/ActivityDisplay";
+import PatientIncremental from "./pages/PatientIncremental/PatientIncremental";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +48,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-
           <Route path="*" element={<Navigate to="/CreateActivity" />} />
 
           <Route
@@ -121,6 +121,16 @@ const App = () => (
             element={
               <LaboRoute>
                 <CalculateAct1 />
+              </LaboRoute>
+            }
+          />
+
+          <Route
+            path="PatientIncremental"
+            element={
+              <LaboRoute>
+          
+                <PatientIncremental />
               </LaboRoute>
             }
           />

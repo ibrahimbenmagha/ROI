@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id("id");
             $table->string('Name');
             $table->foreignId('userId')->references("id")->on("users");
+            $table->float("valeur_patient_incremente")->nullable(true);
             $table->string("status");
             $table->timestamps();
         });

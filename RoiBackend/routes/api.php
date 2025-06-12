@@ -73,6 +73,10 @@ Route::middleware(['check.role:Laboratoire'])->group(function () {
     Route::get('getAllActivityByLaboInfosByLaboId', [ActivitiesController::class, 'getAllActivityByLaboInfosByLaboId']);
     Route::delete('deleteActivityValues', [ActivitiesController::class, 'deleteActivityValues']);
     Route::delete('deletelabovalues', [ActivitiesController::class, 'deletelabovalues']);
+    //UpdateVPI
+
+    Route::post('UpdateVPI', [LaboController::class, 'UpdateVPI']);
+
 });
 
 
@@ -100,3 +104,6 @@ Route::middleware('check.role:Admin,Laboratoire')->group(function () {
     Route::get('getActivityItemsByActivityId/{activityId}', [activityitems::class, 'getActivityItemsByActivityId']);
     Route::get('getActivityItemsByActivityIdall', [activityitems::class, 'getActivityItemsByActivityIdall']);
 });
+
+
+Route::get('getVPI', [LaboController::class, 'getVPI']);
