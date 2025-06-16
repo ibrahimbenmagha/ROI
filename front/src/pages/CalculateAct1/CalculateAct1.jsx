@@ -36,8 +36,29 @@ const CalculateAct1 = () => {
   const [calculated, setCalculated] = useState(false);
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+  const [vpi, setVpi] = useState(null); // Initialisé à null pour gérer les cas où la valeur n'est pas encore récupérée
 
   const navigate = useNavigate();
+
+  // Récupérer la VPI depuis l'API
+  useEffect(() => {
+    const fetchVPI = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axiosInstance.get("getVPI", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setVpi(response.data); // Mettre à jour vpi avec la valeur entière (123 dans cet exemple)
+      } catch (error) {
+        console.error("Erreur lors de la récupération du VPI :", error);
+        setVpi(null); // Définir à null en cas d'erreur
+      }
+    };
+
+    fetchVPI();
+  }, []);
 
   useEffect(() => {
     const activityNum = getCookie("activityNumber");
@@ -55,7 +76,11 @@ const CalculateAct1 = () => {
         const initialFormData = {};
         response.data.items.forEach((item) => {
           if (item.itemName !== "Roi") {
-            initialFormData[item.symbole] = 0;
+            initialFormData[item.symbole] =
+              item.itemName ===
+              "Valeur du revenu par patient incrémental en MAD"
+                ? vpi || 0
+                : 0;
           }
         });
         setFormData(initialFormData);
@@ -64,13 +89,16 @@ const CalculateAct1 = () => {
         message.error("Impossible de charger les données de l'activité.");
         setError("Erreur lors du chargement des données.");
       });
-  }, []);
+  }, [vpi]); // Ajout de vpi comme dépendance pour mettre à jour formData lorsque vpi change
 
   const handleReset = () => {
     const resetFormData = {};
     items.forEach((item) => {
       if (item.itemName !== "Roi") {
-        resetFormData[item.symbole] = 0;
+        resetFormData[item.symbole] =
+          item.itemName === "Valeur du revenu par patient incrémental en MAD"
+            ? vpi || 0
+            : 0;
       }
     });
     setFormData(resetFormData);
@@ -107,7 +135,10 @@ const CalculateAct1 = () => {
         ...result,
         ...formData,
       };
-      const response = await axiosInstance.post("/generate-interpretation", payload);
+      const response = await axiosInstance.post(
+        "/generate-interpretation",
+        payload
+      );
       return response.data.interpretation;
     } catch (error) {
       return null;
@@ -116,7 +147,9 @@ const CalculateAct1 = () => {
 
   const calculateRoi = async () => {
     if (!year) {
-      return message.error("Veuillez sélectionner une année avant de calculer le ROI.");
+      return message.error(
+        "Veuillez sélectionner une année avant de calculer le ROI."
+      );
     }
 
     for (const item of items) {
@@ -142,7 +175,9 @@ const CalculateAct1 = () => {
     }
 
     if (!items || items.length === 0) {
-      return message.error("Les données des items d'activité ne sont pas disponibles.");
+      return message.error(
+        "Les données des items d'activité ne sont pas disponibles."
+      );
     }
 
     setLoading(true);
@@ -155,9 +190,10 @@ const CalculateAct1 = () => {
       };
       items.forEach((item) => {
         if (item.itemName !== "Roi") {
-          payload[item.symbole] = item.Type === "percentage"
-            ? formData[item.symbole] / 100
-            : formData[item.symbole];
+          payload[item.symbole] =
+            item.Type === "percentage"
+              ? formData[item.symbole] / 100
+              : formData[item.symbole];
           payload[`id_${item.symbole}`] = item.id;
         } else {
           payload.id_ROI = item.id;
@@ -193,7 +229,9 @@ const CalculateAct1 = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!items || items.length === 0) {
-      return message.error("Les données nécessaires ne sont pas encore disponibles.");
+      return message.error(
+        "Les données nécessaires ne sont pas encore disponibles."
+      );
     }
 
     if (!activityNumber) {
@@ -201,7 +239,9 @@ const CalculateAct1 = () => {
     }
 
     if (!calculationResult) {
-      return message.error("Veuillez calculer le ROI avant d'insérer les données.");
+      return message.error(
+        "Veuillez calculer le ROI avant d'insérer les données."
+      );
     }
 
     try {
@@ -212,9 +252,10 @@ const CalculateAct1 = () => {
       };
       items.forEach((item) => {
         if (item.itemName !== "Roi") {
-          payload[item.symbole] = item.Type === "percentage"
-            ? formData[item.symbole] / 100
-            : formData[item.symbole];
+          payload[item.symbole] =
+            item.Type === "percentage"
+              ? formData[item.symbole] / 100
+              : formData[item.symbole];
           payload[`id_${item.symbole}`] = item.id;
         } else {
           payload.id_ROI = item.id;
@@ -339,25 +380,56 @@ const CalculateAct1 = () => {
                   .map((item) => (
                     <div key={item.id}>
                       <label>{item.itemName}</label>
-                      <Input
-                        type="number"
-                        min={
-                          item.Type === "percentage"
-                            ? "0"
-                            : item.symbole === "E"
-                            ? "0.1"
-                            : "0"
-                        }
-                        max={item.Type === "percentage" ? "100" : undefined}
-                        step={item.symbole === "E" ? "0.1" : "1"}
-                        value={formData[item.symbole] || 0}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            [item.symbole]: Number(e.target.value),
-                          })
-                        }
-                      />
+                      <div className="flex items-center justify-center gap-2">
+                        {" "}
+                        {/* Centralisation avec justify-center */}
+                        <Input
+                          type="number"
+                          min={
+                            item.Type === "percentage"
+                              ? "0"
+                              : item.symbole === "E"
+                              ? "0.1"
+                              : "0"
+                          }
+                          max={item.Type === "percentage" ? "100" : undefined}
+                          step={item.symbole === "E" ? "0.1" : "1"}
+                          value={
+                            item.itemName ===
+                            "Valeur du revenu par patient incrémental en MAD"
+                              ? vpi !== null && vpi !== undefined
+                                ? vpi
+                                : 0
+                              : formData[item.symbole] || 0
+                          }
+                          disabled={
+                            item.itemName ===
+                            "Valeur du revenu par patient incrémental en MAD"
+                          }
+                          onChange={(e) =>
+                            item.itemName !==
+                              "Valeur du revenu par patient incrémental en MAD" &&
+                            setFormData({
+                              ...formData,
+                              [item.symbole]: Number(e.target.value),
+                            })
+                          }
+                        />
+                        {item.itemName ===
+                          "Valeur du revenu par patient incrémental en MAD" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate("/PatientIncremental")}
+                            // style={{ height: "40px" }}
+                            style={{ backgroundColor: "#1890ff", height: "40px" }}
+                            // Ajuster la hauteur pour correspondre à l'Input
+                            title="Modifier la valeur du revenu par patient incrémental" // Désignation via title
+                          >
+                            Éditer
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 <div>

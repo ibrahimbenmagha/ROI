@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('Name');
             $table->string('symbole')->nullable();
             $table->enum('Type',["percentage", "number"])->default(null);
+            $table->double("benchmark")->nullable();
             $table->foreignId('ActivityId')->references("id")->on("activitieslist");
             $table->timestamps();
         });

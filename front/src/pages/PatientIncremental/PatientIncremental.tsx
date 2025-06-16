@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout, Table, Button, Row, Col, Typography, message, InputNumber, Tooltip, Card } from 'antd';
 import { Download, CheckCircle, Upload } from 'lucide-react';
 import TheHeader from '../Header/Header'; // Adjust path as needed
@@ -8,7 +9,6 @@ import axiosInstance from '../../axiosConfig'; // Assurez-vous que cette instanc
 const { Content } = Layout;
 const { Title: AntTitle, Text } = Typography;
 
-// Données initiales basées sur les images fournies
 const initialSegmentData = [
   {
     key: '1',
@@ -162,6 +162,8 @@ const PatientIncremental: React.FC = () => {
   const [vpiResult, setVpiResult] = useState<number | null>(null);
   const [inputErrors, setInputErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
 
   const patientStayColumns = useCallback(
     (handleInputChange: any) => [
@@ -375,22 +377,16 @@ const PatientIncremental: React.FC = () => {
     }
 
     try {
-      const laboId = 1; // Remplacez par la logique pour obtenir le laboId (par ex. via JWT ou contexte)
-      await axiosInstance.post('UpdateVPI', { vpiResult, laboId });
+      // const laboId = 1; // Remplacez par la logique pour obtenir le laboId (par ex. via JWT ou contexte)
+      await axiosInstance.post('UpdateVPI', { vpiResult });
       message.success('Valeur Patient Incrémentée mise à jour sur le serveur avec succès');
+      navigate("/CalculateAct1");
     } catch (error) {
       message.error('Erreur lors de la mise à jour de la VPI sur le serveur');
       console.error(error);
     }
   };
 
-  // Fonction pour exporter en PDF
-  const handleExportPDF = () => {
-    message.loading('Génération du PDF en cours...', 1);
-    setTimeout(() => {
-      message.success('PDF généré avec succès ! (Simulation)');
-    }, 1000);
-  };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -400,15 +396,7 @@ const PatientIncremental: React.FC = () => {
           <Col>
             <AntTitle level={3}>Calculateur de ROI - Prexige 2025</AntTitle>
           </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<Download size={16} style={{ marginRight: 8 }} />}
-              onClick={handleExportPDF}
-            >
-              Exporter en PDF
-            </Button>
-          </Col>
+
         </Row>
 
         {/* Tableau : Patient Segment */}

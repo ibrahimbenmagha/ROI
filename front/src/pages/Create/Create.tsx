@@ -48,6 +48,8 @@ const ActivityPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmLoading, setConfirmLoading] = useState(false);
 
+
+
   useEffect(() => {
     deleteCookie("activityNumber");
     deleteCookie("activityId");
@@ -79,6 +81,7 @@ const ActivityPage: React.FC = () => {
         setError("Échec du chargement des activités");
         setLoading(false);
       });
+    // axiosInstance.get("getVPI").
   }, []);
 
   const handleActivityClick = (activity: Activity) => {

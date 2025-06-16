@@ -182,30 +182,23 @@ class LaboController extends Controller
         return response()->json(['message' => 'Valeur Patient Incrémentée mise à jour avec succès', 'vpiResult' => $labo->valeur_patient_incremente], 200);
     }
 
-
     public function getVPI(Request $request)
     {
-        // Récupérer l'ID du laboratoire à partir du JWT ou de la requête
         $laboId = JWTHelper::getLaboId($request) ?? $request->input('laboId');
 
-        // Vérifier si l'ID est fourni
         if (!$laboId) {
             return response()->json(['error' => 'ID du laboratoire requis'], 400);
         }
 
-        // Récupérer le laboratoire
         $labo = Labo::find($laboId);
-
-        // Vérifier si le laboratoire existe
         if (!$labo) {
             return response()->json(['error' => 'Laboratoire non trouvé'], 404);
         }
 
-        // Retourner la valeur valeur_patient_incremente
-        return response()->json([
-            'message' => 'Valeur Patient Incrémentée récupérée avec succès',
-            'valeur_patient_incremente' => $labo->valeur_patient_incremente
-        ], 200);
+        // return response()->json([
+        //     'valeur_patient_incremente' => $labo->valeur_patient_incremente
+        // ]);
+        return $labo->valeur_patient_incremente;
     }
-    
+
 }
