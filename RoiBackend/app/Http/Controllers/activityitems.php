@@ -53,6 +53,9 @@ class activityitems extends Controller
                 'activityitems.symbole',
                 'activityitems.Type',
                 'activityitems.ActivityId',
+                'activityitems.benchmark_min',
+                'activityitems.benchmark_max',
+
                 'activitieslist.Name as activityName',
                 'activityitems.created_at',
                 'activityitems.updated_at'
