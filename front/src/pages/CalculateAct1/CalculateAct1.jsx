@@ -9,13 +9,13 @@
 //   Alert,
 //   Spin,
 //   DatePicker,
-//   Tooltip, // Ajout de Tooltip pour le hover
+//   Tooltip,
 // } from "antd";
 // import {
 //   CalculatorOutlined,
 //   ReloadOutlined,
 //   CheckCircleOutlined,
-//   QuestionCircleOutlined, // Icône pour le bouton ?
+//   QuestionCircleOutlined,
 // } from "@ant-design/icons";
 // import { Link, useNavigate } from "react-router-dom";
 // import { Button } from "@/components/ui/button";
@@ -39,6 +39,8 @@
 //   const [items, setItems] = useState([]);
 //   const [error, setError] = useState(null);
 //   const [vpi, setVpi] = useState(null);
+//   const [benchmarkErrors, setBenchmarkErrors] = useState({}); // État pour les messages d'erreur des benchmarks
+//   const [roiBenchmarkError, setRoiBenchmarkError] = useState(null); // État pour l'erreur du ROI
 
 //   const navigate = useNavigate();
 
@@ -108,6 +110,8 @@
 //     setInterpretation(null);
 //     setCalculated(false);
 //     setError(null);
+//     setBenchmarkErrors({}); // Réinitialiser les erreurs de benchmarks
+//     setRoiBenchmarkError(null); // Réinitialiser l'erreur du ROI
 //   };
 
 //   const validateNumeric = (value, min, max = null) => {
@@ -115,6 +119,20 @@
 //     if (isNaN(num)) return false;
 //     if (num < min) return false;
 //     if (max !== null && num > max) return false;
+//     return true;
+//   };
+
+//   const validateBenchmark = (value, item) => {
+//     const num = Number(value);
+//     if (isNaN(num)) return false;
+//     if (
+//       item.benchmark_min !== null &&
+//       item.benchmark_max !== null &&
+//       (num < (item.Type === "percentage" ? item.benchmark_min * 100 : item.benchmark_min) ||
+//         num > (item.Type === "percentage" ? item.benchmark_max * 100 : item.benchmark_max))
+//     ) {
+//       return false;
+//     }
 //     return true;
 //   };
 
@@ -210,6 +228,19 @@
 
 //       setCalculationResult(result);
 //       setCalculated(true);
+
+//       // Vérifier si le ROI est hors des benchmarks
+//       const roiItem = items.find((item) => item.itemName === "Roi");
+//       if (
+//         roiItem &&
+//         roiItem.benchmark_min !== null &&
+//         roiItem.benchmark_max !== null &&
+//         (result.roi < roiItem.benchmark_min || result.roi > roiItem.benchmark_max)
+//       ) {
+//         setRoiBenchmarkError("Le ROI calculé est hors des benchmarks.");
+//       } else {
+//         setRoiBenchmarkError(null);
+//       }
 
 //       const interpretationText = await generateInterpretation(result);
 //       if (interpretationText) {
@@ -319,6 +350,11 @@
 //                       color: calculationResult.roi >= 1 ? "#3f8600" : "#cf1322",
 //                     }}
 //                   />
+//                   {roiBenchmarkError && (
+//                     <Text type="danger" style={{ fontSize: "12px" }}>
+//                       {roiBenchmarkError}
+//                     </Text>
+//                   )}
 //                 </Card>
 //                 {Object.entries(calculationResult)
 //                   .filter(([key]) => key !== "roi")
@@ -382,28 +418,6 @@
 //                     <div key={item.id}>
 //                       <label>{item.itemName}</label>
 //                       <div className="flex items-center gap-2">
-//                         {/* Ajout du bouton ? avec Tooltip pour les benchmarks non null */}
-//                         {(item.benchmark_min !== null || item.benchmark_max !== null) && (
-//                           <Tooltip
-//                             title={
-//                               item.Type === "percentage"
-//                                 ? `${item.benchmark_min * 100}%-${item.benchmark_max * 100}%`
-//                                 : `${item.benchmark_min}-${item.benchmark_max}`
-//                             }
-//                           >
-//                             <Button
-//                               type="button"
-//                               size="sm"
-//                               style={{
-//                                 padding: "0 8px",
-//                                 height: "32px",
-//                                 backgroundColor: "#f0f0f0",
-//                               }}
-//                             >
-//                               <QuestionCircleOutlined />
-//                             </Button>
-//                           </Tooltip>
-//                         )}
 //                         <Input
 //                           type="number"
 //                           min={
@@ -427,15 +441,56 @@
 //                             item.itemName ===
 //                             "Valeur du revenu par patient incrémental en MAD"
 //                           }
-//                           onChange={(e) =>
-//                             item.itemName !==
-//                               "Valeur du revenu par patient incrémental en MAD" &&
-//                             setFormData({
-//                               ...formData,
-//                               [item.symbole]: Number(e.target.value),
-//                             })
-//                           }
+//                           onChange={(e) => {
+//                             const value = Number(e.target.value);
+//                             if (
+//                               item.itemName !==
+//                               "Valeur du revenu par patient incrémental en MAD"
+//                             ) {
+//                               setFormData({
+//                                 ...formData,
+//                                 [item.symbole]: value,
+//                               });
+//                               // Vérifier si la valeur est hors des benchmarks
+//                               if (!validateBenchmark(value, item)) {
+//                                 setBenchmarkErrors({
+//                                   ...benchmarkErrors,
+//                                   [item.symbole]:
+//                                     "Vous êtes hors des benchmarks.",
+//                                 });
+//                               } else {
+//                                 setBenchmarkErrors({
+//                                   ...benchmarkErrors,
+//                                   [item.symbole]: null,
+//                                 });
+//                               }
+//                             }
+//                           }}
 //                         />
+//                         {(item.benchmark_min !== null ||
+//                           item.benchmark_max !== null) && (
+//                           <Tooltip
+//                             title={
+//                               item.Type === "percentage"
+//                                 ? `${item.benchmark_min * 100}%-${
+//                                     item.benchmark_max * 100
+//                                   }%`
+//                                 : `${item.benchmark_min}-${item.benchmark_max}`
+//                             }
+//                           >
+//                             <Button
+//                               type="button"
+//                               size="sm"
+//                               style={{
+//                                 padding: "0 8px",
+//                                 height: "32px",
+//                                 backgroundColor: "#f0f0f0",
+//                               }}
+//                             >
+//                               <QuestionCircleOutlined />
+//                             </Button>
+//                           </Tooltip>
+//                         )}
 //                         {item.itemName ===
 //                           "Valeur du revenu par patient incrémental en MAD" && (
 //                           <Button
@@ -449,6 +504,11 @@
 //                           </Button>
 //                         )}
 //                       </div>
+//                       {benchmarkErrors[item.symbole] && (
+//                         <Text type="danger" style={{ fontSize: "12px" }}>
+//                           {benchmarkErrors[item.symbole]}
+//                         </Text>
+//                       )}
 //                     </div>
 //                   ))}
 //                 <div>
@@ -505,7 +565,6 @@
 
 // export default CalculateAct1;
 
-
 import React, { useState, useEffect } from "react";
 import {
   Layout,
@@ -547,8 +606,8 @@ const CalculateAct1 = () => {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
   const [vpi, setVpi] = useState(null);
-  const [benchmarkErrors, setBenchmarkErrors] = useState({}); // État pour les messages d'erreur des benchmarks
-  const [roiBenchmarkError, setRoiBenchmarkError] = useState(null); // État pour l'erreur du ROI
+  const [benchmarkErrors, setBenchmarkErrors] = useState({});
+  const [roiBenchmarkError, setRoiBenchmarkError] = useState(null);
 
   const navigate = useNavigate();
 
@@ -618,8 +677,8 @@ const CalculateAct1 = () => {
     setInterpretation(null);
     setCalculated(false);
     setError(null);
-    setBenchmarkErrors({}); // Réinitialiser les erreurs de benchmarks
-    setRoiBenchmarkError(null); // Réinitialiser l'erreur du ROI
+    setBenchmarkErrors({});
+    setRoiBenchmarkError(null);
   };
 
   const validateNumeric = (value, min, max = null) => {
@@ -737,7 +796,6 @@ const CalculateAct1 = () => {
       setCalculationResult(result);
       setCalculated(true);
 
-      // Vérifier si le ROI est hors des benchmarks
       const roiItem = items.find((item) => item.itemName === "Roi");
       if (
         roiItem &&
@@ -879,8 +937,7 @@ const CalculateAct1 = () => {
                         suffix={
                           key.includes("cost") || key.includes("sales")
                             ? " MAD"
-                            : key.includes("patients") ||
-                              key.includes("doctors")
+                            : key.includes("patients") || key.includes("doctors")
                             ? " Personnes"
                             : key.includes("samples")
                             ? " Échantillons"
@@ -924,7 +981,7 @@ const CalculateAct1 = () => {
                   .filter((item) => item.itemName !== "Roi")
                   .map((item) => (
                     <div key={item.id}>
-                      <label>{item.itemName}</label>
+                      <label style={{ fontSize: "16px" }}>{item.itemName}</label>
                       <div className="flex items-center gap-2">
                         <Input
                           type="number"
@@ -959,7 +1016,6 @@ const CalculateAct1 = () => {
                                 ...formData,
                                 [item.symbole]: value,
                               });
-                              // Vérifier si la valeur est hors des benchmarks
                               if (!validateBenchmark(value, item)) {
                                 setBenchmarkErrors({
                                   ...benchmarkErrors,
@@ -1020,7 +1076,7 @@ const CalculateAct1 = () => {
                     </div>
                   ))}
                 <div>
-                  <label>Année</label>
+                  <label style={{ fontSize: "16px" }}>Année</label>
                   <DatePicker
                     picker="year"
                     onChange={(date, dateString) => setYear(dateString)}

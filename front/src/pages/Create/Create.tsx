@@ -213,7 +213,10 @@ const ActivityPage: React.FC = () => {
                 >
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2"></div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg text-gray-800 mb-3">
+                    <h3 className="font-semibold text-2xl text-gray-800 mb-3">
+                    {/* <h3 className="font-bold text-3xl text-gray-800"> */}
+
+
                       {act.Name}
                     </h3>
                     <div className="flex justify-end mt-4">
